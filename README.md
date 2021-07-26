@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.1-SNAPSHOT`.
+The current version is `0.1`.
 
 ## Installing
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "net.shadew:json:0.1-SNAPSHOT"
+    implementation "net.shadew:json:0.1"
 }
 ```
 
@@ -43,7 +43,11 @@ Soon™
 
 ### Download
 
-Soon™
+The artifact can be downloaded from my Maven repository:
+
+- **[Download v0.1](https://maven.shadew.net/net/shadew/json/0.1/json-0.1.jar)**
+- **[Download sources v0.1](https://maven.shadew.net/net/shadew/json/0.1/json-0.1-sources.jar)**
+- **[All artifacts for v0.1](https://maven.shadew.net/net/shadew/json/0.1/)**
 
 ## Usage
 
@@ -205,7 +209,10 @@ for debugging only. For production, use `Json#serialize`.
 
 ## Documentation
 
-Documentation is being worked on.
+Documentation is being worked on. Parts of the library are documented with JavaDoc comments. More documentation coming
+in later versions.
+
+I am working on hosting the compiled JavaDoc online.
 
 ## License
 
