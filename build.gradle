@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'net.shadew'
+version '0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task sourceJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = 'json'
+            version = project.version
+
+            from components.java
+            artifact tasks.sourceJar
+        }
+    }
+    repositories {
+        maven {
+            name = "ShwMaven"
+            url = uri("https://maven.shadew.net/")
+            credentials {
+                username = shwMavenUser
+                password = shwMavenPass
+            }
+        }
+    }
+}
