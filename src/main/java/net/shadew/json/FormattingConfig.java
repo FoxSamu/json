@@ -17,6 +17,17 @@ public class FormattingConfig {
         return this;
     }
 
+    private boolean anyValue;
+
+    public boolean anyValue() {
+        return anyValue;
+    }
+
+    public FormattingConfig anyValue(boolean anyValue) {
+        this.anyValue = anyValue;
+        return this;
+    }
+
     private Predicate<JsonNode> wrapArrays = node -> true;
     private Predicate<JsonNode> wrapObjects = node -> true;
 
@@ -342,6 +353,7 @@ public class FormattingConfig {
             throw new NullPointerException();
 
         this.json5 = copy.json5;
+        this.anyValue = copy.anyValue;
         this.wrapArrays = copy.wrapArrays;
         this.wrapObjects = copy.wrapObjects;
         this.ensurePointInNumbers = copy.ensurePointInNumbers;

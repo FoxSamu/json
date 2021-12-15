@@ -200,7 +200,7 @@ abstract class AbstractLexer {
         retain = true;
     }
 
-    public Token token(Token reuse) throws JsonSyntaxException, IOException {
+    public Token token(Token reuse) throws IOException {
         state = defaultState();
         reuseToken = reuse;
 

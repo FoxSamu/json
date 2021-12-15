@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -16,8 +17,8 @@ import java.util.stream.Stream;
  * boolean, null, array or object. The implementation is provided internally and this interface must not be manually
  * implemented.
  * <p>
- * A primitive node (null, a number, a string or a boolean) is immutable and any mutating of this interface will throw
- * an exception for them. Copying primitives is useless.
+ * A not-construct node (null, a number, a string or a boolean) is immutable and any attempt to mutation of this node
+ * will throw an exception for them. Copying primitives is essentially useless.
  * <ul>
  * <li>{@link #NULL} is the singleton null node</li>
  * <li>{@link #TRUE} is the singleton true boolean node</li>
@@ -86,9 +87,9 @@ public interface JsonNode extends Iterable<JsonNode> {
     JsonNode ZERO = new NumberNode(0);
 
     /**
-     * Returns {@code node}, or the {@link #NULL} instance if {@code node} is null. This ensures the returned value is
-     * never null. This also checks whether the given {@link JsonNode} is a correct implementation, and not an external
-     * implementation.
+     * Returns {@code node}, or the {@link #NULL} instance if {@code node} is null (Java null). This ensures the
+     * returned value is never null. This also checks whether the given {@link JsonNode} is a correct implementation,
+     * and not an external implementation.
      *
      * @param node A nullable JSON tree.
      * @return The given JSON tree, or {@link #NULL}.
@@ -161,6 +162,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode array(JsonNode... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         return new ArrayNode(elems);
     }
 
@@ -172,6 +176,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode array(Iterable<? extends JsonNode> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         return new ArrayNode(elems);
     }
 
@@ -183,6 +190,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode stringArray(String... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ArrayNode node = new ArrayNode();
         for (String elem : elems)
             node.add(elem);
@@ -197,6 +207,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode numberArray(Number... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ArrayNode node = new ArrayNode();
         for (Number elem : elems)
             node.add(elem);
@@ -211,6 +224,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode boolArray(Boolean... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ArrayNode node = new ArrayNode();
         for (Boolean elem : elems)
             node.add(elem);
@@ -225,6 +241,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode stringArray(Iterable<? extends String> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ArrayNode node = new ArrayNode();
         for (String elem : elems)
             node.add(elem);
@@ -239,6 +258,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode numberArray(Iterable<? extends Number> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ArrayNode node = new ArrayNode();
         for (Number elem : elems)
             node.add(elem);
@@ -253,6 +275,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode boolArray(Iterable<Boolean> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ArrayNode node = new ArrayNode();
         for (Boolean elem : elems)
             node.add(elem);
@@ -266,10 +291,10 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON array node
      */
     static JsonNode nullArray(int size) {
-        ArrayNode node = new ArrayNode();
-        while (size-- > 0)
-            node.add(NULL);
-        return node;
+        if (size < 0)
+            throw new IllegalArgumentException("Negative size");
+
+        return new ArrayNode(size);
     }
 
     /**
@@ -290,6 +315,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON object node
      */
     static JsonNode object(Map<? extends String, ? extends JsonNode> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         return new ObjectNode(elems);
     }
 
@@ -302,6 +330,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON object node
      */
     static JsonNode stringObject(Map<? extends String, ? extends String> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ObjectNode node = new ObjectNode();
         elems.forEach(node::set);
         return node;
@@ -316,6 +347,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON object node
      */
     static JsonNode numberObject(Map<? extends String, ? extends Number> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ObjectNode node = new ObjectNode();
         elems.forEach(node::set);
         return node;
@@ -330,6 +364,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The JSON object node
      */
     static JsonNode boolObject(Map<? extends String, ? extends Boolean> elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
         ObjectNode node = new ObjectNode();
         elems.forEach(node::set);
         return node;
@@ -497,18 +534,32 @@ public interface JsonNode extends Iterable<JsonNode> {
     boolean isBoolean();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#OBJECT object} node.
+     * Returns true when this node is an {@linkplain JsonType#OBJECT object} node.
      *
-     * @return Whether this node is a object node
+     * @return Whether this node is an object node
      */
     boolean isObject();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#ARRAY array} node.
+     * Returns true when this node is an {@linkplain JsonType#ARRAY array} node.
      *
-     * @return Whether this node is a array node
+     * @return Whether this node is an array node
      */
     boolean isArray();
+
+    /**
+     * Returns true when this node is a {@linkplain JsonType#isPrimitive() primitive} node.
+     *
+     * @return Whether this node is a primitive node
+     */
+    boolean isPrimitive();
+
+    /**
+     * Returns true when this node is a {@linkplain JsonType#isConstruct() construct} node.
+     *
+     * @return Whether this node is a construct node
+     */
+    boolean isConstruct();
 
     /**
      * Returns true when this node is of the specified type.
@@ -534,6 +585,15 @@ public interface JsonNode extends Iterable<JsonNode> {
     JsonNode requireNull();
 
     /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#NULL null}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is null
+     */
+    JsonNode requireNotNull();
+
+    /**
      * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#STRING string}
      *
      * @return This instance for chaining
@@ -541,6 +601,15 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @throws IncorrectTypeException When the this node is not string
      */
     JsonNode requireString();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#STRING string}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is string
+     */
+    JsonNode requireNotString();
 
     /**
      * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#NUMBER number}
@@ -552,6 +621,15 @@ public interface JsonNode extends Iterable<JsonNode> {
     JsonNode requireNumber();
 
     /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#NUMBER number}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is number
+     */
+    JsonNode requireNotNumber();
+
+    /**
      * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#BOOLEAN boolean}
      *
      * @return This instance for chaining
@@ -559,6 +637,15 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @throws IncorrectTypeException When the this node is not boolean
      */
     JsonNode requireBoolean();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#BOOLEAN boolean}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is boolean
+     */
+    JsonNode requireNotBoolean();
 
     /**
      * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#OBJECT object}
@@ -570,6 +657,15 @@ public interface JsonNode extends Iterable<JsonNode> {
     JsonNode requireObject();
 
     /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#OBJECT object}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is object
+     */
+    JsonNode requireNotObject();
+
+    /**
      * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#ARRAY array}
      *
      * @return This instance for chaining
@@ -577,6 +673,51 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @throws IncorrectTypeException When the this node is not array
      */
     JsonNode requireArray();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#ARRAY array}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is array
+     */
+    JsonNode requireNotArray();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#isPrimitive() primitive}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is not primitive
+     */
+    JsonNode requirePrimitive();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#isPrimitive() primitive}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is primitive
+     */
+    JsonNode requireNotPrimitive();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#isConstruct() construct}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is not construct
+     */
+    JsonNode requireConstruct();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#isConstruct() construct}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is construct
+     */
+    JsonNode requireNotConstruct();
 
     /**
      * Throws an {@link IncorrectTypeException} when this node is not the given type
@@ -588,6 +729,15 @@ public interface JsonNode extends Iterable<JsonNode> {
     JsonNode require(JsonType type);
 
     /**
+     * Throws an {@link IncorrectTypeException} when this node is the given type
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is the given type
+     */
+    JsonNode requireNot(JsonType type);
+
+    /**
      * Throws an {@link IncorrectTypeException} when this node is not one of the given types
      *
      * @return This instance for chaining
@@ -596,6 +746,190 @@ public interface JsonNode extends Iterable<JsonNode> {
      */
     JsonNode require(JsonType... types);
 
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is one of the given types
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is one of the given types
+     */
+    JsonNode requireNot(JsonType... types);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#STRING string}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the string value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifString(BiConsumer<JsonNode, String> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the number value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifNumber(BiConsumer<JsonNode, Number> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the byte value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifByte(BiConsumer<JsonNode, Byte> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the short value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifShort(BiConsumer<JsonNode, Short> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the int value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifInt(BiConsumer<JsonNode, Integer> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the long value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifLong(BiConsumer<JsonNode, Long> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the float value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifFloat(BiConsumer<JsonNode, Float> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the double value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifDouble(BiConsumer<JsonNode, Double> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the {@link BigInteger} value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifBigInteger(BiConsumer<JsonNode, BigInteger> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the {@link BigDecimal} value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifBigDecimal(BiConsumer<JsonNode, BigDecimal> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#BOOLEAN boolean}. The consumer must take two
+     * arguments: this {@link JsonNode}, and the boolean value of this node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifBoolean(BiConsumer<JsonNode, Boolean> action);
+
+    /**
+     * Performs the given action if this node is {@linkplain JsonType#NULL null} (JSON null). The consumer must take
+     * this {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifNull(Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if this node is an {@linkplain JsonType#ARRAY array}. The consumer must take this
+     * {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifArray(Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if this node is an {@linkplain JsonType#OBJECT object}. The consumer must take this
+     * {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifObject(Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#isPrimitive() primitive}. The consumer must take
+     * this {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifPrimitive(Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if this node is a {@linkplain JsonType#isConstruct() construct}. The consumer must take
+     * this {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifConstruct(Consumer<JsonNode> action);
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -608,6 +942,16 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The string value of this node
      *
      * @throws IncorrectTypeException When this node is not a string node
+     */
+    String asExactString();
+
+    /**
+     * Returns the string value of this node. Unlike {@link #asExactString()}, this will turn any not-construct into a
+     * string without throwing an exception.
+     *
+     * @return The string value of this node
+     *
+     * @throws IncorrectTypeException When this node is a construct node
      */
     String asString();
 
@@ -799,9 +1143,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The string array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a string node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                string node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     String[] asStringArray(int fixedLength);
 
@@ -812,9 +1156,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The byte array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     byte[] asByteArray(int fixedLength);
 
@@ -825,9 +1169,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The short array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     short[] asShortArray(int fixedLength);
 
@@ -838,9 +1182,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The int array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     int[] asIntArray(int fixedLength);
 
@@ -851,9 +1195,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The long array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     long[] asLongArray(int fixedLength);
 
@@ -864,9 +1208,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The float array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     float[] asFloatArray(int fixedLength);
 
@@ -877,9 +1221,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The double array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     double[] asDoubleArray(int fixedLength);
 
@@ -890,9 +1234,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The {@link BigInteger} array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     BigInteger[] asBigIntegerArray(int fixedLength);
 
@@ -903,9 +1247,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The {@link BigDecimal} array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a number node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     BigDecimal[] asBigDecimalArray(int fixedLength);
 
@@ -916,9 +1260,9 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param fixedLength The required length of the array
      * @return The boolean array value of this node
      *
-     * @throws IncorrectTypeException        When this node is not an array node or when one of the array's elements is
-     *                                       not a boolean node
-     * @throws IncorrectArrayLengthException When the actual length of this array node is not the required length
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                boolean node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     boolean[] asBooleanArray(int fixedLength);
 
@@ -1129,14 +1473,24 @@ public interface JsonNode extends Iterable<JsonNode> {
     int size();
 
     /**
-     * Enforces this array or object to have a specific number of elements, throwing an {@link
-     * IncorrectArrayLengthException} when it is not the correct size.
+     * Returns the size of this array or object if it's an array or object, or the length of this string if it's a
+     * string.
+     *
+     * @return The size/length of this array, object or string
+     *
+     * @throws IncorrectTypeException If this is not an array, object or string
+     */
+    int length();
+
+    /**
+     * Enforces this array or object to have a specific number of elements, throwing an {@link IncorrectSizeException}
+     * when it is not the correct size.
      *
      * @param size The expected size of this node
      * @return This instance for chaining
      *
-     * @throws IncorrectTypeException        If this is not an array or object
-     * @throws IncorrectArrayLengthException When this object or array is not of the given length
+     * @throws IncorrectTypeException If this is not an array or object
+     * @throws IncorrectSizeException When this object or array is not of the given length
      */
     JsonNode requireSize(int size);
 
@@ -1240,6 +1594,16 @@ public interface JsonNode extends Iterable<JsonNode> {
     boolean has(String key);
 
     /**
+     * Returns whether a value is present in this object or array. A null value is treated as a JSON null.
+     *
+     * @param value The value to check for
+     * @return Whether the value is present
+     *
+     * @throws IncorrectTypeException When this node is not an object or array
+     */
+    boolean contains(JsonNode value);
+
+    /**
      * Returns a set of all the keys in this object node. This set reflects this node, and removing from this set means
      * removing from this node.
      *
@@ -1247,7 +1611,51 @@ public interface JsonNode extends Iterable<JsonNode> {
      *
      * @throws IncorrectTypeException When this node is not an object
      */
-    Set<String> keys();
+    Set<String> keySet();
+
+    /**
+     * Returns a set of all the keys in this object node. This set reflects this node, and removing from this set means
+     * removing from this node.
+     *
+     * @return The set of keys in this object
+     *
+     * @throws IncorrectTypeException When this node is not an object
+     * @deprecated Use the Map-like {@link #keySet()}
+     */
+    default Set<String> keys() {
+        return keySet();
+    }
+
+    /**
+     * Returns a collection of all the values in this object or array node. This collection reflects this node, and
+     * removing from this set means removing from this node.
+     *
+     * @return The collection of values in this object or array
+     *
+     * @throws IncorrectTypeException When this node is not an object or array
+     */
+    Collection<JsonNode> values();
+
+    /**
+     * Returns a set of all the key-value pairs in this object node. This set reflects this node, and removing from this
+     * set means removing from this node.
+     *
+     * @return The set of key-value pairs in this object
+     *
+     * @throws IncorrectTypeException When this node is not an object
+     */
+    Set<Map.Entry<String, JsonNode>> entrySet();
+
+    /**
+     * Returns a stream of all the values in this object or array node. This stream is ordered and not parallel. In case
+     * of arrays, the stream order will be the array order. In case of objects, the stream order will be the insertion
+     * order (which is the order of entries in a parsed document as well).
+     *
+     * @return A stream of values in this object or array
+     *
+     * @throws IncorrectTypeException When this node is not an object
+     */
+    Stream<JsonNode> stream();
 
     /**
      * Loops over all key-value pairs in this object, passing them into the given consumer function.

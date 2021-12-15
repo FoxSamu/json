@@ -1,7 +1,6 @@
 package net.shadew.json;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -90,7 +89,7 @@ class Serializer {
         if (!config.alignObjectValues()) return 0;
 
         int len = 0;
-        for (String key : object.keys()) {
+        for (String key : object.keySet()) {
             String jsonKey = keyToJson(key);
             len = Math.max(len, jsonKey.length());
         }
@@ -209,7 +208,7 @@ class Serializer {
             }
 
             int size = object.size();
-            for (String key : object.keys()) {
+            for (String key : object.keySet()) {
                 String jsonKey = keyToJson(key);
                 writeAlignedKey(jsonKey, alignmentLen);
                 writeValue(object.get(key));
@@ -250,7 +249,7 @@ class Serializer {
         if (value.isNull()) writeNull();
         else if (value.isBoolean()) writeBoolean(value.asBoolean());
         else if (value.isNumber()) writeNumber(value.asBigDecimal());
-        else if (value.isString()) writeString(value.asString());
+        else if (value.isString()) writeString(value.asExactString());
         else if (value.isArray()) writeArray(value);
         else if (value.isObject()) writeObject(value);
         else assert false; // Cannot happen if correctly implemented
@@ -271,13 +270,9 @@ class Serializer {
         stringToJsonCache.clear();
     }
 
-    static void serialize(JsonNode node, Appendable output, FormattingConfig config) {
-        try {
-            Serializer serializer = SERIALIZER_INSTANCE.get();
-            serializer.reset(output, config);
-            serializer.writeJson(node);
-        } catch (IOException exc) {
-            throw new UncheckedIOException(exc);
-        }
+    static void serialize(JsonNode node, Appendable output, FormattingConfig config) throws IOException {
+        Serializer serializer = SERIALIZER_INSTANCE.get();
+        serializer.reset(output, config);
+        serializer.writeJson(node);
     }
 }

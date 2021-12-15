@@ -2,6 +2,7 @@ package net.shadew.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.Consumer;
 
 public abstract class AbstractConstructNode extends AbstractJsonNode {
     protected AbstractConstructNode(JsonType type) {
@@ -9,8 +10,49 @@ public abstract class AbstractConstructNode extends AbstractJsonNode {
     }
 
     @Override
-    public String asString() {
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    @Override
+    public boolean isConstruct() {
+        return true;
+    }
+
+    @Override
+    public JsonNode requirePrimitive() {
+        throw new IncorrectTypeException(type(), JsonType.PRIMITIVES);
+    }
+
+    @Override
+    public JsonNode requireNotPrimitive() {
+        return this;
+    }
+
+    @Override
+    public JsonNode requireConstruct() {
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotConstruct() {
+        throw new IncorrectTypeException(type(), JsonType.NOT_CONSTRUCTS);
+    }
+
+    @Override
+    public JsonNode ifConstruct(Consumer<JsonNode> action) {
+        action.accept(this);
+        return this;
+    }
+
+    @Override
+    public String asExactString() {
         throw new IncorrectTypeException(type(), JsonType.STRING);
+    }
+
+    @Override
+    public String asString() {
+        throw new IncorrectTypeException(type(), JsonType.NOT_CONSTRUCTS);
     }
 
     @Override

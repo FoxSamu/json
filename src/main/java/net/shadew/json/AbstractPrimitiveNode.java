@@ -1,12 +1,52 @@
 package net.shadew.json;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 abstract class AbstractPrimitiveNode extends AbstractJsonNode {
     protected AbstractPrimitiveNode(JsonType type) {
         super(type);
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    @Override
+    public boolean isConstruct() {
+        return false;
+    }
+
+    @Override
+    public JsonNode requirePrimitive() {
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotPrimitive() {
+        throw new IncorrectTypeException(type(), JsonType.NOT_PRIMITIVES);
+    }
+
+    @Override
+    public JsonNode requireConstruct() {
+        throw new IncorrectTypeException(type(), JsonType.CONSTRUCTS);
+    }
+
+    @Override
+    public JsonNode requireNotConstruct() {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifPrimitive(Consumer<JsonNode> action) {
+        action.accept(this);
+        return this;
     }
 
     @Override
@@ -81,7 +121,12 @@ abstract class AbstractPrimitiveNode extends AbstractJsonNode {
 
     @Override
     public int size() {
-        throw new IncorrectTypeException(type(), JsonType.ARRAY, JsonType.OBJECT);
+        throw new IncorrectTypeException(type(), JsonType.CONSTRUCTS);
+    }
+
+    @Override
+    public int length() {
+        throw new IncorrectTypeException(type(), JsonType.WITH_LENGTH);
     }
 
     @Override
@@ -120,8 +165,28 @@ abstract class AbstractPrimitiveNode extends AbstractJsonNode {
     }
 
     @Override
-    public Set<String> keys() {
+    public boolean contains(JsonNode value) {
+        throw new IncorrectTypeException(type(), JsonType.CONSTRUCTS);
+    }
+
+    @Override
+    public Set<String> keySet() {
         throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public Collection<JsonNode> values() {
+        throw new IncorrectTypeException(type(), JsonType.CONSTRUCTS);
+    }
+
+    @Override
+    public Set<Map.Entry<String, JsonNode>> entrySet() {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public Stream<JsonNode> stream() {
+        throw new IncorrectTypeException(type(), JsonType.CONSTRUCTS);
     }
 
     @Override
@@ -131,12 +196,12 @@ abstract class AbstractPrimitiveNode extends AbstractJsonNode {
 
     @Override
     public Iterator<JsonNode> iterator() {
-        throw new IncorrectTypeException(type(), JsonType.ARRAY, JsonType.OBJECT);
+        throw new IncorrectTypeException(type(), JsonType.CONSTRUCTS);
     }
 
     @Override
     public JsonNode clear() {
-        throw new IncorrectTypeException(type(), JsonType.ARRAY, JsonType.OBJECT);
+        throw new IncorrectTypeException(type(), JsonType.CONSTRUCTS);
     }
 
     @Override

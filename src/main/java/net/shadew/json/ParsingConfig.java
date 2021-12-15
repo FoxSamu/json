@@ -15,6 +15,17 @@ public class ParsingConfig {
         return this;
     }
 
+    private boolean anyValue;
+
+    public boolean anyValue() {
+        return anyValue;
+    }
+
+    public ParsingConfig anyValue(boolean anyValue) {
+        this.anyValue = anyValue;
+        return this;
+    }
+
     private boolean allowNonExecutePrefix;
 
     public boolean allowNonExecutePrefix() {
@@ -32,6 +43,8 @@ public class ParsingConfig {
 
     public ParsingConfig copyFrom(ParsingConfig copy) {
         this.json5 = copy.json5;
+        this.anyValue = copy.anyValue;
+        this.allowNonExecutePrefix = copy.allowNonExecutePrefix;
         return this;
     }
 

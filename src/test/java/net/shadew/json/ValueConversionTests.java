@@ -69,7 +69,7 @@ public class ValueConversionTests {
     @Test
     void testString() {
         JsonNode node = JsonNode.string("string");
-        assertEquals("string", node.asString());
+        assertEquals("string", node.asExactString());
     }
 
     @Test
@@ -201,61 +201,61 @@ public class ValueConversionTests {
     @Test
     void testByteArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asByteArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asByteArray(1));
     }
 
     @Test
     void testShortArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asShortArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asShortArray(1));
     }
 
     @Test
     void testIntArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asIntArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asIntArray(1));
     }
 
     @Test
     void testLongArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asLongArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asLongArray(1));
     }
 
     @Test
     void testFloatArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asFloatArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asFloatArray(1));
     }
 
     @Test
     void testDoubleArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asDoubleArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asDoubleArray(1));
     }
 
     @Test
     void testBigIntArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asBigIntegerArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asBigIntegerArray(1));
     }
 
     @Test
     void testBigDecArrLenNotCorrect() {
         JsonNode node = JsonNode.numberArray(U31, U31);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asBigDecimalArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asBigDecimalArray(1));
     }
 
     @Test
     void testStringArrLenNotCorrect() {
         JsonNode node = JsonNode.stringArray("string", "string");
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asStringArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asStringArray(1));
     }
 
     @Test
     void testBoolArrLenNotCorrect() {
         JsonNode node = JsonNode.boolArray(true, false);
-        assertThrows(IncorrectArrayLengthException.class, () -> node.asBooleanArray(1));
+        assertThrows(IncorrectSizeException.class, () -> node.asBooleanArray(1));
     }
 
     @Test

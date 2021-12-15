@@ -1,6 +1,8 @@
 package net.shadew.json;
 
-public class JsonSyntaxException extends Exception {
+import java.io.IOException;
+
+public class JsonSyntaxException extends IOException {
     private final int fromIndex;
     private final int fromLine;
     private final int fromCol;

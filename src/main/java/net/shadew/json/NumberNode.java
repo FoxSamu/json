@@ -3,6 +3,7 @@ package net.shadew.json;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 final class NumberNode extends AbstractPrimitiveNode {
     private final Number number;
@@ -16,8 +17,67 @@ final class NumberNode extends AbstractPrimitiveNode {
     }
 
     @Override
-    public String asString() {
+    public JsonNode ifNumber(BiConsumer<JsonNode, Number> action) {
+        action.accept(this, number);
+        return this;
+    }
+
+    @Override
+    public JsonNode ifByte(BiConsumer<JsonNode, Byte> action) {
+        action.accept(this, asByte());
+        return this;
+    }
+
+    @Override
+    public JsonNode ifShort(BiConsumer<JsonNode, Short> action) {
+        action.accept(this, asShort());
+        return this;
+    }
+
+    @Override
+    public JsonNode ifInt(BiConsumer<JsonNode, Integer> action) {
+        action.accept(this, asInt());
+        return this;
+    }
+
+    @Override
+    public JsonNode ifLong(BiConsumer<JsonNode, Long> action) {
+        action.accept(this, asLong());
+        return this;
+    }
+
+    @Override
+    public JsonNode ifFloat(BiConsumer<JsonNode, Float> action) {
+        action.accept(this, asFloat());
+        return this;
+    }
+
+    @Override
+    public JsonNode ifDouble(BiConsumer<JsonNode, Double> action) {
+        action.accept(this, asDouble());
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBigInteger(BiConsumer<JsonNode, BigInteger> action) {
+        action.accept(this, asBigInteger());
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBigDecimal(BiConsumer<JsonNode, BigDecimal> action) {
+        action.accept(this, asBigDecimal());
+        return this;
+    }
+
+    @Override
+    public String asExactString() {
         throw new IncorrectTypeException(JsonType.NUMBER, JsonType.STRING);
+    }
+
+    @Override
+    public String asString() {
+        return number.toString();
     }
 
     @Override
@@ -114,6 +174,9 @@ final class NumberNode extends AbstractPrimitiveNode {
 
     @Override
     public String toString() {
+        if (string != null)
+            return string;
+
         BigDecimal decimal = asBigDecimal();
         try {
             BigInteger integer = decimal.toBigIntegerExact();

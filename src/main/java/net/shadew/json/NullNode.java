@@ -2,6 +2,7 @@ package net.shadew.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.Consumer;
 
 final class NullNode extends AbstractPrimitiveNode {
     NullNode() {
@@ -9,8 +10,29 @@ final class NullNode extends AbstractPrimitiveNode {
     }
 
     @Override
-    public String asString() {
+    public JsonNode ifNull(Consumer<JsonNode> action) {
+        action.accept(this);
+        return this;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+
+    @Override
+    public JsonNode requirePrimitive() {
+        throw new IncorrectTypeException(JsonType.NULL, JsonType.PRIMITIVES);
+    }
+
+    @Override
+    public String asExactString() {
         throw new IncorrectTypeException(JsonType.NULL, JsonType.STRING);
+    }
+
+    @Override
+    public String asString() {
+        return "null";
     }
 
     @Override

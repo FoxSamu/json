@@ -3,6 +3,7 @@ package net.shadew.json;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 final class StringNode extends AbstractPrimitiveNode {
     private final String string;
@@ -10,6 +11,17 @@ final class StringNode extends AbstractPrimitiveNode {
     StringNode(String string) {
         super(JsonType.STRING);
         this.string = string;
+    }
+
+    @Override
+    public JsonNode ifString(BiConsumer<JsonNode, String> action) {
+        action.accept(this, string);
+        return this;
+    }
+
+    @Override
+    public String asExactString() {
+        return string;
     }
 
     @Override
@@ -63,6 +75,11 @@ final class StringNode extends AbstractPrimitiveNode {
     }
 
     @Override
+    public int length() {
+        return string.length();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
@@ -84,7 +101,7 @@ final class StringNode extends AbstractPrimitiveNode {
         return quote(string);
     }
 
-    public static void quote(String string, StringBuilder builder, char quote) {
+    static void quote(String string, StringBuilder builder, char quote) {
         builder.append(quote);
         for (int i = 0, l = string.length(); i < l; i++) {
             char c = string.charAt(i);
@@ -108,7 +125,7 @@ final class StringNode extends AbstractPrimitiveNode {
         builder.append(quote);
     }
 
-    public static String quote(String string) {
+    static String quote(String string) {
         StringBuilder builder = new StringBuilder();
         quote(string, builder, '"');
         return builder.toString();

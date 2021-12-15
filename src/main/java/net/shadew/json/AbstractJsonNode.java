@@ -2,10 +2,10 @@ package net.shadew.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public abstract class AbstractJsonNode implements JsonNode {
     private final JsonType type;
@@ -68,8 +68,20 @@ public abstract class AbstractJsonNode implements JsonNode {
     }
 
     @Override
+    public JsonNode requireNotNull() {
+        requireNot(JsonType.NULL);
+        return this;
+    }
+
+    @Override
     public JsonNode requireString() {
         require(JsonType.STRING);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotString() {
+        requireNot(JsonType.STRING);
         return this;
     }
 
@@ -80,8 +92,20 @@ public abstract class AbstractJsonNode implements JsonNode {
     }
 
     @Override
+    public JsonNode requireNotNumber() {
+        requireNot(JsonType.NUMBER);
+        return this;
+    }
+
+    @Override
     public JsonNode requireBoolean() {
         require(JsonType.BOOLEAN);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotBoolean() {
+        requireNot(JsonType.BOOLEAN);
         return this;
     }
 
@@ -92,8 +116,20 @@ public abstract class AbstractJsonNode implements JsonNode {
     }
 
     @Override
+    public JsonNode requireNotObject() {
+        requireNot(JsonType.OBJECT);
+        return this;
+    }
+
+    @Override
     public JsonNode requireArray() {
         require(JsonType.ARRAY);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotArray() {
+        requireNot(JsonType.ARRAY);
         return this;
     }
 
@@ -105,9 +141,103 @@ public abstract class AbstractJsonNode implements JsonNode {
     }
 
     @Override
+    public JsonNode requireNot(JsonType type) {
+        if (is(type))
+            throw new IncorrectTypeException(this.type, JsonType.allExcluding0(type));
+        return this;
+    }
+
+    @Override
     public JsonNode require(JsonType... types) {
         if (!is(types))
             throw new IncorrectTypeException(type, types);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNot(JsonType... types) {
+        if (is(types))
+            throw new IncorrectTypeException(null, type, types);
+        return this;
+    }
+
+    @Override
+    public JsonNode ifString(BiConsumer<JsonNode, String> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifNumber(BiConsumer<JsonNode, Number> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifByte(BiConsumer<JsonNode, Byte> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifShort(BiConsumer<JsonNode, Short> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifInt(BiConsumer<JsonNode, Integer> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifLong(BiConsumer<JsonNode, Long> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifFloat(BiConsumer<JsonNode, Float> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifDouble(BiConsumer<JsonNode, Double> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBigInteger(BiConsumer<JsonNode, BigInteger> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBigDecimal(BiConsumer<JsonNode, BigDecimal> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBoolean(BiConsumer<JsonNode, Boolean> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifNull(Consumer<JsonNode> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifArray(Consumer<JsonNode> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifObject(Consumer<JsonNode> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifPrimitive(Consumer<JsonNode> action) {
+        return this;
+    }
+
+    @Override
+    public JsonNode ifConstruct(Consumer<JsonNode> action) {
         return this;
     }
 
@@ -124,7 +254,7 @@ public abstract class AbstractJsonNode implements JsonNode {
         for (int i = 0; i < l; i++) {
             JsonNode element = get(i);
             require(i, element, JsonType.STRING);
-            arr[i] = get(i).asString();
+            arr[i] = get(i).asExactString();
         }
         return arr;
     }
@@ -251,7 +381,7 @@ public abstract class AbstractJsonNode implements JsonNode {
         require(JsonType.ARRAY, JsonType.OBJECT);
         int s = size();
         if (s != length)
-            throw new IncorrectArrayLengthException(s, length);
+            throw new IncorrectSizeException(s, length);
         return this;
     }
 
@@ -327,18 +457,12 @@ public abstract class AbstractJsonNode implements JsonNode {
 
     @Override
     public List<JsonNode> asList() {
-        requireArray();
-        List<JsonNode> nodes = new ArrayList<>();
-        forEach(nodes::add);
-        return nodes;
+        throw new IncorrectTypeException(type, JsonType.ARRAY);
     }
 
     @Override
     public Map<String, JsonNode> asMap() {
-        requireObject();
-        Map<String, JsonNode> nodes = new LinkedHashMap<>();
-        forEachEntry(nodes::put);
-        return nodes;
+        throw new IncorrectTypeException(type, JsonType.OBJECT);
     }
 
     @Override

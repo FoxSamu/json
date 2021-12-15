@@ -3,6 +3,7 @@ package net.shadew.json;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 final class BooleanNode extends AbstractPrimitiveNode {
     private final boolean bool;
@@ -13,8 +14,19 @@ final class BooleanNode extends AbstractPrimitiveNode {
     }
 
     @Override
-    public String asString() {
+    public JsonNode ifBoolean(BiConsumer<JsonNode, Boolean> action) {
+        action.accept(this, bool);
+        return this;
+    }
+
+    @Override
+    public String asExactString() {
         throw new IncorrectTypeException(JsonType.BOOLEAN, JsonType.STRING);
+    }
+
+    @Override
+    public String asString() {
+        return bool ? "true" : "false";
     }
 
     @Override

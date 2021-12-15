@@ -66,11 +66,15 @@ class Parser {
         return reader.error(Stream.of(types).map(TokenType::getErrorName).collect(Collectors.joining(", ", "Expected ", "")));
     }
 
-    private void parse0(JsonReader reader, boolean json5) throws JsonSyntaxException {
+    private void parse0(JsonReader reader, ParsingConfig config) throws JsonSyntaxException {
         this.reader = reader;
         valueStack.clear();
         stateStack.clear();
-        stateStack.push(json5 ? Json5State.ROOT : JsonState.ROOT);
+        stateStack.push(
+            config.json5()
+            ? config.anyValue() ? Json5State.VALUE : Json5State.ROOT
+            : config.anyValue() ? JsonState.VALUE : JsonState.ROOT
+        );
         end = false;
 
         while (!end) {
@@ -78,9 +82,9 @@ class Parser {
         }
     }
 
-    public static JsonNode parse(JsonReader reader, boolean json5) throws JsonSyntaxException {
+    public static JsonNode parse(JsonReader reader, ParsingConfig config) throws JsonSyntaxException {
         Parser parser = PARSER_INSTANCE.get();
-        parser.parse0(reader, json5);
+        parser.parse0(reader, config);
         return parser.popValue(JsonNode.class);
     }
 

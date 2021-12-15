@@ -2,13 +2,22 @@ package net.shadew.json;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class ArrayNode extends AbstractConstructNode {
     private final List<JsonNode> children = new ArrayList<>();
+    private Values values;
 
     ArrayNode() {
         super(JsonType.ARRAY);
+    }
+
+    ArrayNode(int len) {
+        super(JsonType.ARRAY);
+        while (len-- > 0)
+            children.add(JsonNode.NULL);
     }
 
     ArrayNode(JsonNode... nodes) {
@@ -21,6 +30,17 @@ final class ArrayNode extends AbstractConstructNode {
         this();
         for (JsonNode node : nodes)
             add(node);
+    }
+
+    @Override
+    public JsonNode ifArray(Consumer<JsonNode> action) {
+        action.accept(this);
+        return this;
+    }
+
+    @Override
+    public List<JsonNode> asList() {
+        return new ArrayList<>(children);
     }
 
     @Override
@@ -121,6 +141,11 @@ final class ArrayNode extends AbstractConstructNode {
     }
 
     @Override
+    public int length() {
+        return children.size();
+    }
+
+    @Override
     public JsonNode get(String key) {
         throw new IncorrectTypeException(JsonType.ARRAY, JsonType.OBJECT);
     }
@@ -156,8 +181,30 @@ final class ArrayNode extends AbstractConstructNode {
     }
 
     @Override
-    public Set<String> keys() {
+    public boolean contains(JsonNode value) {
+        return children.contains(value);
+    }
+
+    @Override
+    public Set<String> keySet() {
         throw new IncorrectTypeException(JsonType.ARRAY, JsonType.OBJECT);
+    }
+
+    @Override
+    public Collection<JsonNode> values() {
+        if (values == null)
+            return values = new Values(children);
+        return values;
+    }
+
+    @Override
+    public Set<Map.Entry<String, JsonNode>> entrySet() {
+        throw new IncorrectTypeException(JsonType.ARRAY, JsonType.OBJECT);
+    }
+
+    @Override
+    public Stream<JsonNode> stream() {
+        return values.stream();
     }
 
     @Override
@@ -209,5 +256,91 @@ final class ArrayNode extends AbstractConstructNode {
     @Override
     public String toString() {
         return "[" + children.stream().map(JsonNode::toString).collect(Collectors.joining(", ")) + "]";
+    }
+
+    private static class Values implements Collection<JsonNode> {
+        private final List<JsonNode> children;
+
+        private Values(List<JsonNode> children) {
+            this.children = children;
+        }
+
+        @Override
+        public int size() {
+            return children.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return children.isEmpty();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return children.contains(o);
+        }
+
+        @Override
+        public Iterator<JsonNode> iterator() {
+            return children.iterator();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return children.toArray();
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            return children.toArray(a);
+        }
+
+        @Override
+        public boolean add(JsonNode jsonNode) {
+            throw new UnsupportedOperationException("add");
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return children.remove(o);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            return children.containsAll(c);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends JsonNode> c) {
+            throw new UnsupportedOperationException("addAll");
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            return children.removeAll(c);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            return children.retainAll(c);
+        }
+
+        @Override
+        public void clear() {
+            children.clear();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (o.getClass() == Values.class)
+                return children.equals(((Values) o).children);
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return children.hashCode();
+        }
     }
 }
