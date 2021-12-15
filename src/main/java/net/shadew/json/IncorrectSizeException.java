@@ -1,6 +1,8 @@
 package net.shadew.json;
 
-public class IncorrectSizeException extends RuntimeException {
+// Inherits IncorrectArrayLengthException so catch blocks catching that also catch this exception
+@SuppressWarnings("deprecation")
+public class IncorrectSizeException extends IncorrectArrayLengthException {
     public IncorrectSizeException() {
     }
 
