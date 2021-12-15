@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.1`.
+The current version is `0.2`.
 
 ## Installing
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "net.shadew:json:0.1"
+    implementation "net.shadew:json:0.2"
 }
 ```
 
@@ -45,9 +45,9 @@ Soon™
 
 The artifact can be downloaded from my Maven repository:
 
-- **[Download v0.1](https://maven.shadew.net/net/shadew/json/0.1/json-0.1.jar)**
-- **[Download sources v0.1](https://maven.shadew.net/net/shadew/json/0.1/json-0.1-sources.jar)**
-- **[All artifacts for v0.1](https://maven.shadew.net/net/shadew/json/0.1/)**
+- **[Download v0.2](https://maven.shadew.net/net/shadew/json/0.1/json-0.2.jar)**
+- **[Download sources v0.2](https://maven.shadew.net/net/shadew/json/0.2/json-0.2-sources.jar)**
+- **[All artifacts for v0.2](https://maven.shadew.net/net/shadew/json/0.2/)**
 
 ## Usage
 
