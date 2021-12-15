@@ -214,6 +214,21 @@ in later versions.
 
 I am working on hosting the compiled JavaDoc online.
 
+## Changelog
+
+### 0.2
+- It's now possible to parse JSON that is not an object or array at root (can enabled in `ParsingConfig`)
+- Added `Json` presets with compact printing
+- Various new `JsonNode` API for reading and writing a JSON structure
+- `IncorrectArrayLengthException` has been replaced with `IncorrectSizeException`
+- `JsonType` has now has some extra API
+- Serializing a JSON node that is not an object or array now throws an exception (this check can be disabled in `FormattingConfig`)
+- Surrogate pairs are now treated as one code point when parsing
+- Improved documentation
+
+### 0.1
+Initial release
+
 ## License
 
 **See LICENSE for full license**
