@@ -5,6 +5,8 @@ import java.io.Reader;
 import java.nio.BufferUnderflowException;
 
 abstract class AbstractLexer {
+    private static final int READ_BUFFER_SIZE = 4096;
+
     private final Reader reader;
     private char[] buffer = new char[128];
     private int bufferPos = 0;
@@ -27,7 +29,7 @@ abstract class AbstractLexer {
     private boolean canSeeCrlf;
     private boolean retain;
 
-    private final char[] readBuffer = new char[4096];
+    private final char[] readBuffer = new char[READ_BUFFER_SIZE + 1]; // + 1 for when we find 32-bit code points
     private int readBufferSize = 0;
     private int readBufferPos = 0;
 
@@ -135,12 +137,38 @@ abstract class AbstractLexer {
 //    }
 
     private int readBuffered() throws IOException {
-        while (readBufferPos >= readBufferSize) {
-            if (readBufferSize < 0) return -1;
+        if (readBufferSize < 0)
+            return -1;
+
+        if (readBufferPos >= readBufferSize) {
             readBufferPos = 0;
-            readBufferSize = reader.read(readBuffer);
+
+            // Manually specify range, since buffer size has one extra space for low-surrogate characters if needed
+            int size = reader.read(readBuffer, 0, READ_BUFFER_SIZE);
+            if (size < 0) {
+                readBufferSize = -1;
+                return -1;
+            }
+
+            // If we read a high-surrogate but haven't read a low-surrogate, read low-surrogate as well
+            if (Character.isHighSurrogate(readBuffer[size - 1])) {
+                int lo = reader.read();
+                if (lo >= 0) { // .... if one is available at least
+                    readBuffer[size] = (char) lo;
+                    size++;
+                }
+            }
+
+            readBufferSize = size;
         }
-        return readBuffer[readBufferPos++];
+
+        char hi = readBuffer[readBufferPos++];
+        if (Character.isHighSurrogate(hi)) {
+            // Join code points
+            char lo = readBuffer[readBufferPos++];
+            return Character.toCodePoint(hi, lo);
+        }
+        return hi;
     }
 
     private int readIncrPos() throws IOException {
