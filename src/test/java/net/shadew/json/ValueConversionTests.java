@@ -19,6 +19,18 @@ public class ValueConversionTests {
     private static final BigDecimal D31 = new BigDecimal("31");
 
     @Test
+    void testNullString() {
+        JsonNode node = JsonNode.NULL;
+        assertEquals("null", node.asString());
+    }
+
+    @Test
+    void testNumString() {
+        JsonNode node = JsonNode.number(U31);
+        assertEquals("31", node.asString());
+    }
+
+    @Test
     void testByte() {
         JsonNode node = JsonNode.number(U31);
         assertEquals((byte) 31, node.asByte());
@@ -70,12 +82,14 @@ public class ValueConversionTests {
     void testString() {
         JsonNode node = JsonNode.string("string");
         assertEquals("string", node.asExactString());
+        assertEquals("string", node.asString());
     }
 
     @Test
     void testBoolean() {
         JsonNode node = JsonNode.bool(true);
         assertEquals(true, node.asBoolean());
+        assertEquals("true", node.asString());
     }
 
     @Test
