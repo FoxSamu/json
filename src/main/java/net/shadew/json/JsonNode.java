@@ -1622,6 +1622,7 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @throws IncorrectTypeException When this node is not an object
      * @deprecated Use the Map-like {@link #keySet()}
      */
+    @Deprecated
     default Set<String> keys() {
         return keySet();
     }
