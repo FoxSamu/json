@@ -59,13 +59,13 @@ class Json5Lexer extends AbstractLexer {
                     return null;
                 } else if (c == '-' || c == '+') {
                     lex.clear();
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(NUMBER_SIGN);
                     lex.startToken();
                     return null;
                 } else if (c == 'e' || c == 'E') {
                     lex.clear();
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(E_IDENTIFIER);
                     lex.startToken();
                     return null;
@@ -76,7 +76,7 @@ class Json5Lexer extends AbstractLexer {
                     return null;
                 } else if (CharUtil.isIdentifierStart(c)) {
                     lex.clear();
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(IDENTIFIER);
                     lex.startToken();
                     return null;
@@ -112,7 +112,7 @@ class Json5Lexer extends AbstractLexer {
                     lex.state(DEFAULT);
                     return lex.newToken(TokenType.STRING, lex.buffered());
                 } else {
-                    lex.store((char) c);
+                    lex.store(c);
                 }
                 return null;
             }
@@ -145,7 +145,7 @@ class Json5Lexer extends AbstractLexer {
                     lex.state(HEX_ESCAPE_1);
                     return null;
                 } else if (!CharUtil.isDigit1to9(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                 } else {
                     throw lex.localError("Illegal escape sequence");
                 }
@@ -252,10 +252,10 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (CharUtil.isDigit(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                     return null;
                 } else if (CharUtil.isIdentifier(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(IDENTIFIER);
                     return null;
                 } else if (c == '\\') {
@@ -273,7 +273,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (CharUtil.isIdentifier(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                     return null;
                 } else if (c == '\\') {
                     lex.state(IDENTIFIER_ESCAPE);
@@ -314,7 +314,7 @@ class Json5Lexer extends AbstractLexer {
         IDENTIFIER_ESCAPE_END {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                char s = lex.unstore();
+                int s = lex.unstore();
                 if (!CharUtil.isIdentifier(s)) {
                     throw lex.localError("Invalid identifier escape sequence");
                 }
@@ -339,7 +339,7 @@ class Json5Lexer extends AbstractLexer {
         START_IDENTIFIER_ESCAPE_END {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                char s = lex.unstore();
+                int s = lex.unstore();
                 if (!CharUtil.isIdentifierStart(s)) {
                     throw lex.localError("Invalid identifier start escape sequence");
                 }
@@ -371,7 +371,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
                 if (CharUtil.isIdentifier(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                     return null;
                 } else {
                     lex.state(DEFAULT);
@@ -395,10 +395,10 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
                 if (c == '0') {
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(ZERO);
                 } else if (CharUtil.isDigit(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(NUMBER_INTEGER);
                 } else if (c == '.') {
                     lex.retain();
@@ -416,10 +416,10 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (CharUtil.isDigit(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(NUMBER_INTEGER);
                 } else if (c == 'x' || c == 'X') {
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(NUMBER_HEXADECIMAL);
                 } else {
                     lex.retain();
@@ -432,7 +432,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (CharUtil.isHexDigit(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                 } else {
                     lex.retain();
                     lex.state(DEFAULT);
@@ -446,7 +446,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (CharUtil.isDigit(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                 } else {
                     lex.retain();
                     lex.state(NUMBER_DECIMAL_START);
@@ -458,7 +458,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (c == '.') {
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(NUMBER_DECIMAL);
                 } else {
                     lex.retain();
@@ -471,7 +471,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (CharUtil.isDigit(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                 } else {
                     lex.retain();
                     lex.state(NUMBER_EXPONENT_START);
@@ -483,7 +483,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (c == 'e' || c == 'E') {
-                    lex.store((char) c);
+                    lex.store(c);
                     lex.state(NUMBER_EXPONENT_SIGN);
                 } else {
                     lex.retain();
@@ -496,7 +496,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (c == '-' || c == '+') {
-                    lex.store((char) c);
+                    lex.store(c);
                 } else {
                     lex.retain();
                 }
@@ -508,7 +508,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) {
                 if (CharUtil.isDigit(c)) {
-                    lex.store((char) c);
+                    lex.store(c);
                 } else {
                     lex.retain();
                     lex.state(NUMBER_END);

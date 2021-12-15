@@ -8,7 +8,7 @@ abstract class AbstractLexer {
     private static final int READ_BUFFER_SIZE = 4096;
 
     private final Reader reader;
-    private char[] buffer = new char[128];
+    private int[] buffer = new int[128];
     private int bufferPos = 0;
 
     private int lastPos;
@@ -61,9 +61,9 @@ abstract class AbstractLexer {
     }
 
     private void extendBuffer() {
-        char[] oldbuf = buffer;
+        int[] oldbuf = buffer;
         int oldlen = oldbuf.length;
-        char[] newbuf = new char[oldlen + 128];
+        int[] newbuf = new int[oldlen + 128];
         System.arraycopy(oldbuf, 0, newbuf, 0, oldlen);
         buffer = newbuf;
     }
@@ -88,14 +88,14 @@ abstract class AbstractLexer {
         return new String(buffer, 0, bufferPos);
     }
 
-    public void store(char c) {
+    public void store(int c) {
         if (bufferPos >= buffer.length)
             extendBuffer();
         buffer[bufferPos] = c;
         bufferPos += 1;
     }
 
-    public char unstore() {
+    public int unstore() {
         if (bufferPos == 0) {
             throw new BufferUnderflowException();
         }
