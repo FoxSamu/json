@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.2`.
+The current version is `0.2.1`.
 
 ## Installing
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "net.shadew:json:0.2"
+    implementation "net.shadew:json:0.2.1"
 }
 ```
 
@@ -45,9 +45,9 @@ Soon™
 
 The artifact can be downloaded from my Maven repository:
 
-- **[Download v0.2](https://maven.shadew.net/net/shadew/json/0.1/json-0.2.jar)**
-- **[Download sources v0.2](https://maven.shadew.net/net/shadew/json/0.2/json-0.2-sources.jar)**
-- **[All artifacts for v0.2](https://maven.shadew.net/net/shadew/json/0.2/)**
+- **[Download v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/json-0.2.1.jar)**
+- **[Download sources v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/json-0.2.1-sources.jar)**
+- **[All artifacts for v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/)**
 
 ## Usage
 
@@ -215,6 +215,9 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.2.1
+- Add methods to create array nodes from arrays of primitives
 
 ### 0.2
 - It's now possible to parse JSON that is not an object or array at root (can enabled in `ParsingConfig`)

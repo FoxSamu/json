@@ -217,6 +217,102 @@ public interface JsonNode extends Iterable<JsonNode> {
     }
 
     /**
+     * Returns a new mutable array node, initially filled with the given numbers.
+     *
+     * @param elems The elements in the array
+     * @return The JSON array node
+     */
+    static JsonNode numberArray(byte... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        ArrayNode node = new ArrayNode();
+        for (byte elem : elems)
+            node.add(elem);
+        return node;
+    }
+
+    /**
+     * Returns a new mutable array node, initially filled with the given numbers.
+     *
+     * @param elems The elements in the array
+     * @return The JSON array node
+     */
+    static JsonNode numberArray(short... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        ArrayNode node = new ArrayNode();
+        for (short elem : elems)
+            node.add(elem);
+        return node;
+    }
+
+    /**
+     * Returns a new mutable array node, initially filled with the given numbers.
+     *
+     * @param elems The elements in the array
+     * @return The JSON array node
+     */
+    static JsonNode numberArray(int... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        ArrayNode node = new ArrayNode();
+        for (int elem : elems)
+            node.add(elem);
+        return node;
+    }
+
+    /**
+     * Returns a new mutable array node, initially filled with the given numbers.
+     *
+     * @param elems The elements in the array
+     * @return The JSON array node
+     */
+    static JsonNode numberArray(long... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        ArrayNode node = new ArrayNode();
+        for (long elem : elems)
+            node.add(elem);
+        return node;
+    }
+
+    /**
+     * Returns a new mutable array node, initially filled with the given numbers.
+     *
+     * @param elems The elements in the array
+     * @return The JSON array node
+     */
+    static JsonNode numberArray(float... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        ArrayNode node = new ArrayNode();
+        for (float elem : elems)
+            node.add(elem);
+        return node;
+    }
+
+    /**
+     * Returns a new mutable array node, initially filled with the given numbers.
+     *
+     * @param elems The elements in the array
+     * @return The JSON array node
+     */
+    static JsonNode numberArray(double... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        ArrayNode node = new ArrayNode();
+        for (double elem : elems)
+            node.add(elem);
+        return node;
+    }
+
+    /**
      * Returns a new mutable array node, initially filled with the given booleans. Any null element is automatically
      * converted to {@link #NULL}.
      *
@@ -229,6 +325,22 @@ public interface JsonNode extends Iterable<JsonNode> {
 
         ArrayNode node = new ArrayNode();
         for (Boolean elem : elems)
+            node.add(elem);
+        return node;
+    }
+
+    /**
+     * Returns a new mutable array node, initially filled with the given booleans.
+     *
+     * @param elems The elements in the array
+     * @return The JSON array node
+     */
+    static JsonNode boolArray(boolean... elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        ArrayNode node = new ArrayNode();
+        for (boolean elem : elems)
             node.add(elem);
         return node;
     }
