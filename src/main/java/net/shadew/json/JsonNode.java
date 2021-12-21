@@ -319,7 +319,7 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param elems The elements in the array
      * @return The JSON array node
      */
-    static JsonNode boolArray(Boolean... elems) {
+    static JsonNode boolArray(Boolean[] elems) {
         if (elems == null)
             throw new NullPointerException();
 
