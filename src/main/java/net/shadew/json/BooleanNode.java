@@ -90,4 +90,9 @@ final class BooleanNode extends AbstractPrimitiveNode {
     public int hashCode() {
         return Objects.hash(bool);
     }
+
+    @Override
+    public String toString() {
+        return asString();
+    }
 }

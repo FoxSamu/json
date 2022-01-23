@@ -214,6 +214,16 @@ final class ObjectNode extends AbstractConstructNode {
     }
 
     @Override
+    public JsonNode append(JsonNode other) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode prepend(JsonNode other) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;

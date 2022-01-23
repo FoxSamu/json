@@ -237,6 +237,20 @@ final class ArrayNode extends AbstractConstructNode {
     }
 
     @Override
+    public JsonNode append(JsonNode other) {
+        other.requireArray();
+        children.addAll(other.values());
+        return this;
+    }
+
+    @Override
+    public JsonNode prepend(JsonNode other) {
+        other.requireArray();
+        children.addAll(0, other.values());
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;

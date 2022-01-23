@@ -10,7 +10,10 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
+
+import net.shadew.json.codec.JsonRepresentable;
 
 /**
  * A general interface representing a JSON tree. This interface covers any type a JSON node can be: a string, number,
@@ -60,7 +63,7 @@ import java.util.stream.Stream;
  * Converting a node to a string will generate a quick and compact JSON representation of the node. This is useful for
  * debugging purposes, but it's not recommended when writing to a file or sending over a network.
  */
-public interface JsonNode extends Iterable<JsonNode> {
+public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     /**
      * The only {@link JsonNode} representing the JSON value {@code null}.
      */
@@ -335,7 +338,7 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @param elems The elements in the array
      * @return The JSON array node
      */
-    static JsonNode boolArray(boolean... elems) {
+    static JsonNode boolArray(boolean[] elems) {
         if (elems == null)
             throw new NullPointerException();
 
@@ -1615,6 +1618,33 @@ public interface JsonNode extends Iterable<JsonNode> {
      */
     JsonNode clear();
 
+    /**
+     * Appends all the elements from the given array to this array. It does not modify the given array.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this node, or the supplied node, is not an array
+     */
+    JsonNode append(JsonNode other);
+
+    /**
+     * Prepends all the elements from the given array to this array. It does not modify the given array.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this node, or the supplied node, is not an array
+     */
+    JsonNode prepend(JsonNode other);
+
+    /**
+     * Returns a {@link Collector} that collects {@link JsonNode}s into an {@linkplain JsonType#ARRAY array} node.
+     *
+     * @return A {@link Collector} that collects to an array node
+     */
+    static Collector<JsonNode, ?, JsonNode> arrayCollector() {
+        return JsonArrayCollector.INSTANCE;
+    }
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1837,4 +1867,15 @@ public interface JsonNode extends Iterable<JsonNode> {
      * @return The shallow copy of this tree
      */
     JsonNode copy();
+
+    /**
+     * Implementation of {@link JsonRepresentable}. This method will return this node, as it is already a {@link
+     * JsonNode}.
+     *
+     * @return This node.
+     */
+    @Override
+    default JsonNode toJson() {
+        return this;
+    }
 }

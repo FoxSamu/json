@@ -4,7 +4,7 @@ package net.shadew.json;
  * @deprecated Replaced with {@link IncorrectSizeException}
  */
 @Deprecated
-public class IncorrectArrayLengthException extends RuntimeException {
+public class IncorrectArrayLengthException extends JsonException {
     public IncorrectArrayLengthException() {
     }
 
