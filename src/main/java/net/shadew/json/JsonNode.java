@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import net.shadew.json.codec.JsonCodec;
 import net.shadew.json.codec.JsonRepresentable;
 
 /**
@@ -494,13 +495,14 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * Even though this method allows to obtain a JSON tree quickly from pretty much any basic builtin type, this method
      * is not recommended for production use. This method does some implicit conversions to primitive types in order to
      * create a suitable JSON structure, which can happen in semi-unpredictable ways. One might prefer more control over
-     * how instances are converted to JSON. Use with a light risk.
+     * how instances are converted to JSON. Use with a light risk. For a more flexible way to convert to JSON trees, use
+     * {@link JsonCodec}s.
      * <p>
      * This method will convert types in the following order:
      * <ul>
      * <li><code>null</code> is converted to {@link #NULL}</li>
      * <li>Any {@link JsonNode} is returned by itself</li>
-     * <li>Any {@link JsonSerializable} is converted via {@link JsonSerializable#toJsonTree()}, implement this interface to allow quick serialization</li>
+     * <li>Any {@link JsonRepresentable} is converted via {@link JsonRepresentable#toJson()}, implement this interface to allow quick serialization</li>
      * <li>Any {@link Boolean} is converted to a boolean node</li>
      * <li>Any {@link Number} is converted to a number node</li>
      * <li>Any {@link String} is converted to a string node</li>
@@ -519,7 +521,11 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @param obj The object to convert.
      * @return The converted JSON tree
+     *
+     * @deprecated This method makes lots of assumptions and is only for debug purposes. For production purposes, use a
+     *     {@link JsonCodec}.
      */
+    @Deprecated
     static JsonNode fromJavaObject(Object obj) {
         if (obj == null) {
             // Null
@@ -527,9 +533,9 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
         } else if (obj instanceof JsonNode) {
             // Any node is returned by itself
             return (JsonNode) obj;
-        } else if (obj instanceof JsonSerializable) {
+        } else if (obj instanceof JsonRepresentable) {
             // Serialize anything specifically serializable in the way it wants to
-            return orNull(((JsonSerializable) obj).toJsonTree());
+            return orNull(((JsonRepresentable) obj).toJson());
         } else if (obj instanceof Boolean) {
             // Boolean
             return bool((Boolean) obj);

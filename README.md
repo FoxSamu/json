@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.2.1`.
+The current version is `0.3`.
 
 ## Installing
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "net.shadew:json:0.2.1"
+    implementation "net.shadew:json:0.3"
 }
 ```
 
@@ -207,6 +207,70 @@ Use a different indentation (2 spaces, instead of the default of 4).
 Another way to serialize JSON is by calling `toString` on a `JsonNode`. However, this is less optimal and is intended
 for debugging only. For production, use `Json#serialize`.
 
+### Codecs
+
+Codecs are a handy tool to easily encode and decode Java objects into JSON trees and vice versa. All the logic for this can be found in a separate package: `net.shadew.json.codec`.
+
+The main type that is important in defining codecs is the `JsonCodec` interface. This interface contains many base codec definitions, for primitives and other basic Java types. You can use codecs of other types to define new codecs.
+
+Say, you have a class like this:
+```java
+public class Person {
+    public final String firstName;
+    public final String lastName;
+    public String nickname; // Optional
+    
+    public Person(String first, String last) {
+        firstName = first;
+        lastName = last;
+    }
+}
+```
+The class contains a few fields and you preferably want to serialize it in a JSON structure like this:
+```json
+{
+    "first_name": "Lottie",
+    "last_name": "Mills",
+    "nickname": "Lot"
+}
+```
+In this scenario, you have a variety of options:
+- Implement `JsonCodec` manually
+- Make your class implement the `JsonEncodable` interface
+- Implement a `RecordCodec`
+
+The first option means you have to perform the checks for the presence and correctness of fields yourself. This might be preferred in some cases, but the codec system can do this for you. The second option is not really practical, as this is more useful for mutable types and your class is mostly immutable. Additionally, it will still require you to perform the same checks as with implementing `JsonCodec`.
+
+The `RecordCodec` solves problems here. It allows you to read and write fields in the format you prefer, while the `RecordCodec` class keeps track of the validity of the JSON tree.
+
+For the `Person` class, the codec implementation would look something like this:
+
+```java
+public static final JsonCodec<Person> CODEC = new RecordCodec<>() {
+    @Override
+    protected Person decode(DecodeContext<Person> ctx) {
+        Person person = new Person(
+            ctx.field("first_name", JsonCodec.STRING),
+            ctx.field("last_name", JsonCodec.STRING)
+        );
+        // Applies the field only if it's present in the JSON object
+        ctx.applyField("nickname", JsonCodec.STRING, nickname -> person.nickname = nickname);
+        return person;
+    }
+
+    @Override
+    protected void encode(EncodeContext<Person> ctx, Person obj) {
+        ctx.field("first_name", JsonCodec.STRING, obj.firstName);
+        ctx.field("last_name", JsonCodec.STRING, obj.lastName);
+        if (obj.nickname != null)
+            // Set the optional field only if it's present
+            ctx.field("nickname", JsonCodec.STRING, obj.nickname);
+    }
+}
+```
+
+Note that a `RecordCodec` always produces and requires a JSON object. It cannot handle arrays or primitives. See the static methods of `JsonCodec` for other ways to construct codecs.
+
 ## Documentation
 
 Documentation is being worked on. Parts of the library are documented with JavaDoc comments. More documentation coming
@@ -215,6 +279,16 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.3
+- Added the codec system for easy encoding and decoding of Java objects to/from JSON trees
+- Fixed `toString` returning `net.shadew.json.BooleanNode@.....` for boolean types, making `toString` JSON data not parsable
+- A new unchecked exception, `JsonException`, is now the superclass of all the exceptions thrown by the assertions in `JsonNode` methods, as well as exceptions thrown from codecs
+- Added `JsonNode.arrayCollector()` for easily collecting all `JsonNode`s in a `Stream` into an array node
+- The numeric values returned from `JsonNode`s should now be closer to the actual value stored in the JSON data
+- `JsonRepresentable` now replaces `JsonSerializable`, and a `JsonNode` is now `JsonRepresentable`
+- `JsonNode.fromJavaObject` is now deprecated and only for debug purposes
+- Improved documentation
 
 ### 0.2.1
 - Add methods to create array nodes from arrays of primitives
@@ -234,7 +308,7 @@ Initial release
 
 ## License
 
-**See LICENSE for full license**
+**[See LICENSE for full license](LICENSE)**
 
 Copyright 2021 Shadew
 

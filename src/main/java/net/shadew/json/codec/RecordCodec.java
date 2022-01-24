@@ -11,6 +11,18 @@ import java.util.stream.Stream;
 import net.shadew.json.JsonException;
 import net.shadew.json.JsonNode;
 
+/**
+ * A codec that encodes or decodes a record. This codec class automatically manages the checks and exceptions thrown by
+ * inner codecs, and ensures required fields are present.
+ * <p>
+ * In terms of JSON codecs, a record is a flat JSON object with some properties. Flat means that all fields of the
+ * encoded object have a separate property in the encoded JSON, and are not nested into inner structures if they are
+ * neither in the Java object. For example, a person object with a first name and a last name as separate fields will
+ * become {@code {"firstName": ..., "lastName": ...}}, but a person object with one name field of a name record will
+ * encode like {@code {"name": {"first": ..., "last": ...}}}.
+ * <p>
+ * A {@link RecordCodec} will always require a JSON object, not an array or primitive. It will not encode null values.
+ */
 public abstract class RecordCodec<A> implements JsonCodec<A> {
     private final ThreadLocal<ContextStack<DecodeContextImpl<A>>> decodeStack
         = ThreadLocal.withInitial(() -> new ContextStack<>(DecodeContextImpl::new));
@@ -18,6 +30,9 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
     private final ThreadLocal<ContextStack<EncodeContextImpl<A>>> encodeStack
         = ThreadLocal.withInitial(() -> new ContextStack<>(EncodeContextImpl::new));
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public A decode(JsonNode json) {
         json.requireObject();
@@ -32,6 +47,9 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonNode encode(A obj) {
         ContextStack<EncodeContextImpl<A>> stack = encodeStack.get();
@@ -46,7 +64,22 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         }
     }
 
+    /**
+     * Decodes the record.
+     *
+     * @param ctx The decode context, which wraps the JSON tree and checks the presence of required fields when reading
+     *            them. This context is recycled after decoding, do not try to cache it.
+     * @return The decoded object
+     */
     protected abstract A decode(DecodeContext<A> ctx);
+
+    /**
+     * Encodes the record.
+     *
+     * @param ctx The encode context, which wraps the JSON tree and ensures fields are encoded the right way. This
+     *            context is recycled after encoding, do not try to cache it.
+     * @param obj The object to encode
+     */
     protected abstract void encode(EncodeContext<A> ctx, A obj);
 
     private static class ContextStack<C> {
@@ -197,8 +230,8 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         }
 
         @Override
-        public void field(String key, JsonRepresentable obj) {
-            json.set(key, obj.toJson());
+        public void field(String key, JsonRepresentable value) {
+            json.set(key, value.toJson());
         }
 
         @Override
@@ -230,8 +263,8 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         }
 
         @Override
-        public <A> void field(String key, JsonCodec<A> codec, A obj) {
-            field(key, encode(codec, obj, key));
+        public <A> void field(String key, JsonCodec<A> codec, A value) {
+            field(key, encode(codec, value, key));
         }
 
         @Override
@@ -256,42 +289,222 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         }
     }
 
+    /**
+     * A decode context, which wraps a JSON tree for decoding
+     */
     public interface DecodeContext<I> {
+        /**
+         * Returns the JSON tree to decode
+         */
         JsonNode json();
 
+        /**
+         * Checks whether a specific key is present in the record JSON
+         *
+         * @param key The key to check
+         * @return True if it is present, false if not
+         */
         boolean has(String key);
 
+        /**
+         * Get the value of a required field, failing if the field is not present.
+         *
+         * @param key The name of the field
+         * @return The field value, as raw JSON data
+         */
         JsonNode field(String key);
+
+        /**
+         * Get the value of an optional field, returning null if the field is not present.
+         *
+         * @param key The name of the field
+         * @return The field value, as raw JSON data, or null if absent
+         */
         JsonNode optionalField(String key);
+
+        /**
+         * Get the value of an optional field, passing it on to the given function if the field is present.
+         *
+         * @param key     The name of the field
+         * @param applier The function that applies the field
+         */
         void applyField(String key, Consumer<? super JsonNode> applier);
 
+        /**
+         * Get the value of a required field, failing if the field is not present.
+         *
+         * @param key   The name of the field
+         * @param codec The codec of the field's type
+         * @return The field value, decoded by the given codec
+         */
         <A> A field(String key, JsonCodec<A> codec);
+
+        /**
+         * Get the value of an optional field, returning null if the field is not present.
+         *
+         * @param key   The name of the field
+         * @param codec The codec of the field's type
+         * @return The field value, decoded by the given codec, or null if absent
+         */
         <A> A optionalField(String key, JsonCodec<A> codec);
+
+        /**
+         * Get the value of an optional field, passing it on to the given function if the field is present.
+         *
+         * @param key     The name of the field
+         * @param codec   The codec of the field's type
+         * @param applier The function that applies the field
+         */
         <A> void applyField(String key, JsonCodec<A> codec, Consumer<? super A> applier);
 
+        /**
+         * Get the value of a required field, failing if the field is not present.
+         *
+         * @param key     The name of the field
+         * @param factory The factory of the {@link JsonEncodable} object
+         * @return The field value, decoded
+         */
         <A extends JsonEncodable> A field(String key, Function<JsonNode, A> factory);
+
+        /**
+         * Get the value of an optional field, returning null if the field is not present.
+         *
+         * @param key     The name of the field
+         * @param factory The factory of the {@link JsonEncodable} object
+         * @return The field value, decoded, or null if absent
+         */
         <A extends JsonEncodable> A optionalField(String key, Function<JsonNode, A> factory);
+
+        /**
+         * Get the value of an optional field, passing it on to the given function if the field is present.
+         *
+         * @param key     The name of the field
+         * @param factory The factory of the {@link JsonEncodable} object
+         * @param applier The function that applies the field
+         */
         <A extends JsonEncodable> void applyField(String key, Function<JsonNode, A> factory, Consumer<? super A> applier);
 
+        /**
+         * Get the value of a required field, failing if the field is not present.
+         *
+         * @param key     The name of the field
+         * @param factory The factory of the {@link JsonEncodable} object
+         * @return The field value, decoded
+         */
         <A extends JsonEncodable> A field(String key, Supplier<A> factory);
+
+        /**
+         * Get the value of an optional field, returning null if the field is not present.
+         *
+         * @param key     The name of the field
+         * @param factory The factory of the {@link JsonEncodable} object
+         * @return The field value, decoded, or null if absent
+         */
         <A extends JsonEncodable> A optionalField(String key, Supplier<A> factory);
+
+        /**
+         * Get the value of an optional field, passing it on to the given function if the field is present.
+         *
+         * @param key     The name of the field
+         * @param factory The factory of the {@link JsonEncodable} object
+         * @param applier The function that applies the field
+         */
         <A extends JsonEncodable> void applyField(String key, Supplier<A> factory, Consumer<? super A> applier);
     }
 
+    /**
+     * An encode context, which wraps a JSON tree for encoding.
+     */
     @SuppressWarnings("unchecked")
     public interface EncodeContext<I> {
+        /**
+         * Returns the JSON tree that is being encoded to.
+         */
         JsonNode json();
 
-        void field(String key, JsonRepresentable obj);
+        /**
+         * Sets a field.
+         *
+         * @param key   The name of the field
+         * @param value The value of the field
+         */
+        void field(String key, JsonRepresentable value);
+
+        /**
+         * Sets a field.
+         *
+         * @param key   The name of the field
+         * @param value The field getter
+         */
         void supplyField(String key, Supplier<? extends JsonRepresentable> value);
+
+        /**
+         * Sets an array field (as a JSON array).
+         *
+         * @param key   The name of the field
+         * @param value The values of the array field
+         */
         void arrayField(String key, JsonRepresentable... value);
+
+        /**
+         * Sets an array field (as a JSON array).
+         *
+         * @param key   The name of the field
+         * @param value The values of the array field
+         */
         void arrayField(String key, Stream<? extends JsonRepresentable> value);
+
+        /**
+         * Sets an array field (as a JSON array).
+         *
+         * @param key   The name of the field
+         * @param value The values of the array field
+         */
         void supplyArrayField(String key, Supplier<Stream<? extends JsonRepresentable>> value);
 
-        <A> void field(String key, JsonCodec<A> codec, A obj);
+        /**
+         * Sets a field.
+         *
+         * @param key   The name of the field
+         * @param codec The codec of the value
+         * @param value The value of the field
+         */
+        <A> void field(String key, JsonCodec<A> codec, A value);
+
+        /**
+         * Sets a field.
+         *
+         * @param key   The name of the field
+         * @param codec The codec of the value
+         * @param value The field getter
+         */
         <A> void supplyField(String key, JsonCodec<A> codec, Supplier<? extends A> value);
+
+        /**
+         * Sets an array field (as a JSON array).
+         *
+         * @param key   The name of the field
+         * @param codec The codec of the value
+         * @param value The values of the array field
+         */
         <A> void arrayField(String key, JsonCodec<A> codec, A... value);
+
+        /**
+         * Sets an array field (as a JSON array).
+         *
+         * @param key   The name of the field
+         * @param codec The codec of the value
+         * @param value The values of the array field
+         */
         <A> void arrayField(String key, JsonCodec<A> codec, Stream<A> value);
+
+        /**
+         * Sets an array field (as a JSON array).
+         *
+         * @param key   The name of the field
+         * @param codec The codec of the value
+         * @param value The values of the array field
+         */
         <A> void supplyArrayField(String key, JsonCodec<A> codec, Supplier<Stream<A>> value);
     }
 }

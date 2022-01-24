@@ -7,10 +7,12 @@ import java.util.function.BiConsumer;
 
 final class BooleanNode extends AbstractPrimitiveNode {
     private final boolean bool;
+    private final String string;
 
     BooleanNode(boolean bool) {
         super(JsonType.BOOLEAN);
         this.bool = bool;
+        this.string = bool ? "true" : "false";
     }
 
     @Override
@@ -26,7 +28,7 @@ final class BooleanNode extends AbstractPrimitiveNode {
 
     @Override
     public String asString() {
-        return bool ? "true" : "false";
+        return string;
     }
 
     @Override
@@ -93,6 +95,6 @@ final class BooleanNode extends AbstractPrimitiveNode {
 
     @Override
     public String toString() {
-        return asString();
+        return string;
     }
 }
