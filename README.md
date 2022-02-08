@@ -1,7 +1,7 @@
 # JSON for Java
 
 This small and performant library allows for easy JSON parsing, modifying and serializing, in Java, supporting
-the [JSON standard specification][json-spec] and the extended [JSON 5 specifiecation][json5-spec].
+the [JSON standard specification][json-spec] and the extended [JSON 5 specification][json5-spec].
 
 ## Design goals
 
