@@ -45,9 +45,9 @@ Soon™
 
 The artifact can be downloaded from my Maven repository:
 
-- **[Download v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/json-0.2.1.jar)**
-- **[Download sources v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/json-0.2.1-sources.jar)**
-- **[All artifacts for v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/)**
+- **[Download v0.3](https://maven.shadew.net/net/shadew/json/0.3/json-0.3.jar)**
+- **[Download sources v0.3](https://maven.shadew.net/net/shadew/json/0.2.1/json-0.3-sources.jar)**
+- **[All artifacts for v0.3](https://maven.shadew.net/net/shadew/json/0.3/)**
 
 ## Usage
 
