@@ -70,6 +70,10 @@ class Parser {
         this.reader = reader;
         valueStack.clear();
         stateStack.clear();
+        if (config.anyValue()) {
+            // Must push EOF because we aren't using ROOT
+            stateStack.push(JsonState.END_OF_FILE);
+        }
         stateStack.push(
             config.json5()
             ? config.anyValue() ? Json5State.VALUE : Json5State.ROOT

@@ -13,6 +13,7 @@ class UnparsedNumber extends Number {
     private long intValue;
     private BigInteger bigIntValue;
     private BigDecimal bigValue;
+    private boolean isZero;
 
     UnparsedNumber(String number) {
         this.number = number;
@@ -51,21 +52,56 @@ class UnparsedNumber extends Number {
             }
         }
 
-        if (integral.isEmpty()) integral = "0";
-        if (integral.equals("-")) integral = "-0";
-        if (integral.equals("+")) integral = "0";
+        boolean integralZero = false;
+        if (integral.isEmpty()) {
+            integral = "0";
+            integralZero = true;
+        }
+        if (integral.equals("-")) {
+            integral = "-0";
+            integralZero = true;
+        }
+        if (integral.equals("+")) {
+            integral = "0";
+            integralZero = true;
+        }
+        zeroCheck:
+        if (!integralZero) {
+            int s = 0;
+            if (integral.startsWith("-") || integral.startsWith("+")) s = 1;
+            for (int i = s, l = integral.length(); i < l; i++) {
+                if (integral.charAt(i) != '0')
+                    break zeroCheck;
+            }
+            integralZero = true;
+        }
 
+        boolean decimalZero = true;
         String full = integral;
         if (!decimal.isEmpty()) {
             full += "." + decimal;
+            decimalZero = false;
         }
+
+        zeroCheck:
+        if (!decimalZero) {
+            for (int i = 0, l = decimal.length(); i < l; i++) {
+                if (decimal.charAt(i) != '0')
+                    break zeroCheck;
+            }
+            decimalZero = true;
+        }
+
         if (!exponent.isEmpty()) {
             if (exponent.equals("-")) exponent = "-0";
             if (exponent.equals("+")) exponent = "0";
             full += "e" + exponent;
         }
+        // If number is zero, exponent can be anything but it will remain zero
+
         this.full = full;
         this.integral = integral;
+        this.isZero = integralZero && decimalZero;
         return full;
     }
 
@@ -134,5 +170,23 @@ class UnparsedNumber extends Number {
 
     public String toJsonValidString() {
         return new BigDecimal(full()).toString().toLowerCase(Locale.ROOT);
+    }
+
+    public static boolean isZero(Number number) {
+        if (number instanceof UnparsedNumber)
+            return ((UnparsedNumber) number).isZero;
+        if (number instanceof UnparsedHexNumber)
+            return ((UnparsedHexNumber) number).isZero();
+        if (number instanceof BigInteger)
+            return number.equals(BigInteger.ZERO);
+        if (number instanceof BigDecimal)
+            return number.equals(BigDecimal.ZERO);
+        if (number instanceof Byte || number instanceof Short || number instanceof Integer)
+            return number.intValue() == 0;
+        if (number instanceof Long)
+            return number.longValue() == 0L;
+        if (number instanceof Float)
+            return number.floatValue() == 0F;
+        return number.doubleValue() == 0D;
     }
 }

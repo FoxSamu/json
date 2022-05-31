@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.3`.
+The current version is `0.3.1`.
 
 ## Installing
 
@@ -45,9 +45,9 @@ Soon™
 
 The artifact can be downloaded from my Maven repository:
 
-- **[Download v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/json-0.2.1.jar)**
-- **[Download sources v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/json-0.2.1-sources.jar)**
-- **[All artifacts for v0.2.1](https://maven.shadew.net/net/shadew/json/0.2.1/)**
+- **[Download v0.3.1](https://maven.shadew.net/net/shadew/json/0.3.1/json-0.3.1.jar)**
+- **[Download sources v0.3.1](https://maven.shadew.net/net/shadew/json/0.3.1/json-0.3.1-sources.jar)**
+- **[All artifacts for v0.3.1](https://maven.shadew.net/net/shadew/json/0.3.1/)**
 
 ## Usage
 
@@ -279,6 +279,9 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.3.1
+- Fixed floating point numbers between 0 and 1 being rounded to 0 in `JsonNode.number()`
 
 ### 0.3
 - Added the codec system for easy encoding and decoding of Java objects to/from JSON trees

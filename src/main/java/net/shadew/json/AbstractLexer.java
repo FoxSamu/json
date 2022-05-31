@@ -216,6 +216,8 @@ abstract class AbstractLexer {
 
             Token token = state().lex(c, this);
             if (token != null) {
+                if (Debug.debug)
+                    Debug.tokenConsumer.accept(token);
                 return token;
             }
         }

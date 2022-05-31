@@ -146,7 +146,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode number(Number value) {
         if (value == null) return NULL;
-        return value.intValue() == 0 ? ZERO : new NumberNode(value);
+        return UnparsedNumber.isZero(value) ? ZERO : new NumberNode(value);
     }
 
     /**

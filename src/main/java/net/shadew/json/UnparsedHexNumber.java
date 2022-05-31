@@ -15,9 +15,35 @@ class UnparsedHexNumber extends Number {
     private double doubleValue;
     private BigInteger bigIntValue;
     private BigDecimal bigDecValue;
+    private boolean isZeroDefined;
+    private boolean isZero;
 
     UnparsedHexNumber(String number) {
         this.number = number;
+    }
+
+    public boolean isZero() {
+        if (!isZeroDefined) {
+            boolean zero = true;
+            String nr = number;
+            int start = 2;
+            if (nr.startsWith("-")) {
+                start = 3;
+            }
+            if (nr.startsWith("+")) {
+                start = 3;
+            }
+            for (int i = start, l = nr.length(); i < l; i++) {
+                char c = nr.charAt(i);
+                if (c != '0') {
+                    zero = false;
+                    break;
+                }
+            }
+            isZero = zero;
+            isZeroDefined = true;
+        }
+        return isZero;
     }
 
     @Override
