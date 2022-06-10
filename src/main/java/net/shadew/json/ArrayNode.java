@@ -251,6 +251,33 @@ final class ArrayNode extends AbstractConstructNode {
     }
 
     @Override
+    public JsonNode slice(int from, int to) {
+        int size = size();
+        if (from < 0) from += size;
+        if (to < 0) to += size;
+        if (to < from)
+            throw new IllegalArgumentException("to < from: " + to + " < " + from);
+        if (from < 0 || from > size)
+            throw new IndexOutOfBoundsException("from: " + from);
+        if (to < 0 || to > size)
+            throw new IndexOutOfBoundsException("to: " + to);
+
+        int remaining = to - from;
+        if (remaining == 0) {
+            children.clear();
+            return this;
+        }
+        while (from > 0) {
+            children.remove(0);
+            from--;
+        }
+        while (size() > remaining) {
+            children.remove(to);
+        }
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;

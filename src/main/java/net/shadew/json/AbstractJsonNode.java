@@ -364,6 +364,19 @@ public abstract class AbstractJsonNode implements JsonNode {
     }
 
     @Override
+    public Number[] asNumberArray() {
+        requireArray();
+        int l = size();
+        Number[] arr = new Number[l];
+        for (int i = 0; i < l; i++) {
+            JsonNode element = get(i);
+            require(i, element, JsonType.NUMBER);
+            arr[i] = get(i).asNumber();
+        }
+        return arr;
+    }
+
+    @Override
     public boolean[] asBooleanArray() {
         requireArray();
         int l = size();
@@ -446,6 +459,13 @@ public abstract class AbstractJsonNode implements JsonNode {
         requireArray();
         requireSize(fixedLength);
         return asBigDecimalArray();
+    }
+
+    @Override
+    public Number[] asNumberArray(int fixedLength) {
+        requireArray();
+        requireSize(fixedLength);
+        return asNumberArray();
     }
 
     @Override

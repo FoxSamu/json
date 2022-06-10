@@ -76,6 +76,11 @@ final class NullNode extends AbstractPrimitiveNode {
     }
 
     @Override
+    public BigDecimal asNumber() {
+        throw new IncorrectTypeException(JsonType.NULL, JsonType.NUMBER);
+    }
+
+    @Override
     public boolean asBoolean() {
         throw new IncorrectTypeException(JsonType.NULL, JsonType.BOOLEAN);
     }

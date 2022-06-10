@@ -215,6 +215,11 @@ abstract class AbstractPrimitiveNode extends AbstractJsonNode {
     }
 
     @Override
+    public JsonNode slice(int from, int to) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
     public JsonNode copy() {
         return this;
     }

@@ -151,6 +151,11 @@ final class NumberNode extends AbstractPrimitiveNode {
     }
 
     @Override
+    public Number asNumber() {
+        return number;
+    }
+
+    @Override
     public boolean asBoolean() {
         throw new IncorrectTypeException(JsonType.NUMBER, JsonType.BOOLEAN);
     }

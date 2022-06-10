@@ -70,6 +70,11 @@ final class StringNode extends AbstractPrimitiveNode {
     }
 
     @Override
+    public Number asNumber() {
+        throw new IncorrectTypeException(JsonType.STRING, JsonType.NUMBER);
+    }
+
+    @Override
     public boolean asBoolean() {
         throw new IncorrectTypeException(JsonType.STRING, JsonType.BOOLEAN);
     }

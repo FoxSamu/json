@@ -96,6 +96,11 @@ public abstract class AbstractConstructNode extends AbstractJsonNode {
     }
 
     @Override
+    public BigDecimal asNumber() {
+        throw new IncorrectTypeException(type(), JsonType.NUMBER);
+    }
+
+    @Override
     public boolean asBoolean() {
         throw new IncorrectTypeException(type(), JsonType.BOOLEAN);
     }

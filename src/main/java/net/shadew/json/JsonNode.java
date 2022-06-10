@@ -1149,6 +1149,15 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     BigDecimal asBigDecimal();
 
     /**
+     * Returns a {@link Number} value of this node, in of any type that fits best.
+     *
+     * @return The {@link Number} value of this node
+     *
+     * @throws IncorrectTypeException When this node is not a number node
+     */
+    Number asNumber();
+
+    /**
      * Returns the boolean value of this node.
      *
      * @return The boolean value of this node
@@ -1246,6 +1255,16 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *                                number node
      */
     BigDecimal[] asBigDecimalArray();
+
+    /**
+     * Returns a {@link Number} array value of this node, numbers being in of any type that fits best.
+     *
+     * @return The {@link Number} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     */
+    Number[] asNumberArray();
 
     /**
      * Returns the boolean array value of this node.
@@ -1373,6 +1392,19 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectSizeException When the actual length of this array node is not the required length
      */
     BigDecimal[] asBigDecimalArray(int fixedLength);
+
+    /**
+     * Returns the {@link Number} array value of this node, enforcing the specified length. An exception is thrown if
+     * any other length of array is present.
+     *
+     * @param fixedLength The required length of the array
+     * @return The {@link Number} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                number node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
+     */
+    Number[] asNumberArray(int fixedLength);
 
     /**
      * Returns the boolean array value of this node, enforcing the specified length. An exception is thrown if any other
@@ -1641,6 +1673,21 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException If this node, or the supplied node, is not an array
      */
     JsonNode prepend(JsonNode other);
+
+    /**
+     * Slices this array, removing all elements except those in the given range. This operation modifies this array. To
+     * obtain a sliced copy make a copy first: {@code array.copy().slice(...)}.
+     *
+     * @param from The start index, negative values count from the end
+     * @param to   The end index, must be more than start
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException    If this node, or the supplied node, is not an array
+     * @throws IndexOutOfBoundsException If one of the given indices is more than the length of this array, or less than
+     *                                   negative the length of this array.
+     * @throws IllegalArgumentException  If to is less than from.
+     */
+    JsonNode slice(int from, int to);
 
     /**
      * Returns a {@link Collector} that collects {@link JsonNode}s into an {@linkplain JsonType#ARRAY array} node.

@@ -72,6 +72,11 @@ final class BooleanNode extends AbstractPrimitiveNode {
     }
 
     @Override
+    public BigDecimal asNumber() {
+        throw new IncorrectTypeException(JsonType.BOOLEAN, JsonType.NUMBER);
+    }
+
+    @Override
     public boolean asBoolean() {
         return bool;
     }

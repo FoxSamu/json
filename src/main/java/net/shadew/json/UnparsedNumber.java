@@ -14,6 +14,7 @@ class UnparsedNumber extends Number {
     private BigInteger bigIntValue;
     private BigDecimal bigValue;
     private boolean isZero;
+    private boolean isIntegral;
 
     UnparsedNumber(String number) {
         this.number = number;
@@ -99,13 +100,37 @@ class UnparsedNumber extends Number {
         }
         // If number is zero, exponent can be anything but it will remain zero
 
+        boolean zero = integralZero && decimalZero;
+        if (!zero) {
+            BigInteger i = new BigInteger(exponent);
+            int comp = i.compareTo(BigInteger.ZERO);
+            if (comp < 0) {
+                integral = null;
+            } else if (comp > 0 && i.compareTo(BigInteger.TEN) <= 0) {
+                integral += "0".repeat(i.intValue());
+            }
+        } else {
+            integral = "0";
+            bigIntValue = BigInteger.ZERO;
+            bigValue = BigDecimal.ZERO;
+            value = 0;
+            hasValue = true;
+            intValue = 0;
+            hasIntValue = true;
+        }
+
         this.full = full;
         this.integral = integral;
         this.isZero = integralZero && decimalZero;
+        this.isIntegral = decimalZero;
         return full;
     }
 
-    private String integral() {
+    boolean isIntegral() {
+        return isIntegral;
+    }
+
+    String integral() {
         if (integral == null) full();
         return integral;
     }
@@ -114,7 +139,8 @@ class UnparsedNumber extends Number {
     public long longValue() {
         if (!hasIntValue) {
             try {
-                intValue = Long.parseLong(integral());
+                String i = integral();
+                intValue = i == null ? bigDecimalValue().longValue() : Long.parseLong(i);
             } catch (NumberFormatException exc) {
                 intValue = 0;
             }
@@ -144,7 +170,8 @@ class UnparsedNumber extends Number {
     public BigInteger bigIntegerValue() {
         if (bigIntValue == null) {
             try {
-                bigIntValue = new BigInteger(integral());
+                String i = integral();
+                bigIntValue = i == null ? bigDecimalValue().toBigInteger() : new BigInteger(i);
             } catch (NumberFormatException exc) {
                 bigIntValue = BigInteger.ZERO;
             }
