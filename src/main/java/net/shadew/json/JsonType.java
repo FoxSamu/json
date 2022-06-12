@@ -7,32 +7,32 @@ public enum JsonType {
     /**
      * The string type, standing for string literals ({@code "foo"})
      */
-    STRING(true, false),
+    STRING("str", true, false),
 
     /**
      * The number type, standing for number literals ({@code 52})
      */
-    NUMBER(true, false),
+    NUMBER("num", true, false),
 
     /**
      * The boolean type, standing for boolean literals ({@code true})
      */
-    BOOLEAN(true, false),
+    BOOLEAN("bool", true, false),
 
     /**
      * The null type, standing for the null literal ({@code null})
      */
-    NULL(false, false),
+    NULL("null", false, false),
 
     /**
      * The array type, standing for arrays ({@code ["foo", "bar"]})
      */
-    ARRAY(false, true),
+    ARRAY("arr", false, true),
 
     /**
      * The object type, standing for objects ({@code {"foo": "bar", "baz": 42}})
      */
-    OBJECT(false, true);
+    OBJECT("obj", false, true);
 
     // Not private for quick internal access (skipping array copy)
     static final JsonType[][] EXCLUDING_ARRAYS = {
@@ -52,12 +52,24 @@ public enum JsonType {
 
     static final JsonType[] VALUES = values();
 
+    private final String templateName;
     private final boolean primitive;
     private final boolean construct;
 
-    JsonType(boolean primitive, boolean construct) {
+    JsonType(String templateName, boolean primitive, boolean construct) {
+        this.templateName = templateName;
         this.primitive = primitive;
         this.construct = construct;
+    }
+
+    /**
+     * Returns the template name of this JSON type. This is the identifier that must be used in the template language to
+     * check if a value is of a certain type.
+     *
+     * @return The template name of this JSON type
+     */
+    public String templateName() {
+        return templateName;
     }
 
     /**

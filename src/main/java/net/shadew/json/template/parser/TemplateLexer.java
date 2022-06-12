@@ -1,12 +1,18 @@
-package net.shadew.json;
+package net.shadew.json.template.parser;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferUnderflowException;
+import java.util.HashMap;
+import java.util.Stack;
+import java.util.function.Supplier;
 
-abstract class AbstractLexer {
+import net.shadew.json.JsonSyntaxException;
+
+class TemplateLexer {
     private static final int READ_BUFFER_SIZE = 4096;
 
+    private final HashMap<String, LexerState> cachedStates = new HashMap<>();
     private final Reader reader;
     private int[] buffer = new int[128];
     private int bufferPos = 0;
@@ -37,27 +43,15 @@ abstract class AbstractLexer {
 
     private int remember;
 
-    AbstractLexer(Reader reader) {
+    private Stack<LexerMode> modeStack = new Stack<>();
+
+    TemplateLexer(Reader reader) {
         this.reader = reader;
+        modeStack.push(LexerStates.DEFAULT_MODE);
     }
 
-    void skipNonExecutePrefixes() throws IOException {
-        int len = JsonUtil.NOEXEC_CRLF.length();
-        char[] buf = new char[len];
-        int l = 0;
-        while (l < len) {
-            int r = reader.read(buf, l, len - l);
-            if (r < 0) break;
-            l += r;
-        }
-        String prefix = new String(buf, 0, l);
-        if (prefix.equals(JsonUtil.NOEXEC_CRLF)) {
-            return;
-        }
-        if (prefix.startsWith(JsonUtil.NOEXEC_LF) || prefix.startsWith(JsonUtil.NOEXEC_CR))
-            // Store in read buffer if there's no prefix so we can read it again
-            System.arraycopy(buf, 0, readBuffer, 0, l);
-        readBufferSize = l;
+    public LexerState cacheState(String name, Supplier<LexerState> factory) {
+        return cachedStates.computeIfAbsent(name, k -> factory.get());
     }
 
     private void extendBuffer() {
@@ -74,6 +68,23 @@ abstract class AbstractLexer {
 
     public void state(LexerState state) {
         this.state = state;
+    }
+
+    public LexerMode mode() {
+        return modeStack.peek();
+    }
+
+    public void pushMode(LexerMode mode) {
+        modeStack.push(mode);
+    }
+
+    public void popPushMode(LexerMode mode) {
+        modeStack.pop();
+        modeStack.push(mode);
+    }
+
+    public LexerMode popMode() {
+        return modeStack.pop();
     }
 
     public void remember(int c) {
@@ -122,7 +133,9 @@ abstract class AbstractLexer {
         return new Token(type, val, startPos, startLine, startCol, pos, line, col);
     }
 
-    protected abstract LexerState defaultState();
+    protected LexerState defaultState() {
+        return LexerStates.BaseStates.DEFAULT;
+    }
 
 //    private int read() {
 //        try {
@@ -180,7 +193,7 @@ abstract class AbstractLexer {
     private int read() throws IOException {
         int c = readIncrPos();
         if (canSeeCrlf && c == '\n') {
-            c = readIncrPos();
+            c = readIncrPos(); // Ignore the newline character, we already dealt with this
         }
         canSeeCrlf = false;
         if (c == '\r') {
@@ -201,7 +214,7 @@ abstract class AbstractLexer {
     }
 
     public Token token(Token reuse) throws IOException {
-        state = defaultState();
+        mode().init(this);
         reuseToken = reuse;
 
         while (true) {
@@ -216,8 +229,6 @@ abstract class AbstractLexer {
 
             Token token = state().lex(c, this);
             if (token != null) {
-                if (Debug.debug)
-                    Debug.tokenConsumer.accept(token);
                 return token;
             }
         }
@@ -238,6 +249,10 @@ abstract class AbstractLexer {
 
     @FunctionalInterface
     protected interface LexerState {
-        Token lex(int c, AbstractLexer lex) throws JsonSyntaxException;
+        Token lex(int c, TemplateLexer lex) throws JsonSyntaxException;
+    }
+
+    protected interface LexerMode {
+        void init(TemplateLexer lex);
     }
 }

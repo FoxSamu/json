@@ -1,10 +1,10 @@
 package net.shadew.json;
 
-final class CharUtil {
-    static final String NOEXEC_NOLF = ")]}'";
-    static final String NOEXEC_LF = ")]}'\n";
-    static final String NOEXEC_CR = ")]}'\r";
-    static final String NOEXEC_CRLF = ")]}'\r\n";
+public final class JsonUtil {
+    public static final String NOEXEC_NOLF = ")]}'";
+    public static final String NOEXEC_LF = ")]}'\n";
+    public static final String NOEXEC_CR = ")]}'\r";
+    public static final String NOEXEC_CRLF = ")]}'\r\n";
 
     public static boolean isNewline(int c) {
         return c == '\n' || c == '\r';
@@ -77,9 +77,9 @@ final class CharUtil {
         for (int i = 0; i < l; i++) {
             char c = key.charAt(i);
 
-            if (i == 0 && !CharUtil.isIdentifierStart(c))
+            if (i == 0 && !JsonUtil.isIdentifierStart(c))
                 return false;
-            if (i > 0 && !CharUtil.isIdentifier(c))
+            if (i > 0 && !JsonUtil.isIdentifier(c))
                 return false;
         }
 
@@ -88,5 +88,13 @@ final class CharUtil {
 
     public static boolean isEof(int c) {
         return c < 0;
+    }
+
+    public static Number unparsedNumber(String nr) {
+        return new UnparsedNumber(nr);
+    }
+
+    public static Number unparsedHexNumber(String nr) {
+        return new UnparsedHexNumber(nr);
     }
 }

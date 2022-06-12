@@ -5,11 +5,11 @@ import java.util.NoSuchElementException;
 
 import net.shadew.json.JsonNode;
 
-public class StringIterator implements Iterator<JsonNode> {
+class StringIterator implements Iterator<JsonNode> {
     private final String str;
     private int i = 0;
 
-    public StringIterator(String str) {
+    StringIterator(String str) {
         this.str = str;
     }
 

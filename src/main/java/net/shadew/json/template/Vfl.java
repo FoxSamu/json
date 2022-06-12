@@ -5,21 +5,25 @@ import java.util.Map;
 
 import net.shadew.json.JsonNode;
 
-public class VariableFunctionLayer {
+public class Vfl { // Variable-Function Layer
+    private final String name;
     private final TemplateContext owner;
-    private final VariableFunctionLayer parent;
-    private final Scope scope;
+    private final Vfl parent;
+    private final Execution scope;
     private final Map<String, JsonNode> variables = new LinkedHashMap<>();
-    private final Map<String, TemplateFunction> functions = new LinkedHashMap<>();
+    private final Map<String, Function> functions = new LinkedHashMap<>();
+    private final boolean partial;
     private boolean used;
 
-    public VariableFunctionLayer(TemplateContext owner, VariableFunctionLayer parent, Scope scope) {
+    public Vfl(String name, TemplateContext owner, Vfl parent, Execution scope, boolean partial) {
+        this.name = name;
         this.owner = owner;
         this.parent = parent;
         this.scope = scope;
+        this.partial = partial;
     }
 
-    public VariableFunctionLayer parent() {
+    public Vfl parent() {
         return parent;
     }
 
@@ -27,7 +31,31 @@ public class VariableFunctionLayer {
         return scope == null;
     }
 
+    public boolean isPartial() {
+        return partial;
+    }
+
+    public String debugPath() {
+        return (parent != null ? parent.debugPath() + " > " : "") + name;
+    }
+
+    private boolean hasVar(String name) {
+        if (variables.containsKey(name))
+            return true;
+        return parent != null && parent.hasVar(name);
+    }
+
+    private boolean setPartial(String name, JsonNode val) {
+        if (hasVar(name)) {
+            variables.put(name, JsonNode.orNull(val));
+            return true;
+        }
+        return false;
+    }
+
     public void set(String name, JsonNode val) {
+        if (partial && parent.setPartial(name, val))
+            return;
         variables.put(name, JsonNode.orNull(val));
     }
 
@@ -63,8 +91,11 @@ public class VariableFunctionLayer {
 
     public JsonNode call(String name, JsonNode... args) {
         used = true;
-        if (!functions.containsKey(name))
-            return owner.exception(ExceptionType.UNDEFINED_FUNCTION, "Function '" + name + "' does not exist");
+        if (!functions.containsKey(name)) {
+            if (parent == null)
+                return owner.exception(ExceptionType.UNDEFINED_FUNCTION, "Function '" + name + "' does not exist");
+            return parent.call(name, args);
+        }
         try {
             return JsonNode.orNull(functions.get(name).call(owner, this, args));
         } catch (Exception exc) {
@@ -72,7 +103,7 @@ public class VariableFunctionLayer {
         }
     }
 
-    public void define(String name, TemplateFunction func) {
+    public void define(String name, Function func) {
         if (func == null)
             throw new IllegalArgumentException("Function cannot be null");
         if (used)
@@ -80,23 +111,19 @@ public class VariableFunctionLayer {
         functions.put(name, func);
     }
 
-    public VariableFunctionLayer newLayer(Scope scope) {
-        return new VariableFunctionLayer(owner, this, scope);
+    public Vfl newLayer(String name, Execution scope) {
+        return new Vfl(name, owner, this, scope, false);
     }
 
-    public VariableFunctionLayer newLayer(ScopeType scope) {
-        return new VariableFunctionLayer(owner, this, new Scope(scope));
+    public Vfl newLayerWithSameScope(String name) {
+        return new Vfl(name, owner, this, scope, true);
     }
 
-    public VariableFunctionLayer newLayerWithSameScope() {
-        return new VariableFunctionLayer(owner, this, scope);
+    public Vfl newSubtemplateLayer(String name) {
+        return new Vfl(name, owner, this, null, false);
     }
 
-    public VariableFunctionLayer newSubtemplateLayer() {
-        return new VariableFunctionLayer(owner, this, null);
-    }
-
-    public static VariableFunctionLayer root(TemplateContext owner) {
-        return new VariableFunctionLayer(owner, null, null);
+    public static Vfl root(String name, TemplateContext owner) {
+        return new Vfl(name, owner, null, null, false);
     }
 }

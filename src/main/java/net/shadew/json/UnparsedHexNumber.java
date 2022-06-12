@@ -62,7 +62,7 @@ class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }
@@ -91,7 +91,7 @@ class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }
@@ -120,7 +120,7 @@ class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }
@@ -149,7 +149,7 @@ class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }

@@ -1,40 +1,86 @@
 package net.shadew.json.template;
 
 import java.util.EmptyStackException;
+import java.util.Stack;
 
 import net.shadew.json.JsonNode;
 
 public class TemplateContext {
-    private VariableFunctionLayer varFnLayer = VariableFunctionLayer.root(this);
+    private Vfl vfl = Vfl.root("root", this);
 
-    public void pushVarFnLayer(Scope scope) {
-        varFnLayer = varFnLayer.newLayer(scope);
+    public void pushVfl(String name, Execution scope) {
+        vfl = vfl.newLayer(name, scope);
+        if (TemplateDebug.debug)
+            TemplateDebug.pushVfl.accept(vfl);
     }
 
-    public void pushVarFnLayer(ScopeType scope) {
-        varFnLayer = varFnLayer.newLayer(scope);
+    public void pushVflWithSameScope(String name) {
+        vfl = vfl.newLayerWithSameScope(name);
+        if (TemplateDebug.debug)
+            TemplateDebug.pushVfl.accept(vfl);
     }
 
-    public void pushVarFnLayerWithSameScope() {
-        varFnLayer = varFnLayer.newLayerWithSameScope();
+    public void pushVflForSubtemplate() {
+        vfl = vfl.newSubtemplateLayer("subtemplate");
+        if (TemplateDebug.debug)
+            TemplateDebug.pushVfl.accept(vfl);
     }
 
-    public void pushVarFnLayerForSubtemplate() {
-        varFnLayer = varFnLayer.newSubtemplateLayer();
-    }
-
-    public void popVarFnLayer() {
-        if (varFnLayer.parent() == null)
+    public void popVfl() {
+        if (vfl.parent() == null)
             throw new EmptyStackException();
-        varFnLayer = varFnLayer.parent();
+        if (TemplateDebug.debug)
+            TemplateDebug.popVfl.accept(vfl);
+        vfl = vfl.parent();
     }
 
-    public VariableFunctionLayer varFnLayer() {
-        return varFnLayer;
+    public Vfl vfl() {
+        return vfl;
+    }
+
+    private final Stack<Execution> executionStack = new Stack<>();
+
+    private Execution newExecution(ExecutionType type, Instructions insns) {
+        if (TemplateDebug.debug)
+            return new ExecutionWithDebug(this, type, insns);
+        return new Execution(this, type, insns);
     }
 
     public JsonNode evaluate(Expression expr) {
-        return expr.evaluate(this, varFnLayer());
+        return expr.evaluate(this, vfl());
+    }
+
+    public JsonNode evaluate(Instructions instructions, ExecutionType type) {
+        Execution exec = newExecution(type, instructions);
+
+        try {
+            if (type == ExecutionType.ROOT) pushVflForSubtemplate();
+            else pushVfl(type == ExecutionType.ARRAY ? "array" : "object", exec);
+
+            return runExec(exec);
+        } finally {
+            popVfl();
+        }
+    }
+
+    public JsonNode evaluate(Instructions instructions) {
+        Execution exec = newExecution(ExecutionType.ROOT, instructions);
+        return runExec(exec);
+    }
+
+    private JsonNode runExec(Execution exec) {
+        try {
+            executionStack.push(exec);
+            return exec.run();
+        } finally {
+            executionStack.pop();
+        }
+    }
+
+    public Execution currentExecution() {
+        if (executionStack.empty())
+            return null;
+        return executionStack.peek();
     }
 
     private ExceptionProcessor exceptionProcessor = ExceptionProcessor.DEFAULT;

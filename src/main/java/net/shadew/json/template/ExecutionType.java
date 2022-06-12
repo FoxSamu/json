@@ -1,6 +1,6 @@
 package net.shadew.json.template;
 
-public enum ScopeType {
+public enum ExecutionType {
     ROOT,
     OBJECT,
     ARRAY

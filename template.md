@@ -23,6 +23,34 @@ Generates the following JSON
 - Should be easy to use and understand.
 - Any JSON document and most JSON 5 documents (with the exception of unquoted key names being illegal) should be a valid teplate document, generating that exact JSON object.
 
+# Base design
+The template language takes advantage of the fact that anything in JSON is a comma-separated list of entries. An object is a list of key-value pairs, and an array is a list of values. The template language sticks to this design.
+
+Any object or array, and any other context within the template language, is a list of several comma-separated entities. These lists form lists of instructions that modify the context. The types of entities allowed depends on the context (e.g. you may not use a key-value pair in an array). The language identifies the following entities:
+
+- A value: only allowed in a root context, or an array. It instructs an array context to add the value to the array, or a root context to terminate evaluation and return with the value as result. It can be:
+  - Primitive: `true`, `3.1415`, `null`, `"foo"`
+  - An expression: `3 + 8`, `var * 2`
+  - An array: `[ ... ]`
+  - An object: `{ ... }`
+- A key-value pair: only allowed in an object. It instructs an object context to add (or overwrite) a field with the value. The key must be a string (`"hello"`), a variable (`var`) or an expression in parentheses (`(3+4)`; will be [stringified](#string-representation)). The value can be anything an array/root value entry can be:
+  - Primitive: `"bool": true`, `"pi": 3.1415`, `"null": null`, `"foo": "bar"`
+  - An expression: `"num": 3 + 8`, `"var": var * 2`
+  - An array: `"arr": [ ... ]`
+  - An object: `"obj": { ... }`
+- A void line: allowed anywhere. A void line is a line that evaluates an expression and then ignores the result. This is ideal for updating variables without having the result of the variable update generated.
+  - `@ this = "a void line"`
+  - `@ the_outcome_of("this expression") == "ignored"`
+- A `if`-`else` block: allowed anywhere. This allows to use different entities based on a condition. More below.
+- A `for` block: allowed anywhere. This allows to repeat a set of entities. More below.
+- A `switch` block: allowed anywhere. This allows to pick a set of entities based on a value. More below.
+- A function definition: allowed in the root, and in objects and arrays. It is not allowed in any `if`, `else`, `for` or `switch` block. While they are part of the list, they do not belong to the instructions in that list and are instead processed before the rest. More below.
+- A `break` statement: allowed anywhere. In a loop, this immediately exists the loop. Outside of a loop, it indicates the object or array must be finished as-is, not adding any further entries.
+- A `continue` statement: allowed in any loop. This immediately finishes the current iteration of the loop, not generating any further entries for that iteration.
+- A `return` statement: allowed anywhere. Upon encounter, the generated document or sub-template value as it is will immediately be returned. In sub-templates, this will only finish the sub-template.
+
+Some contexts define a comma-separated list but with its own entities, such as `switch`, `match` or inline `if` blocks.
+
 # Features
 
 ## Value
@@ -106,19 +134,19 @@ An operator is a symbol that modifies or combines values.
   - Raw logic or: values can be anything (see [Truthiness](#truthiness))
 - `a && b`: Logic and: values can be anything (note that right side is not processed if left side is false)
 - `a || b`: Logic or: values can be anything (note that right side is not processed if left side is true)
-- `a ? b : c`: Conditional ternary operation: values can be anything (left side is converted to boolean, see [Truthiness](#truthiness))
+- `a ? b : c`: Conditional ternary operation: values can be anything (left operand is converted to boolean, see [Truthiness](#truthiness))
 - `if {}`: Advanced conditional expression
 - `match a {}`: Match expression
 - `do {} then a`: Do-before block
 - `a then do {}`: Do-after block
 - `a ++`, `a --`: Add or subtract from variable and return old value: operand must be a field or variable reference
 - `++ a`, `-- a`: Add or subtract from variable and return old value: operand must be a field or variable reference
-- `a = b`, `a *= b`, `a /= b`, `a %= b`, `a += b`, `a -= b`, `a <<= b`, `a >>= b`, `a >>>= b`, `a &= b`, `a |= b`, `a &&= b`, `a ||= b`: Alter a variable or field with operator: left side must be a field or variable reference and right side can be any value (but exceptions will raise if the operator can't function on the variable's value and the given value, e.g. `a *= "str"` will never work).
+- `a = b`, `a *= b`, `a /= b`, `a %= b`, `a += b`, `a -= b`, `a <<= b`, `a >>= b`, `a >>>= b`, `a &= b`, `a |= b`, `a ^= b`: Alter a variable or field with operator: left side must be a field or variable reference and right side can be any value (but exceptions will raise if the operator can't function on the variable's value and the given value, e.g. `a *= "str"` will never work).
 
 ### Operator precedence
 - `(a)`
 - `a[b]`, `a[b..c]`, `a[..b]`, `a[b..]`, `a.b`
-- `+a`, `-a`, `!a`, `~a`, `#a`, `*a`, `copy a`, `copy deep a`
+- `+a`, `-a`, `!a`, `~a`, `#a`, `*a`, `copy a`
 - `a*b`, `a/b`, `a%b`
 - `a+b`, `a-b`
 - `a<<b`, `a>>b`, `a>>>b`
@@ -142,11 +170,11 @@ The logic and (`&&`) and logic or (`||`) operators have special functionality, a
 The `if` keyword initiates an advanced conditional expression, where multiple conditions and outcomes can be defined.
 ```
 if {
-    condition1 -> result1,
-    condition2 -> result2,
-    condition3 -> result3,
+    case condition1 -> result1,
+    case condition2 -> result2,
+    case condition3 -> result3,
     
-    else result4
+    else -> result4
 }
 ```
 
@@ -156,11 +184,11 @@ If no `else` is defined, it will generate an exception if none of the conditions
 The `match` keyword initiates a match expression, where it compares a value to multiple other values and generates an outcome based on that.
 ```
 match value {
-    value1 -> result1,
-    value2 -> result2,
-    value3 -> result3,
+    case value1 -> result1,
+    case value2 -> result2,
+    case value3 -> result3,
     
-    else result4
+    else -> result4
 }
 ```
 
@@ -307,7 +335,7 @@ def name_of_the_function(arg1, arg2) -> arg1 + arg2
 
 Note that defining a function is not an expression and therefore must not happen in a void line.
 ```
-@ def function() -> 3  // Syntax error: unexpected '->'; the first part is seen as a function call
+@ def function() -> 3  // Syntax error: unexpected 'def'
 ```
 
 A function can, unlike variables, not be reassigned.
@@ -511,9 +539,9 @@ Switch entries (`switch` blocks) generate entries for the given value. The `else
 ```
 @ a = 3,
 [switch a {
-    1 { "a is 1" },
-    2 { "a is 2" },
-    3 { "a is 3" },
+    case 1 { "a is 1" },
+    case 2 { "a is 2" },
+    case 3 { "a is 3" },
     else { "a is something else" }
 }]  // ["a is 3"]
 ```
@@ -522,9 +550,9 @@ If the `else` block is omitted but no entry in the switch block matches, then no
 ```
 @ a = 4,
 [switch a {
-    1 { "a is 1" },
-    2 { "a is 2" },
-    3 { "a is 3" }
+    case 1 { "a is 1" },
+    case 2 { "a is 2" },
+    case 3 { "a is 3" }
 }]  // []
 ```
 

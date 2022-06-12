@@ -17,10 +17,10 @@ class Json5Lexer extends AbstractLexer {
         DEFAULT {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                if (CharUtil.isEof(c)) {
+                if (JsonUtil.isEof(c)) {
                     lex.startToken();
                     return lex.newToken(TokenType.EOF, null);
-                } else if (CharUtil.isWhitespace5(c)) {
+                } else if (JsonUtil.isWhitespace5(c)) {
                     return null;
                 } else if (c == '{') {
                     lex.startToken();
@@ -51,7 +51,7 @@ class Json5Lexer extends AbstractLexer {
                     lex.state(COMMENT_START);
                     lex.startToken();
                     return null;
-                } else if (CharUtil.isDigit(c) || c == '.') {
+                } else if (JsonUtil.isDigit(c) || c == '.') {
                     lex.clear();
                     lex.retain();
                     lex.state(NUMBER_START);
@@ -74,7 +74,7 @@ class Json5Lexer extends AbstractLexer {
                     lex.state(START_IDENTIFIER_ESCAPE);
                     lex.startToken();
                     return null;
-                } else if (CharUtil.isIdentifierStart(c)) {
+                } else if (JsonUtil.isIdentifierStart(c)) {
                     lex.clear();
                     lex.store(c);
                     lex.state(IDENTIFIER);
@@ -88,7 +88,7 @@ class Json5Lexer extends AbstractLexer {
         COMMA {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isWhitespace5(c)) {
+                if (JsonUtil.isWhitespace5(c)) {
                     return null;
                 } else if (c == ']') {
                     return lex.newToken(TokenType.ARRAY_END, null);
@@ -104,7 +104,7 @@ class Json5Lexer extends AbstractLexer {
         STRING {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                if (CharUtil.isNewline5(c) || CharUtil.isEof(c)) {
+                if (JsonUtil.isNewline5(c) || JsonUtil.isEof(c)) {
                     throw lex.localError("Expected string end");
                 } else if (c == '\\') {
                     lex.state(STRING_ESCAPE);
@@ -120,9 +120,9 @@ class Json5Lexer extends AbstractLexer {
         STRING_ESCAPE {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                if (CharUtil.isEof(c)) {
+                if (JsonUtil.isEof(c)) {
                     throw lex.localError("Expected string escape");
-                } else if (CharUtil.isNewline5(c)) {
+                } else if (JsonUtil.isNewline5(c)) {
                     // nope
                 } else if (c == 'n') {
                     lex.store('\n');
@@ -144,7 +144,7 @@ class Json5Lexer extends AbstractLexer {
                     lex.store((char) 0);
                     lex.state(HEX_ESCAPE_1);
                     return null;
-                } else if (!CharUtil.isDigit1to9(c)) {
+                } else if (!JsonUtil.isDigit1to9(c)) {
                     lex.store(c);
                 } else {
                     throw lex.localError("Illegal escape sequence");
@@ -156,7 +156,7 @@ class Json5Lexer extends AbstractLexer {
         UNICODE_ESCAPE_1 {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 4 more hex digits");
                 } else {
@@ -171,7 +171,7 @@ class Json5Lexer extends AbstractLexer {
         UNICODE_ESCAPE_2 {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 3 more hex digits");
                 } else {
@@ -186,7 +186,7 @@ class Json5Lexer extends AbstractLexer {
         UNICODE_ESCAPE_3 {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 2 more hex digits");
                 } else {
@@ -201,7 +201,7 @@ class Json5Lexer extends AbstractLexer {
         UNICODE_ESCAPE_4 {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 1 more hex digit");
                 } else {
@@ -221,7 +221,7 @@ class Json5Lexer extends AbstractLexer {
         HEX_ESCAPE_1 {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 2 more hex digits");
                 } else {
@@ -236,7 +236,7 @@ class Json5Lexer extends AbstractLexer {
         HEX_ESCAPE_2 {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = JsonUtil.getHexDigitValue(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 1 more hex digit");
                 } else {
@@ -251,10 +251,10 @@ class Json5Lexer extends AbstractLexer {
         E_IDENTIFIER {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isDigit(c)) {
+                if (JsonUtil.isDigit(c)) {
                     lex.store(c);
                     return null;
-                } else if (CharUtil.isIdentifier(c)) {
+                } else if (JsonUtil.isIdentifier(c)) {
                     lex.store(c);
                     lex.state(IDENTIFIER);
                     return null;
@@ -272,7 +272,7 @@ class Json5Lexer extends AbstractLexer {
         IDENTIFIER {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isIdentifier(c)) {
+                if (JsonUtil.isIdentifier(c)) {
                     lex.store(c);
                     return null;
                 } else if (c == '\\') {
@@ -315,7 +315,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
                 int s = lex.unstore();
-                if (!CharUtil.isIdentifier(s)) {
+                if (!JsonUtil.isIdentifier(s)) {
                     throw lex.localError("Invalid identifier escape sequence");
                 }
                 lex.store(s);
@@ -340,7 +340,7 @@ class Json5Lexer extends AbstractLexer {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
                 int s = lex.unstore();
-                if (!CharUtil.isIdentifierStart(s)) {
+                if (!JsonUtil.isIdentifierStart(s)) {
                     throw lex.localError("Invalid identifier start escape sequence");
                 }
                 lex.store(s);
@@ -352,11 +352,11 @@ class Json5Lexer extends AbstractLexer {
         NUMBER_SIGN {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isDigit(c) || c == '.' || c == 'e' || c == 'E') {
+                if (JsonUtil.isDigit(c) || c == '.' || c == 'e' || c == 'E') {
                     lex.state(NUMBER_START);
                     lex.retain();
                     return null;
-                } else if (CharUtil.isIdentifierStart(c)) {
+                } else if (JsonUtil.isIdentifierStart(c)) {
                     lex.state(SIGNED_INFINITY_NAN);
                     lex.retain();
                     return null;
@@ -370,7 +370,7 @@ class Json5Lexer extends AbstractLexer {
         SIGNED_INFINITY_NAN {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                if (CharUtil.isIdentifier(c)) {
+                if (JsonUtil.isIdentifier(c)) {
                     lex.store(c);
                     return null;
                 } else {
@@ -397,7 +397,7 @@ class Json5Lexer extends AbstractLexer {
                 if (c == '0') {
                     lex.store(c);
                     lex.state(ZERO);
-                } else if (CharUtil.isDigit(c)) {
+                } else if (JsonUtil.isDigit(c)) {
                     lex.store(c);
                     lex.state(NUMBER_INTEGER);
                 } else if (c == '.') {
@@ -415,7 +415,7 @@ class Json5Lexer extends AbstractLexer {
         ZERO {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isDigit(c)) {
+                if (JsonUtil.isDigit(c)) {
                     lex.store(c);
                     lex.state(NUMBER_INTEGER);
                 } else if (c == 'x' || c == 'X') {
@@ -431,7 +431,7 @@ class Json5Lexer extends AbstractLexer {
         NUMBER_HEXADECIMAL {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isHexDigit(c)) {
+                if (JsonUtil.isHexDigit(c)) {
                     lex.store(c);
                 } else {
                     lex.retain();
@@ -445,7 +445,7 @@ class Json5Lexer extends AbstractLexer {
         NUMBER_INTEGER {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isDigit(c)) {
+                if (JsonUtil.isDigit(c)) {
                     lex.store(c);
                 } else {
                     lex.retain();
@@ -470,7 +470,7 @@ class Json5Lexer extends AbstractLexer {
         NUMBER_DECIMAL {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isDigit(c)) {
+                if (JsonUtil.isDigit(c)) {
                     lex.store(c);
                 } else {
                     lex.retain();
@@ -507,7 +507,7 @@ class Json5Lexer extends AbstractLexer {
         NUMBER_EXPONENT {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isDigit(c)) {
+                if (JsonUtil.isDigit(c)) {
                     lex.store(c);
                 } else {
                     lex.retain();
@@ -540,7 +540,7 @@ class Json5Lexer extends AbstractLexer {
         LINE_COMMENT {
             @Override
             public Token lex(int c, AbstractLexer lex) {
-                if (CharUtil.isNewline5(c) || CharUtil.isEof(c)) {
+                if (JsonUtil.isNewline5(c) || JsonUtil.isEof(c)) {
                     lex.state(DEFAULT);
                 }
                 return null;
@@ -549,7 +549,7 @@ class Json5Lexer extends AbstractLexer {
         BLOCK_COMMENT {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                if (CharUtil.isEof(c)) {
+                if (JsonUtil.isEof(c)) {
                     throw lex.localError("Unfinished block comment");
                 } else if (c == '*') {
                     lex.state(BLOCK_COMMENT_END);
@@ -560,7 +560,7 @@ class Json5Lexer extends AbstractLexer {
         BLOCK_COMMENT_END {
             @Override
             public Token lex(int c, AbstractLexer lex) throws JsonSyntaxException {
-                if (CharUtil.isEof(c)) {
+                if (JsonUtil.isEof(c)) {
                     throw lex.localError("Unfinished block comment");
                 } else if (c == '/') {
                     lex.state(DEFAULT);

@@ -1,0 +1,31 @@
+package net.shadew.json.template.parser;
+
+public enum NodeType {
+    DOCUMENT,
+
+    EXPR_LITERAL,
+    EXPR_VARIABLE,
+    EXPR_UNARY_OP,
+    EXPR_BINARY_OP,
+    EXPR_TERNARY_OP,
+    EXPR_HAS_KEY,
+    EXPR_IS_TYPE,
+    EXPR_LOGIC_OP,
+    EXPR_INDEX,
+    EXPR_ASSIGN,
+    EXPR_INCR,
+    EXPR_SLICE,
+    EXPR_MEMBER,
+    EXPR_INTERPOLATE_STRING,
+    EXPR_DO_THEN,
+    EXPR_MATCH,
+    EXPR_OBJECT,
+    EXPR_ARRAY,
+    EXPR_SUBTEMPLATE,
+    EXPR_CALL_FN,
+
+    ENT_VALUE,
+    ENT_KEY_VALUE,
+    ENT_VOID_LINE,
+    ENT_IF
+}

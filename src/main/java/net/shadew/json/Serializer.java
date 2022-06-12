@@ -77,7 +77,7 @@ class Serializer {
         if (config.json5() && config.useIdentifierKeys()) {
             if (validIds.contains(str))
                 return str;
-            if (CharUtil.isIdentifierValid(str)) {
+            if (JsonUtil.isIdentifierValid(str)) {
                 validIds.add(str);
                 return str;
             }
@@ -257,7 +257,7 @@ class Serializer {
 
     private void writeJson(JsonNode node) throws IOException {
         if (config.makeNonExecutable()) {
-            output.append(CharUtil.NOEXEC_LF);
+            output.append(JsonUtil.NOEXEC_LF);
         }
 
         node.require(JsonType.ARRAY, JsonType.OBJECT);

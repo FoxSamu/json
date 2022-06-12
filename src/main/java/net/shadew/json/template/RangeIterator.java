@@ -5,11 +5,11 @@ import java.util.NoSuchElementException;
 
 import net.shadew.json.JsonNode;
 
-public class RangeIterator implements Iterator<JsonNode> {
+class RangeIterator implements Iterator<JsonNode> {
     private final int from, to, incr;
     private int i;
 
-    public RangeIterator(int from, int to) {
+    RangeIterator(int from, int to) {
         boolean back = to < from;
         this.from = back ? to : from;
         this.to = back ? from : to;

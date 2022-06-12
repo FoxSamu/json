@@ -1,0 +1,74 @@
+document
+    root
+
+root
+    comma_list('root')
+
+comma_list($type)
+    <none>
+    entity($type) [',' comma_list($type)]
+
+entity($type)
+    basic_entity($type)
+    ent_void_line
+    ent_if($type)
+    ent_for($type)
+    ent_switch($type)
+    ent_def
+
+basic_entity('root')
+    ent_value
+
+basic_entity('array')
+    ent_value
+
+basic_entity('object')
+    ent_key_value
+
+ent_value
+    expression
+
+ent_key_value
+    key ':' expression
+
+key
+    string
+    variable
+    '(' expression ')'
+
+ent_void_line
+    '@' expression
+
+ent_if($type)
+    'if' expression '{' comma_list($type) '}' ['else' if_else($type)]
+
+if_else($type)
+    '{' comma_list($type) '}'
+    ent_if($type)
+
+ent_for($type)
+    'for' IDENTIFIER 'in' expression '{' comma_list($type) '}'
+    'for' IDENTIFIER 'from' expression 'to' expression '{' comma_list($type) '}'
+
+ent_switch($type)
+    'switch' expression '{' switch_list($type) '}'
+
+switch_list($type)
+    switch_entry($type) [',' switch_list($type)]
+
+switch_entry($type)
+    'case' expression '{' comma_list($type) '}'
+    'else' '{' comma_list($type) '}'
+
+expression
+    '(' expression ')'
+    expr_get_slice
+
+expr_get_slice
+    expression '[' expression ']'
+    expression '[' expression '..' ']'
+    expression '[' '..' expression ']'
+    expression '[' expression '..' expression ']'
+    expression '[' '..' ']'
+    expression '.' IDENTIFIER
+    expr_unary

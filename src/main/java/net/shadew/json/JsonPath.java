@@ -304,7 +304,7 @@ public final class JsonPath {
         if (trim.isEmpty())
             return ROOT;
 
-        if (CharUtil.isIdentifierValid(trim))
+        if (JsonUtil.isIdentifierValid(trim))
             return rootMember(trim);
 
         // Advanced path, parse
@@ -333,7 +333,7 @@ public final class JsonPath {
     private static int skipWhitespaces(Reader reader) {
         int c = reader.peek();
 
-        while (CharUtil.isWhitespace5(c)) { // Skip whitespaces
+        while (JsonUtil.isWhitespace5(c)) { // Skip whitespaces
             reader.skip();
             c = reader.peek();
         }
@@ -346,7 +346,7 @@ public final class JsonPath {
         if (c == -1) // End of string, no more step here
             return null;
 
-        if (c == '.' || first && CharUtil.isIdentifierStart(c)) {
+        if (c == '.' || first && JsonUtil.isIdentifierStart(c)) {
             // Identifier: ".abc", or "abc" and first step
             return readId(reader);
         } else if (c == '[') {
@@ -377,7 +377,7 @@ public final class JsonPath {
         // TODO It is essentially possible to allow any identifier character as first character, decide if that's wanted
         //   Advantage:    it allows some more strings to be identifiers
         //   Disadvantage: numeric identifiers (i.e. path.3.y is possible) can be confused with indices
-        if (!CharUtil.isIdentifierStart(c) && c != '\\')
+        if (!JsonUtil.isIdentifierStart(c) && c != '\\')
             throw reader.positionalError("Expected identifier");
 
         // First character
@@ -390,7 +390,7 @@ public final class JsonPath {
         c = reader.peek();
 
         // Extra characters
-        while (CharUtil.isIdentifier(c) || c == '\\') {
+        while (JsonUtil.isIdentifier(c) || c == '\\') {
             reader.skip();
             if (c == '\\')
                 builder.append(readUnicodeEscape(reader));
@@ -422,7 +422,7 @@ public final class JsonPath {
         }
 
         // Number case
-        if (CharUtil.isDigit(c) || c == '-' || c == '+') {
+        if (JsonUtil.isDigit(c) || c == '-' || c == '+') {
             // Sign
             boolean neg = false;
             if (c == '-' || c == '+') {
@@ -435,7 +435,7 @@ public final class JsonPath {
             c = reader.skipAndPeek();
 
             // Parse number
-            while (CharUtil.isDigit(c)) {
+            while (JsonUtil.isDigit(c)) {
                 int v = c - '0';
                 n = n * 10 + v;
 
@@ -506,10 +506,10 @@ public final class JsonPath {
         int hc = 0;
         for (int i = 0; i < 4; i++) {
             c = reader.peek();
-            if (!CharUtil.isHexDigit(c))
+            if (!JsonUtil.isHexDigit(c))
                 throw reader.positionalError("Illegal escape");
 
-            int v = CharUtil.getHexDigitValue(c);
+            int v = JsonUtil.getHexDigitValue(c);
             hc = hc << 4 | v;
             reader.skip();
         }
@@ -647,7 +647,7 @@ public final class JsonPath {
 
         @Override
         public void appendString(boolean first, StringBuilder builder) {
-            if (CharUtil.isIdentifierValid(key)) {
+            if (JsonUtil.isIdentifierValid(key)) {
                 if (!first)
                     builder.append(".");
                 builder.append(key);
