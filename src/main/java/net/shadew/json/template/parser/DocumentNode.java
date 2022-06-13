@@ -16,13 +16,18 @@ public class DocumentNode extends ParsedTemplateNode implements EntityNode.Entit
     }
 
     @Override
+    protected List<ParsedTemplateNode> childList() {
+        return List.copyOf(entities);
+    }
+
+    @Override
     public NodeType type() {
         return NodeType.DOCUMENT;
     }
 
     @Override
     public EntityNode asEntity() {
-        throw new UnsupportedOperationException("Document cannot be an entity");
+        throw new UnsupportedOperationException();
     }
 
     @Override

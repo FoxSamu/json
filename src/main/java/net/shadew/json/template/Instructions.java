@@ -7,9 +7,18 @@ import net.shadew.json.template.parser.EntityNode;
 
 public class Instructions implements Iterable<Instruction> {
     private final Instruction[] instructions;
+    private final Map<String, Function> definedFunctions;
 
-    public Instructions(Instruction... instructions) {
-        this.instructions = instructions;
+    private Instructions(Sink sink) {
+        instructions = sink.instructions.toArray(Instruction[]::new);
+
+        Map<String, Function> map = new HashMap<>();
+        for (Map.Entry<String, List<FunctionDefinition>> defs : sink.functions.entrySet()) {
+            String name = defs.getKey();
+            List<FunctionDefinition> overloads = defs.getValue();
+            map.put(name, FunctionDefinition.createOverloadedFunction(overloads));
+        }
+        definedFunctions = Map.copyOf(map);
 
         int pos = 0;
         for (Instruction cmd : instructions) {
@@ -18,6 +27,10 @@ public class Instructions implements Iterable<Instruction> {
             }
             pos++;
         }
+    }
+
+    public Map<String, Function> getDefinedFunctions() {
+        return definedFunctions;
     }
 
     public Instruction at(int pos) {
@@ -77,6 +90,7 @@ public class Instructions implements Iterable<Instruction> {
 
     public static class Sink implements EntityNode.InstructionSink {
         private final List<Instruction> instructions = new ArrayList<>();
+        private final Map<String, List<FunctionDefinition>> functions = new HashMap<>();
 
         @Override
         public Sink add(Instruction insns) {
@@ -96,8 +110,14 @@ public class Instructions implements Iterable<Instruction> {
             return this;
         }
 
+        @Override
+        public EntityNode.InstructionSink defFunction(FunctionDefinition funcdef) {
+            functions.computeIfAbsent(funcdef.name(), k -> new ArrayList<>()).add(funcdef);
+            return null;
+        }
+
         public Instructions build() {
-            return new Instructions(instructions.toArray(Instruction[]::new));
+            return new Instructions(this);
         }
 
         public void flush(EntityNode.InstructionSink sink) {

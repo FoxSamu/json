@@ -195,6 +195,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         }
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of();
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_LITERAL;
         }
@@ -207,6 +212,58 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         @Override
         public Expression compile() {
             return new Expression.Literal(literal);
+        }
+    }
+
+    public static Underscore underscore() {
+        return new Underscore();
+    }
+
+    public static class Underscore extends ExpressionNode {
+        @Override
+        public Expression compile() {
+            return Expression.UNDERSCORE;
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of();
+        }
+
+        @Override
+        public NodeType type() {
+            return NodeType.EXPR_UNDERSCORE;
+        }
+
+        @Override
+        public String asString() {
+            return "_";
+        }
+    }
+
+    public static Dollar dollar() {
+        return new Dollar();
+    }
+
+    public static class Dollar extends ExpressionNode {
+        @Override
+        public Expression compile() {
+            return Expression.DOLLAR;
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of();
+        }
+
+        @Override
+        public NodeType type() {
+            return NodeType.EXPR_DOLLAR;
+        }
+
+        @Override
+        public String asString() {
+            return "$";
         }
     }
 
@@ -231,6 +288,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         public Variable var(String name) {
             variable = name;
             return this;
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of();
         }
 
         @Override
@@ -335,7 +397,7 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         // @formatter:on
 
         @Override
-        public List<ParsedTemplateNode> children() {
+        protected List<ParsedTemplateNode> childList() {
             return List.of(expr);
         }
 
@@ -513,7 +575,7 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         // @formatter:on
 
         @Override
-        public List<ParsedTemplateNode> children() {
+        protected List<ParsedTemplateNode> childList() {
             return List.of(left, right);
         }
 
@@ -584,6 +646,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         public TernaryOp right(ExpressionNode expr) {
             right = expr;
             return this;
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(left, middle, right);
         }
 
         @Override
@@ -695,6 +762,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
 
         public HasKeyOp has() {
             return hasnt(false);
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(left, right);
         }
 
         @Override
@@ -956,6 +1028,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         }
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(left);
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_IS_TYPE;
         }
@@ -1050,6 +1127,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         }
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(left, right);
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_LOGIC_OP;
         }
@@ -1104,6 +1186,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         public StringInterpolation append(ExpressionNode node) {
             interpolations.add(new StringInterpolation.Interpolation(node));
             return this;
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.copyOf(interpolations);
         }
 
         @Override
@@ -1178,12 +1265,7 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         public String asString() {
             StringBuilder builder = new StringBuilder("\"");
             for (StringInterpolation.Interpolation ipl : interpolations) {
-                if (ipl.str != null) {
-                    escape(ipl.str, builder, '"');
-                } else {
-                    assert ipl.node != null;
-                    builder.append("#[ ").append(ipl.node.asString()).append(" ]");
-                }
+                builder.append(ipl.asString());
             }
             return builder.append("\"").toString();
         }
@@ -1240,24 +1322,51 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
             }
         }
 
-        public static class Interpolation {
+        public static class Interpolation extends ParsedTemplateNode {
             public final String str;
             public final ExpressionNode node;
 
-            private Interpolation(String str) {
+            public Interpolation(String str) {
                 this.str = str;
                 this.node = null;
             }
 
-            private Interpolation(ExpressionNode node) {
+            public Interpolation(ExpressionNode node) {
                 this.str = null;
                 this.node = node;
             }
 
-            private StringInterpolation.CompiledInterpolation compile() {
+            private CompiledInterpolation compile() {
                 if (node != null)
-                    return new StringInterpolation.CompiledInterpolation(node.compile());
-                return new StringInterpolation.CompiledInterpolation(str);
+                    return new CompiledInterpolation(node.compile());
+                return new CompiledInterpolation(str);
+            }
+
+            @Override
+            protected List<ParsedTemplateNode> childList() {
+                return node != null ? List.of(node) : List.of();
+            }
+
+            @Override
+            public NodeType type() {
+                return NodeType.STRING_INTERPOLATION;
+            }
+
+            @Override
+            public EntityNode asEntity() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String asString() {
+                StringBuilder builder = new StringBuilder();
+                if (str != null) {
+                    escape(str, builder, '"');
+                } else {
+                    assert node != null;
+                    builder.append("#[ ").append(node.asString()).append(" ]");
+                }
+                return builder.toString();
             }
         }
     }
@@ -1303,6 +1412,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         public Member name(String name) {
             right = name;
             return this;
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(left);
         }
 
         @Override
@@ -1396,6 +1510,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         public Index idx(String member) {
             name = literal(member);
             return this;
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(left, name);
         }
 
         @Override
@@ -1535,6 +1654,15 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         }
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+            children.add(left);
+            if (from != null) children.add(from);
+            if (to != null) children.add(to);
+            return List.copyOf(children);
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_SLICE;
         }
@@ -1636,6 +1764,14 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
                 doAfter.addAll(0, e.doAfter);
                 expr = e.expr;
             }
+        }
+
+        @Override
+        protected List<ParsedTemplateNode> childList() {
+            ArrayList<ParsedTemplateNode> children = new ArrayList<>(doBefore);
+            children.add(expr);
+            children.addAll(doAfter);
+            return List.copyOf(children);
         }
 
         @Override
@@ -1779,6 +1915,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         // @formatter:on
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(left, right);
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_ASSIGN;
         }
@@ -1894,6 +2035,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         }
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.of(expr);
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_ASSIGN;
         }
@@ -1955,13 +2101,22 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         }
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+            if (match != null) children.add(match);
+            children.addAll(cases);
+            if (caseElse != null) children.add(caseElse);
+            return List.copyOf(children);
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_MATCH;
         }
 
         @Override
         public String asString() {
-            String inner = Stream.concat(cases.stream().map(Case::string), Stream.ofNullable(caseElse).map(n -> "else -> " + n.asString()))
+            String inner = Stream.concat(cases.stream().map(Case::asString), Stream.ofNullable(caseElse).map(n -> "else -> " + n.asString()))
                                  .collect(Collectors.joining(", ", "{ ", " }"));
             return "match " + (match != null ? match.asString() + " " : "") + inner;
         }
@@ -1983,7 +2138,7 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
             return new Expression.MatchCondition(c, e);
         }
 
-        public static class Case {
+        public static class Case extends ParsedTemplateNode {
             public final ExpressionNode match;
             public final ExpressionNode then;
 
@@ -1992,7 +2147,23 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
                 this.then = then;
             }
 
-            public String string() {
+            @Override
+            protected List<ParsedTemplateNode> childList() {
+                return List.of(match, then);
+            }
+
+            @Override
+            public NodeType type() {
+                return NodeType.MATCH_CASE;
+            }
+
+            @Override
+            public EntityNode asEntity() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String asString() {
                 return "case " + match.asString() + " -> " + then.asString();
             }
         }
@@ -2060,6 +2231,11 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         }
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.copyOf(arguments);
+        }
+
+        @Override
         public NodeType type() {
             return NodeType.EXPR_CALL_FN;
         }
@@ -2086,15 +2262,18 @@ public abstract class ExpressionNode extends ParsedTemplateNode {
         protected abstract ExecutionType executionType();
 
         @Override
+        protected List<ParsedTemplateNode> childList() {
+            return List.copyOf(entities);
+        }
+
+        @Override
         public List<EntityNode> entities() {
             return entities;
         }
 
         @Override
         public Expression compile() {
-            Instructions.Sink sink = new Instructions.Sink();
-            compileEntities(sink);
-            return new Expression.Execute(sink.build(), executionType());
+            return new Expression.Execute(compileToInstructions(), executionType());
         }
 
         @Override

@@ -21,7 +21,7 @@ class ExecutionWithDebug extends Execution {
             msg += "Problem: " + exc.getLocalizedMessage() + System.lineSeparator();
             msg += "Instructions are:" + System.lineSeparator();
             msg += insns.writeInstructionDebug() + System.lineSeparator();
-            msg += "Frames are:" + frames.stream().map(
+            msg += "Frames are:" + System.lineSeparator() + frames.stream().map(
                 frame -> " - '" + frame.name + "' from @" + frame.from.pos() + " to @" + frame.to.pos() + System.lineSeparator()
             ).collect(Collectors.joining(""));
 

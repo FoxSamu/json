@@ -1549,6 +1549,47 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode add(Boolean value);
 
     /**
+     * Adds a new element to the beginning of this array. A null value is converted to {@link #NULL}.
+     *
+     * @param value The new value
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException   If this node is not an array
+     * @throws IllegalArgumentException When the given {@link JsonNode} implementation is not built in
+     */
+    JsonNode unshift(JsonNode value);
+
+    /**
+     * Adds a new string element to the beginning of this array. A null value is converted to {@link #NULL}.
+     *
+     * @param value The new value
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this node is not an array
+     */
+    JsonNode unshift(String value);
+
+    /**
+     * Adds a new number to the beginning of this array. A null value is converted to {@link #NULL}.
+     *
+     * @param value The new value
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this node is not an array
+     */
+    JsonNode unshift(Number value);
+
+    /**
+     * Adds a new boolean to the beginning of this array. A null value is converted to {@link #NULL}.
+     *
+     * @param value The new value
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this node is not an array
+     */
+    JsonNode unshift(Boolean value);
+
+    /**
      * Inserts a new element at a certain position in this array, before the element at the given index. Negative
      * indices index from the end (note that index -1 does <strong>not</strong> add it to the end, but before the last
      * element). A null value is converted to {@link #NULL}.
@@ -1622,7 +1663,10 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @return The size of this array or object
      *
      * @throws IncorrectTypeException If this is not an array or object
+     * @deprecated Use {@link #length()}, will be removed in 1.5
      */
+    // TODO Remove in 1.5
+    @Deprecated
     int size();
 
     /**
@@ -1634,6 +1678,15 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException If this is not an array, object or string
      */
     int length();
+
+    /**
+     * Returns whether this this string, array or object is empty, i.e. it's {@link #length()} is 0.
+     *
+     * @return Whether this array, object or string is empty
+     *
+     * @throws IncorrectTypeException If this is not an array, object or string
+     */
+    boolean empty();
 
     /**
      * Enforces this array or object to have a specific number of elements, throwing an {@link IncorrectSizeException}
@@ -1648,7 +1701,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireSize(int size);
 
     /**
-     * Removes all elements from this array or object.
+     * Removes all elements from this array or object, making it such that {@link #empty()} returns true.
      *
      * @return This instance for chaining
      *
@@ -1688,6 +1741,76 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IllegalArgumentException  If to is less than from.
      */
     JsonNode slice(int from, int to);
+
+    /**
+     * Returns the last element in this array.
+     *
+     * @return This last element in this array
+     *
+     * @throws IncorrectTypeException    If this node, or the supplied node, is not an array
+     * @throws IndexOutOfBoundsException If the array is empty
+     */
+    JsonNode last();
+
+    /**
+     * Returns the first element in this array.
+     *
+     * @return This first element in this array
+     *
+     * @throws IncorrectTypeException    If this node, or the supplied node, is not an array
+     * @throws IndexOutOfBoundsException If the array is empty
+     */
+    JsonNode first();
+
+    /**
+     * Searches this array forwards, starting from the beginning, and returns the index of the next occurence of the
+     * given value. If the value wasn't found, -1 is returned.
+     *
+     * @param value The value to check for
+     * @return The index of the value or -1 if it's absent
+     *
+     * @throws IncorrectTypeException When this node is not an array
+     */
+    int indexOf(JsonNode value);
+
+    /**
+     * Searches this array forwards, starting from the given index, and returns the index of the next occurence of the
+     * given value. If the value wasn't found, -1 is returned.
+     *
+     * @param value The value to check for
+     * @param from  The index to search from (inclusive), negative values index from the end
+     * @return The index of the value or -1 if it's absent
+     *
+     * @throws IncorrectTypeException    When this node is not an array
+     * @throws IndexOutOfBoundsException If the given index is more than the length of this array, or less than negative
+     *                                   the length of this array.
+     */
+    int indexOf(JsonNode value, int from);
+
+    /**
+     * Searches this array backwards, starting from the end, and returns the index of the next occurence of the given
+     * value. If the value wasn't found, -1 is returned.
+     *
+     * @param value The value to check for
+     * @return The index of the value or -1 if it's absent
+     *
+     * @throws IncorrectTypeException When this node is not an array
+     */
+    int lastIndexOf(JsonNode value);
+
+    /**
+     * Searches this array backwards, starting from the given index, and returns the index of the next occurence of the
+     * given value. If the value wasn't found, -1 is returned.
+     *
+     * @param value The value to check for
+     * @param from  The index to search from (exclusive), negative values index from the end
+     * @return The index of the value or -1 if it's absent
+     *
+     * @throws IncorrectTypeException    When this node is not an array
+     * @throws IndexOutOfBoundsException If the given index is more than the length of this array, or less than negative
+     *                                   the length of this array.
+     */
+    int lastIndexOf(JsonNode value, int from);
 
     /**
      * Returns a {@link Collector} that collects {@link JsonNode}s into an {@linkplain JsonType#ARRAY array} node.

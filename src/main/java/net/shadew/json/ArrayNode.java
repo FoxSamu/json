@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 final class ArrayNode extends AbstractConstructNode {
-    private final List<JsonNode> children = new ArrayList<>();
+    private final ArrayList<JsonNode> children = new ArrayList<>();
     private Values values;
 
     ArrayNode() {
@@ -102,6 +102,30 @@ final class ArrayNode extends AbstractConstructNode {
     }
 
     @Override
+    public JsonNode unshift(JsonNode value) {
+        children.add(0, JsonNode.orNull(value));
+        return this;
+    }
+
+    @Override
+    public JsonNode unshift(String value) {
+        children.add(0, JsonNode.string(value));
+        return this;
+    }
+
+    @Override
+    public JsonNode unshift(Number value) {
+        children.add(0, JsonNode.number(value));
+        return this;
+    }
+
+    @Override
+    public JsonNode unshift(Boolean value) {
+        children.add(0, JsonNode.bool(value));
+        return this;
+    }
+
+    @Override
     public JsonNode insert(int index, JsonNode value) {
         if (index < 0) index += size();
         children.add(index, JsonNode.orNull(value));
@@ -143,6 +167,63 @@ final class ArrayNode extends AbstractConstructNode {
     @Override
     public int length() {
         return children.size();
+    }
+
+    @Override
+    public boolean empty() {
+        return children.isEmpty();
+    }
+
+    @Override
+    public JsonNode last() {
+        if (children.isEmpty())
+            throw new IndexOutOfBoundsException("Empty array");
+        return children.get(children.size() - 1);
+    }
+
+    @Override
+    public JsonNode first() {
+        if (children.isEmpty())
+            throw new IndexOutOfBoundsException("Empty array");
+        return children.get(0);
+    }
+
+    @Override
+    public int indexOf(JsonNode value) {
+        return indexOf(value, 0);
+    }
+
+    @Override
+    public int indexOf(JsonNode value, int from) {
+        int l = children.size();
+        if (from < 0) from += l;
+        if (from < 0 || from > l)
+            throw new IndexOutOfBoundsException("Index: " + from + ", size: " + children.size());
+
+        for (int i = from; i < l; i++) {
+            if (children.get(i).equals(value))
+                return i;
+        }
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(JsonNode value) {
+        return indexOf(value, size());
+    }
+
+    @Override
+    public int lastIndexOf(JsonNode value, int from) {
+        int l = children.size();
+        if (from < 0) from += l;
+        if (from < 0 || from > l)
+            throw new IndexOutOfBoundsException("Index: " + from + ", size: " + children.size());
+
+        for (int i = from - 1; i >= 0; i--) {
+            if (children.get(i).equals(value))
+                return i;
+        }
+        return -1;
     }
 
     @Override

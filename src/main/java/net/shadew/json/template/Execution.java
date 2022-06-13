@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.shadew.json.JsonNode;
 
-class Execution {
+public class Execution {
     protected final TemplateContext context;
     protected final ExecutionType type;
     protected final Instructions insns;
@@ -19,6 +19,11 @@ class Execution {
         this.type = type;
         this.insns = insns;
         reset();
+    }
+
+    public void registerFunctions() {
+        Vfl vfl = context.vfl();
+        insns.getDefinedFunctions().forEach(vfl::define);
     }
 
     public void reset() {
@@ -44,6 +49,12 @@ class Execution {
             if (pos >= insns.length())
                 terminate = true;
         }
+
+        // Pop remaining frames to make sure we get back to the proper VFL
+        // (and for debug: to send all the frame-exit events properly)
+        while (!frames.isEmpty())
+            popFrame();
+
         return value == null ? JsonNode.object() : value;
     }
 
@@ -108,7 +119,10 @@ class Execution {
     }
 
     public void exception(JsonNode exception) {
-        value = exception;
+        if (type == ExecutionType.OBJECT)
+            produce("!EXCEPTION!", exception);
+        else
+            produce(exception);
         terminate = true;
     }
 
@@ -139,22 +153,76 @@ class Execution {
 
     public void breakFrame() {
         int breakable = findNearestBreakableFrame();
+        if (breakable < 0) {
+            terminate();
+            return;
+        }
+
         while (frames.size() > breakable + 1) {
             popFrame();
         }
 
-        if (breakable < 0) terminate();
-        else branch(popFrame().breakPos);
+        branch(peekFrame().breakPos);
+    }
+
+    public void breakFrames(int depth) {
+        while (depth > 0) {
+            if (terminate) {
+                exception(context.exception(ExceptionType.BREAK_CONTINUE_MISMATCH, "Break depth too high"));
+                return;
+            }
+
+            int breakable = findNearestBreakableFrame();
+            if (breakable < 0) {
+                terminate();
+                depth--;
+                continue;
+            }
+            while (frames.size() > breakable + 1) {
+                popFrame();
+            }
+
+            if (depth == 1) branch(peekFrame().breakPos);
+            else popFrame();
+            depth--;
+        }
     }
 
     public void continueFrame() {
-        int breakable = findNearestContinuableFrame();
-        while (frames.size() > breakable + 1) {
+        int continuable = findNearestContinuableFrame();
+        if (continuable < 0) {
+            exception(context.exception(ExceptionType.BREAK_CONTINUE_MISMATCH, "Cannot continue here"));
+            return;
+        }
+        while (frames.size() > continuable + 1) {
             popFrame();
         }
 
-        if (breakable < 0) exception(context.exception(ExceptionType.EXECUTION_EXCEPTION, "Cannot continue here"));
-        else branch(popFrame().breakPos);
+        branch(peekFrame().continuePos);
+    }
+
+    public void continueFrames(int depth) {
+        while (depth > 1) {
+            if (terminate) {
+                exception(context.exception(ExceptionType.BREAK_CONTINUE_MISMATCH, "Continue depth too high"));
+                return;
+            }
+
+            int breakable = findNearestBreakableFrame();
+            if (breakable < 0) {
+                terminate();
+                depth--;
+                continue;
+            }
+            while (frames.size() > breakable + 1) {
+                popFrame();
+            }
+
+            popFrame();
+            depth--;
+        }
+
+        continueFrame();
     }
 
     private int findNearestBreakableFrame() {

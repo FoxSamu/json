@@ -15,7 +15,7 @@ public class TemplateContext {
     }
 
     public void pushVflWithSameScope(String name) {
-        vfl = vfl.newLayerWithSameScope(name);
+        vfl = vfl.newPartialLayer(name);
         if (TemplateDebug.debug)
             TemplateDebug.pushVfl.accept(vfl);
     }
@@ -26,12 +26,18 @@ public class TemplateContext {
             TemplateDebug.pushVfl.accept(vfl);
     }
 
+    public void pushVflForFunctionCall(String fnName, Vfl functionLayer, boolean subtemplate) {
+        vfl = functionLayer.newFunctionCallLayer(fnName + "()", vfl, subtemplate);
+        if (TemplateDebug.debug)
+            TemplateDebug.pushVfl.accept(vfl);
+    }
+
     public void popVfl() {
-        if (vfl.parent() == null)
+        if (vfl.below() == null)
             throw new EmptyStackException();
         if (TemplateDebug.debug)
             TemplateDebug.popVfl.accept(vfl);
-        vfl = vfl.parent();
+        vfl = vfl.below();
     }
 
     public Vfl vfl() {
@@ -69,6 +75,7 @@ public class TemplateContext {
     }
 
     private JsonNode runExec(Execution exec) {
+        exec.registerFunctions();
         try {
             executionStack.push(exec);
             return exec.run();

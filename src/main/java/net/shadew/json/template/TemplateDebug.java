@@ -3,7 +3,7 @@ package net.shadew.json.template;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-class TemplateDebug {
+public class TemplateDebug {
     public static boolean debug;
     public static Consumer<Vfl> pushVfl = vfl -> { };
     public static Consumer<Vfl> popVfl = vfl -> { };

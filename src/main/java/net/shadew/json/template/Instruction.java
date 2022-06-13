@@ -60,10 +60,10 @@ public abstract class Instruction {
         }
     }
 
-    public static class VoidLine extends Instruction {
+    public static class VoidEval extends Instruction {
         private final Expression expr;
 
-        public VoidLine(Expression expr) {
+        public VoidEval(Expression expr) {
             this.expr = expr;
         }
 
@@ -79,7 +79,7 @@ public abstract class Instruction {
 
         @Override
         public String writeDebug() {
-            return "VOID_LINE " + expr.writeDebug();
+            return "VOID_EVAL " + expr.writeDebug();
         }
     }
 
@@ -122,7 +122,7 @@ public abstract class Instruction {
             this.frame = frame;
         }
 
-        public PushFrame(String name, Instruction.Label from, Instruction.Label to, Instruction.Label breakPos, Instruction.Label continuePos) {
+        public PushFrame(String name, Label from, Label to, Label breakPos, Label continuePos) {
             this(new Execution.Frame(name, from, to, breakPos, continuePos));
         }
 
@@ -138,7 +138,9 @@ public abstract class Instruction {
 
         @Override
         public String writeDebug() {
-            return "FRAME '" + frame.name + "' from @" + frame.from.pos + " to @" + frame.to.pos;
+            return "FRAME '" + frame.name + "' from @" + frame.from.pos + " to @" + frame.to.pos
+                       + (frame.canBreak() ? " break at @" + frame.breakPos.pos : "")
+                       + (frame.canContinue() ? " continue at @" + frame.continuePos.pos : "");
         }
     }
 
@@ -165,10 +167,73 @@ public abstract class Instruction {
         }
     }
 
-    public static class If extends Jump {
+    public static class IfJump extends Jump {
         private final Expression cond;
 
-        public If(Expression cond, Label label) {
+        public IfJump(Expression cond, Label label) {
+            super(label);
+            this.cond = cond;
+        }
+
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            if (Operators.truthy(context.evaluate(cond)))
+                super.perform(exec, context);
+        }
+
+        @Override
+        public String writeDebug() {
+            return "IF_JUMP to @" + label.pos + ", " + cond.writeDebug();
+        }
+    }
+
+    public static class SwitchJump extends Jump {
+        private final Expression cond;
+
+        public SwitchJump(Expression cond, Label label) {
+            super(label);
+            this.cond = cond;
+        }
+
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            if (context.vfl().switching().equals(context.evaluate(cond)))
+                super.perform(exec, context);
+        }
+
+        @Override
+        public String writeDebug() {
+            return "SWITCH_JUMP to @" + label.pos + ", " + cond.writeDebug();
+        }
+    }
+
+    public static class InitSwitch extends Instruction {
+        private final Expression val;
+
+        public InitSwitch(Expression val) {
+            this.val = val;
+        }
+
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            context.vfl().switchOver(context.evaluate(val));
+        }
+
+        @Override
+        public boolean isValidIn(ExecutionType type) {
+            return true;
+        }
+
+        @Override
+        public String writeDebug() {
+            return "INIT_SWITCH " + val.writeDebug();
+        }
+    }
+
+    public static class UnlessJump extends Jump {
+        private final Expression cond;
+
+        public UnlessJump(Expression cond, Label label) {
             super(label);
             this.cond = cond;
         }
@@ -181,19 +246,17 @@ public abstract class Instruction {
 
         @Override
         public String writeDebug() {
-            return "IF to @" + label.pos + ", " + cond.writeDebug();
+            return "UNLESS_JUMP to @" + label.pos + ", " + cond.writeDebug();
         }
     }
 
-    public static class StartIterationRange extends Instruction {
+    public static class InitRangeItr extends Instruction {
         private final Expression from;
         private final Expression to;
-        private final IfIterator iterator;
 
-        public StartIterationRange(Expression from, Expression to, IfIterator iterator) {
+        public InitRangeItr(Expression from, Expression to) {
             this.from = from;
             this.to = to;
-            this.iterator = iterator;
         }
 
         @Override
@@ -201,11 +264,21 @@ public abstract class Instruction {
             JsonNode from = context.evaluate(this.from);
             JsonNode to = context.evaluate(this.to);
             if (from.isNumber() && to.isNumber()) {
-                iterator.iterator(new RangeIterator(from.asInt(), to.asInt()));
+                context.vfl().iterate(createIterator(from.asInt(), to.asInt()));
             } else if (!from.isNumber()) {
                 exec.exception(context.exception(ExceptionType.INCORRECT_TYPES, "Range iteration 'from' cannot be " + from.type()));
             } else {
-                exec.exception(context.exception(ExceptionType.INCORRECT_TYPES, "Range iteration 'to' cannot be " + from.type()));
+                exec.exception(context.exception(ExceptionType.INCORRECT_TYPES, "Range iteration 'to' cannot be " + to.type()));
+            }
+        }
+
+        private static Iterator<JsonNode> createIterator(int from, int to) {
+            if (from > to) {
+                return new DownRangeIterator(from, to);
+            } else if (from < to) {
+                return new UpRangeIterator(from, to);
+            } else {
+                return EmptyIterator.INSTANCE;
             }
         }
 
@@ -216,29 +289,41 @@ public abstract class Instruction {
 
         @Override
         public String writeDebug() {
-            return "START_ITR_RANGE " + from.writeDebug() + " .. " + to.writeDebug();
+            return "INIT_RANGE_ITR " + from.writeDebug() + " .. " + to.writeDebug();
         }
     }
 
-    public static class StartIteration extends Instruction {
+    public static class InitArrayItr extends Instruction {
         private final Expression iterable;
-        private final IfIterator iterator;
 
-        public StartIteration(Expression iterable, IfIterator iterator) {
+        public InitArrayItr(Expression iterable) {
             this.iterable = iterable;
-            this.iterator = iterator;
         }
 
         @Override
         public void perform(Execution scope, TemplateContext context) {
             JsonNode itr = context.evaluate(iterable);
             if (itr.isString()) {
-                iterator.iterator(new StringIterator(itr.asString()));
+                context.vfl().iterate(createIterator(itr.asString()));
             } else if (itr.isArray()) {
-                iterator.iterator(itr.iterator());
+                context.vfl().iterate(createIterator(itr));
             } else {
                 scope.exception(context.exception(ExceptionType.INCORRECT_TYPES, "Cannot iterate " + itr.type()));
             }
+        }
+
+        private Iterator<JsonNode> createIterator(String str) {
+            if (str.isEmpty())
+                return EmptyIterator.INSTANCE;
+            else
+                return new StringIterator(str);
+        }
+
+        private Iterator<JsonNode> createIterator(JsonNode arr) {
+            if (arr.empty())
+                return EmptyIterator.INSTANCE;
+            else
+                return arr.iterator();
         }
 
         @Override
@@ -248,26 +333,24 @@ public abstract class Instruction {
 
         @Override
         public String writeDebug() {
-            return "START_ITR " + iterable.writeDebug();
+            return "INIT_ARRAY_ITR " + iterable.writeDebug();
         }
     }
 
-    public static class StartIterationObj extends Instruction {
+    public static class InitObjectItr extends Instruction {
         private final Expression iterable;
-        private final IfIteratorObj iterator;
 
-        public StartIterationObj(Expression iterable, IfIteratorObj iterator) {
+        public InitObjectItr(Expression iterable) {
             this.iterable = iterable;
-            this.iterator = iterator;
         }
 
         @Override
         public void perform(Execution exec, TemplateContext context) {
             JsonNode itr = context.evaluate(iterable);
             if (itr.isObject()) {
-                iterator.iterator(itr.entrySet().iterator());
+                context.vfl().iterate(itr.entrySet().iterator());
             } else {
-                exec.exception(context.exception(ExceptionType.INCORRECT_TYPES, "Cannot object-iterate " + itr.type()));
+                exec.exception(context.exception(ExceptionType.INCORRECT_TYPES, "Cannot iterate key-value pairs of " + itr.type()));
             }
         }
 
@@ -278,65 +361,150 @@ public abstract class Instruction {
 
         @Override
         public String writeDebug() {
-            return "START_ITR_OBJ " + iterable.writeDebug();
+            return "INIT_OBJECT_ITR " + iterable.writeDebug();
         }
     }
 
-    public static class IfIterator extends Jump {
-        private final String var;
-        private Iterator<JsonNode> itr;
-
-        public IfIterator(String var, Label label) {
+    public static class ItrJump extends Jump {
+        public ItrJump(Label label) {
             super(label);
-            this.var = var;
-        }
-
-        public void iterator(Iterator<JsonNode> itr) {
-            this.itr = itr;
         }
 
         @Override
         public void perform(Execution exec, TemplateContext context) {
-            if (itr.hasNext()) {
-                context.vfl().set(var, itr.next());
+            Vfl vfl = context.vfl();
+            Iterator<JsonNode> itr = vfl.iterator();
+            if (!itr.hasNext()) {
                 super.perform(exec, context);
             }
         }
 
         @Override
         public String writeDebug() {
-            return "IF_ITR to @" + label.pos + " for " + var;
+            return "ITR_JUMP to @" + label.pos;
         }
     }
 
-    public static class IfIteratorObj extends Jump {
+    public static class ItrGet extends Instruction {
+        private final String var;
+
+        public ItrGet(String var) {
+            this.var = var;
+        }
+
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            Vfl vfl = context.vfl();
+            Iterator<JsonNode> itr = vfl.iterator();
+            vfl.set(var, itr.next());
+        }
+
+        @Override
+        public boolean isValidIn(ExecutionType type) {
+            return true;
+        }
+
+        @Override
+        public String writeDebug() {
+            return "ITR " + var;
+        }
+    }
+
+    public static class ItrGetKV extends Instruction {
         private final String kvar;
         private final String vvar;
-        private Iterator<Map.Entry<String, JsonNode>> itr;
 
-        public IfIteratorObj(String kvar, String vvar, Label label) {
-            super(label);
+        public ItrGetKV(String kvar, String vvar) {
             this.kvar = kvar;
             this.vvar = vvar;
         }
 
-        public void iterator(Iterator<Map.Entry<String, JsonNode>> itr) {
-            this.itr = itr;
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            Vfl vfl = context.vfl();
+            Iterator<Map.Entry<String, JsonNode>> itr = vfl.iterator();
+            Map.Entry<String, JsonNode> entry = itr.next();
+            vfl.set(kvar, JsonNode.string(entry.getKey()));
+            vfl.set(vvar, entry.getValue());
         }
 
         @Override
-        public void perform(Execution exec, TemplateContext context) {
-            if (itr.hasNext()) {
-                Map.Entry<String, JsonNode> entry = itr.next();
-                context.vfl().set(kvar, JsonNode.string(entry.getKey()));
-                context.vfl().set(vvar, entry.getValue());
-                super.perform(exec, context);
-            }
+        public boolean isValidIn(ExecutionType type) {
+            return true;
         }
 
         @Override
         public String writeDebug() {
-            return "IF_ITR_OBJ to @" + label.pos + " for " + kvar + ":" + vvar;
+            return "ITR_KV " + kvar + ":" + vvar;
+        }
+    }
+
+    public static class BreakFrame extends Instruction {
+        private final int depth;
+
+        public BreakFrame(int depth) {
+            this.depth = depth;
+        }
+
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            if (depth == 1)
+                exec.breakFrame();
+            else
+                exec.breakFrames(depth);
+        }
+
+        @Override
+        public boolean isValidIn(ExecutionType type) {
+            return true;
+        }
+
+        @Override
+        public String writeDebug() {
+            return "BREAK_FRAME " + depth;
+        }
+    }
+
+    public static class ContinueFrame extends Instruction {
+        private final int depth;
+
+        public ContinueFrame(int depth) {
+            this.depth = depth;
+        }
+
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            if (depth == 1)
+                exec.continueFrame();
+            else
+                exec.continueFrames(depth);
+        }
+
+        @Override
+        public boolean isValidIn(ExecutionType type) {
+            return true;
+        }
+
+        @Override
+        public String writeDebug() {
+            return "CONTINUE_FRAME " + depth;
+        }
+    }
+
+    public static class Return extends Instruction {
+        @Override
+        public void perform(Execution exec, TemplateContext context) {
+            exec.terminate();
+        }
+
+        @Override
+        public boolean isValidIn(ExecutionType type) {
+            return true;
+        }
+
+        @Override
+        public String writeDebug() {
+            return "RETURN";
         }
     }
 }

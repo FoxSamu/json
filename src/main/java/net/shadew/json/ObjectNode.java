@@ -76,6 +76,26 @@ final class ObjectNode extends AbstractConstructNode {
     }
 
     @Override
+    public JsonNode unshift(JsonNode value) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode unshift(String value) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode unshift(Number value) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode unshift(Boolean value) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
     public JsonNode insert(int index, JsonNode value) {
         throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
     }
@@ -108,6 +128,41 @@ final class ObjectNode extends AbstractConstructNode {
     @Override
     public int length() {
         return children.size();
+    }
+
+    @Override
+    public boolean empty() {
+        return children.isEmpty();
+    }
+
+    @Override
+    public JsonNode last() {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode first() {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public int indexOf(JsonNode value) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public int indexOf(JsonNode value, int from) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public int lastIndexOf(JsonNode value) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
+    }
+
+    @Override
+    public int lastIndexOf(JsonNode value, int from) {
+        throw new IncorrectTypeException(JsonType.OBJECT, JsonType.ARRAY);
     }
 
     @Override

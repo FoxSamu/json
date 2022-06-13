@@ -85,6 +85,11 @@ final class StringNode extends AbstractPrimitiveNode {
     }
 
     @Override
+    public boolean empty() {
+        return string.isEmpty();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;

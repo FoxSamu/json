@@ -13,6 +13,49 @@ public interface Expression {
     JsonNode simplifyToLiteral();
     String writeDebug();
 
+    Expression UNDERSCORE = new Expression() {
+        @Override
+        public JsonNode evaluate(TemplateContext context, Vfl vfl) {
+            return vfl.underscore();
+        }
+
+        @Override
+        public boolean isContextDependent() {
+            return true;
+        }
+
+        @Override
+        public JsonNode simplifyToLiteral() {
+            return null;
+        }
+
+        @Override
+        public String writeDebug() {
+            return "_";
+        }
+    };
+    Expression DOLLAR = new Expression() {
+        @Override
+        public JsonNode evaluate(TemplateContext context, Vfl vfl) {
+            return vfl.dollar();
+        }
+
+        @Override
+        public boolean isContextDependent() {
+            return true;
+        }
+
+        @Override
+        public JsonNode simplifyToLiteral() {
+            return null;
+        }
+
+        @Override
+        public String writeDebug() {
+            return "$";
+        }
+    };
+
     class Literal implements Expression {
         private final JsonNode node;
 

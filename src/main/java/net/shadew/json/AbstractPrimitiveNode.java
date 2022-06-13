@@ -95,6 +95,26 @@ abstract class AbstractPrimitiveNode extends AbstractJsonNode {
     }
 
     @Override
+    public JsonNode unshift(JsonNode value) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode unshift(String value) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode unshift(Number value) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode unshift(Boolean value) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
     public JsonNode insert(int index, JsonNode value) {
         throw new IncorrectTypeException(type(), JsonType.ARRAY);
     }
@@ -127,6 +147,41 @@ abstract class AbstractPrimitiveNode extends AbstractJsonNode {
     @Override
     public int length() {
         throw new IncorrectTypeException(type(), JsonType.WITH_LENGTH);
+    }
+
+    @Override
+    public boolean empty() {
+        throw new IncorrectTypeException(type(), JsonType.WITH_LENGTH);
+    }
+
+    @Override
+    public JsonNode last() {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public JsonNode first() {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public int indexOf(JsonNode value) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public int indexOf(JsonNode value, int from) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public int lastIndexOf(JsonNode value) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
+    }
+
+    @Override
+    public int lastIndexOf(JsonNode value, int from) {
+        throw new IncorrectTypeException(type(), JsonType.ARRAY);
     }
 
     @Override
