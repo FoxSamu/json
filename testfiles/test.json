@@ -1,0 +1,122 @@
+[
+  {
+    "index": 0,
+    "guid": "d022c968-5c2e-42bb-bb88-086b4b9d04a7",
+    "isActive": true,
+    "age": 22,
+    "eyeColor": "green",
+    "name": "Lottie Mills",
+    "gender": "female",
+    "company": "DOGTOWN",
+    "email": "lottiemills@dogtown.com",
+    "phone": "+1 (975) 485-2551",
+    "address": "628 Rock Street, Condon, Pennsylvania, 6464",
+    "registered": "2015-03-12T11:39:15 -01:00",
+    "latitude": -77.608719,
+    "longitude": 5.979469,
+    "tags": ["proident", "voluptate", "ut", "minim", "duis", "duis", "sint"],
+    "friends": [
+      { "id": 0, "name": "Priscilla Hahn" },
+      { "id": 1, "name": "Odom Lynch" },
+      { "id": 2, "name": "Rojas Mccormick" }
+    ],
+    "greeting": "Hello, Lottie Mills! You have 10 unread messages.",
+    "favoriteFruit": "strawberry"
+  },
+  {
+    "index": 1,
+    "guid": "054a8611-b81b-4bac-bbd8-38dea1e61a87",
+    "isActive": false,
+    "age": 20,
+    "eyeColor": "brown",
+    "name": "Middleton Hayden",
+    "gender": "male",
+    "company": "ZINCA",
+    "email": "middletonhayden@zinca.com",
+    "phone": "+1 (952) 462-3108",
+    "address": "957 Malta Street, Onton, Louisiana, 3065",
+    "registered": "2014-04-02T06:56:13 -02:00",
+    "latitude": 86.708109,
+    "longitude": 26.737863,
+    "tags": ["voluptate", "sint", "anim", "veniam", "quis", "commodo", "est"],
+    "friends": [
+      { "id": 0, "name": "Charlene Munoz" },
+      { "id": 1, "name": "Rios Casey" },
+      { "id": 2, "name": "Chase Schroeder" }
+    ],
+    "greeting": "Hello, Middleton Hayden! You have 8 unread messages.",
+    "favoriteFruit": "strawberry"
+  },
+  {
+    "index": 2,
+    "guid": "14e56110-0a0a-4da3-8b46-cf152f3ce4bb",
+    "isActive": false,
+    "age": 25,
+    "eyeColor": "green",
+    "name": "Bobbi Luna",
+    "gender": "female",
+    "company": "HINWAY",
+    "email": "bobbiluna@hinway.com",
+    "phone": "+1 (965) 452-2654",
+    "address": "826 Himrod Street, Bridgetown, Arizona, 2853",
+    "registered": "2019-05-05T03:07:12 -02:00",
+    "latitude": 33.097351,
+    "longitude": 17.262079,
+    "tags": ["tempor", "fugiat", "ullamco", "laborum", "pariatur", "deserunt", "aliqua"],
+    "friends": [
+      { "id": 0, "name": "Angelina Buck" },
+      { "id": 1, "name": "Emily Allison" },
+      { "id": 2, "name": "Mandy Joyner" }
+    ],
+    "greeting": "Hello, Bobbi Luna! You have 3 unread messages.",
+    "favoriteFruit": "strawberry"
+  },
+  {
+    "index": 3,
+    "guid": "196ea6f5-255d-45cc-a310-9428b3ddf09c",
+    "isActive": false,
+    "age": 27,
+    "eyeColor": "green",
+    "name": "Stokes Boyd",
+    "gender": "male",
+    "company": "BEDLAM",
+    "email": "stokesboyd@bedlam.com",
+    "phone": "+1 (825) 523-3063",
+    "address": "652 Nassau Avenue, Hasty, Ohio, 2947",
+    "registered": "2021-03-23T01:37:53 -01:00",
+    "latitude": 14.961365,
+    "longitude": 112.339097,
+    "tags": ["fugiat", "elit", "officia", "aliqua", "voluptate", "reprehenderit", "amet"],
+    "friends": [
+      { "id": 0, "name": "Sylvia Winters" },
+      { "id": 1, "name": "Atkins Hayes" },
+      { "id": 2, "name": "Ruth Salas" }
+    ],
+    "greeting": "Hello, Stokes Boyd! You have 3 unread messages.",
+    "favoriteFruit": "apple"
+  },
+  {
+    "index": 4,
+    "guid": "dbe3b8de-19d8-4bff-9175-bcd62999f679",
+    "isActive": true,
+    "age": 21,
+    "eyeColor": "blue",
+    "name": "Elena Morrison",
+    "gender": "female",
+    "company": "FANGOLD",
+    "email": "elenamorrison@fangold.com",
+    "phone": "+1 (990) 527-3621",
+    "address": "358 Clifford Place, Salvo, Alabama, 8546",
+    "registered": "2019-05-06T07:31:53 -02:00",
+    "latitude": -60.514729,
+    "longitude": 60.893278,
+    "tags": ["et", "est", "culpa", "irure", "eu", "magna", "nostrud"],
+    "friends": [
+      { "id": 0, "name": "Reynolds Herman" },
+      { "id": 1, "name": "Murray Morris" },
+      { "id": 2, "name": "Lilia Mcintosh" }
+    ],
+    "greeting": "Hello, Elena Morrison! You have 10 unread messages.",
+    "favoriteFruit": "strawberry"
+  }
+]

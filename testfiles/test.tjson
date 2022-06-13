@@ -1,0 +1,12 @@
+def square(n) -> n * n,
+
+@ start = 1,
+@ end = 10,
+
+{
+    "squares_of_#[from]_to_#[to]": [
+        for i from start to end + 1 {
+            square(i)
+        }
+    ]
+}
