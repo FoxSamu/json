@@ -1,103 +1,136 @@
 package net.shadew.json.template.parser;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import net.shadew.json.JsonSyntaxException;
-import net.shadew.json.ParsingConfig;
+import net.shadew.json.template.TemplateDebug;
 
 class TemplateParser {
     private static final ThreadLocal<TemplateParser> PARSER_INSTANCE = ThreadLocal.withInitial(TemplateParser::new);
+    private final ParserTable table = ParserDefinition.table();
+
     private TemplateLexer lexer;
-    private final Stack<Object> valueStack = new Stack<>();
-    private final Stack<State> stateStack = new Stack<>();
-    private boolean end = false;
+    private final Stack<ParserNode> stack = new Stack<>();
+    private int startState = 0;
 
-    private final Token token = new Token();
-    private boolean retain;
+    private static final int BASE_STACK_SIZE = 16;
+    private static final int STACK_GROW = 16;
+    private static final int STACK_SHRINK_THRESHOLD = 1024;
 
-    void retain() {
-        retain = true;
+    private final Token lookahead = new Token();
+
+    private boolean accepted = false;
+
+    void shift() {
+        push(new TokenNode(lookahead));
+        lookahead();
     }
 
-    void end() {
-        end = true;
+    private void lookahead() {
+        try {
+            lexer.token(lookahead);
+        } catch (IOException exc) {
+            throw new UncheckedIOException(exc);
+        }
     }
 
-    void pushState(State state) {
-        stateStack.push(state);
+    void shift(int state) {
+        shift();
+        state(state);
     }
 
-    void popState() {
-        stateStack.pop();
+    void reduce(Grammar.Rule rule) {
+        Reduction reduction = rule.reduction;
+        int amount = reduction.amount();
+        ParserNode[] nodes = new ParserNode[amount];
+        for (int i = amount - 1; i >= 0; i--) {
+            nodes[i] = pop();
+        }
+
+        int next = table.goTo(state(), rule.nonterminal);
+        push(reduction.reduce(nodes));
+        state(next);
     }
 
-    void switchState(State state) {
-        stateStack.pop();
-        stateStack.push(state);
+    void accept() {
+        accepted = true;
     }
 
-    void switchPushState(State push, State then) {
-        stateStack.pop();
-        stateStack.push(then);
-        stateStack.push(push);
+    void state(int state) {
+        peek().parserState = state;
     }
 
-    void pushValue(Object node) {
-        valueStack.push(node);
+    int state() {
+        if (stack.empty()) return 0;
+        return peek().parserState;
     }
 
-    <T> T peekValue(Class<T> type) {
-        return type.cast(valueStack.peek());
+    void push(ParserNode value) {
+        stack.push(value);
     }
 
-    <T> T popValue(Class<T> type) {
-        return type.cast(valueStack.pop());
+    ParserNode peek() {
+        return stack.peek();
     }
 
-    JsonSyntaxException expected(TokenType type) {
-        return lexer.error("Expected " + type.getErrorName());
+    ParserNode pop() {
+        return stack.pop();
     }
 
-    JsonSyntaxException expected(TokenType... types) {
-        return lexer.error(Stream.of(types).map(TokenType::getErrorName).collect(Collectors.joining(", ", "Expected ", "")));
+    boolean matches(NodePredicate... pattern) {
+        int l = pattern.length;
+        int s = stack.size() - l;
+        if (s < 0) {
+            return false;
+        }
+
+        for (int i = 0; i < l; i++) {
+            if (!pattern[i].matches(stack.get(s + i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    private void parse0(TemplateLexer lexer, ParsingConfig config) throws JsonSyntaxException {
-//        this.lexer = lexer;
-//        valueStack.clear();
-//        stateStack.clear();
-//        if (config.anyValue()) {
-//            // Must push EOF because we aren't using ROOT
-//            stateStack.push(Parser.JsonState.END_OF_FILE);
-//        }
-//        stateStack.push(
-//            config.json5()
-//            ? config.anyValue() ? Parser.Json5State.VALUE : Parser.Json5State.ROOT
-//            : config.anyValue() ? Parser.JsonState.VALUE : Parser.JsonState.ROOT
-//        );
-//        end = false;
-//
-//        while (!end) {
-//            try {
-//                if (!retain)
-//                    lexer.token(token);
-//                retain = false;
-//                stateStack.peek().parseToken(token, this);
-//            } catch (IOException e) {
-//                throw new UncheckedIOException(e);
-//            }
-//        }
+    JsonSyntaxException makeError(WrongSyntax wrongSyntax) {
+        return lookahead.error(wrongSyntax.getMessage());
     }
 
-    public static ParsedTemplateNode parse(TemplateLexer lexer, ParsingConfig config) throws JsonSyntaxException {
+    private void parse0(TemplateLexer lexer) throws JsonSyntaxException {
+        this.lexer = lexer;
+        stack.clear();
+        lookahead();
+        while (!accepted) {
+            ParserTable.Action action = table.action(state(), lookahead.getType());
+            if (action == null) {
+                ParserTable.State state = table.state(state());
+                List<String> expected = new ArrayList<>();
+                for (TokenType terminal : TokenType.values()) {
+                    if (state.action(terminal) != null)
+                        expected.add(terminal.errorName());
+                }
+                throw lookahead.error("Expected " + String.join(", ", expected));
+            }
+            action.accept(this);
+
+            if (TemplateDebug.debug && TemplateDebug.sleepParser > 0) {
+                System.out.println(action.name());
+                try {
+                    Thread.sleep(TemplateDebug.sleepParser);
+                } catch (InterruptedException exc) {
+                    return;
+                }
+            }
+        }
+    }
+
+    public static ParserNode parse(TemplateLexer lexer) throws JsonSyntaxException {
         TemplateParser parser = PARSER_INSTANCE.get();
-        parser.parse0(lexer, config);
-        return parser.popValue(ParsedTemplateNode.class);
-    }
-
-    private interface State {
-        void parseToken(Token next, TemplateParser parser) throws JsonSyntaxException;
+        parser.parse0(lexer);
+        return parser.pop();
     }
 }

@@ -5,7 +5,7 @@ import java.util.function.BinaryOperator;
 import net.shadew.json.JsonNode;
 import net.shadew.json.template.Operators;
 
-public enum BinaryOperatorType {
+public enum BinaryOperatorType implements Expectable {
     ADD("+", Operators::add),
     SUB("-", Operators::sub),
     MUL("*", Operators::mul),
@@ -30,5 +30,10 @@ public enum BinaryOperatorType {
     BinaryOperatorType(String symbol, BinaryOperator<JsonNode> operator) {
         this.symbol = symbol;
         this.operator = operator;
+    }
+
+    @Override
+    public String errorName() {
+        return "'" + symbol + "'";
     }
 }

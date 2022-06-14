@@ -6,15 +6,37 @@ import java.util.Map;
 
 import net.shadew.json.JsonSyntaxException;
 
-public abstract class ParsedTemplateNode {
+public abstract class ParserNode {
     private int fromPos, fromLine, fromCol;
     private int toPos, toLine, toCol;
-    private List<ParsedTemplateNode> children;
-    private ParsedTemplateNode parent;
-    private ParsedTemplateNode next;
-    private ParsedTemplateNode prev;
+    private List<ParserNode> children;
+    private ParserNode parent;
+    private ParserNode next;
+    private ParserNode prev;
     private int nthChild;
     private final Map<String, Object> properties = new HashMap<>();
+
+    public int parserState;
+
+    public final <T extends ParserNode> T as(Class<T> type) {
+        return type.cast(this);
+    }
+
+    public final ExpressionNode asExpr() {
+        return (ExpressionNode) this;
+    }
+
+    public final EntityNode asEnt() {
+        return (EntityNode) this;
+    }
+
+    public final DocumentNode asDoc() {
+        return (DocumentNode) this;
+    }
+
+    public final TokenNode asToken() {
+        return (TokenNode) this;
+    }
 
     public final void position(int fromPos, int fromLine, int fromCol, int toPos, int toLine, int toCol) {
         this.fromPos = fromPos;
@@ -25,10 +47,25 @@ public abstract class ParsedTemplateNode {
         this.toCol = toCol;
     }
 
+    public final void position(ParserNode node) {
+        this.fromPos = node.fromPos;
+        this.fromLine = node.fromLine;
+        this.fromCol = node.fromCol;
+        this.toPos = node.toPos;
+        this.toLine = node.toLine;
+        this.toCol = node.toCol;
+    }
+
     public final void start(int fromPos, int fromLine, int fromCol) {
         this.fromPos = fromPos;
         this.fromLine = fromLine;
         this.fromCol = fromCol;
+    }
+
+    public final void start(ParserNode node) {
+        this.fromPos = node.fromPos;
+        this.fromLine = node.fromLine;
+        this.fromCol = node.fromCol;
     }
 
     public final void end(int toPos, int toLine, int toCol) {
@@ -37,8 +74,14 @@ public abstract class ParsedTemplateNode {
         this.toCol = toCol;
     }
 
-    protected abstract List<ParsedTemplateNode> childList();
-    public abstract NodeType type();
+    public final void end(ParserNode node) {
+        this.toPos = node.toPos;
+        this.toLine = node.toLine;
+        this.toCol = node.toCol;
+    }
+
+    protected abstract List<ParserNode> childList();
+    public abstract ParserNodeType type();
     public abstract EntityNode asEntity();
     public abstract String asString();
 
@@ -47,16 +90,16 @@ public abstract class ParsedTemplateNode {
         return "Node " + type() + " [ " + asString() + " ]";
     }
 
-    public final void updateTree(ParsedTemplateNode parent) {
+    public final void updateTree(ParserNode parent) {
         this.parent = parent;
         this.children = childList();
         this.nthChild = 0;
         this.prev = null;
         this.next = null;
         int i = 0;
-        ParsedTemplateNode last = null;
+        ParserNode last = null;
 
-        for (ParsedTemplateNode c : children) {
+        for (ParserNode c : children) {
             c.updateTree(this);
             c.nthChild = i++;
 
@@ -73,19 +116,19 @@ public abstract class ParsedTemplateNode {
         return nthChild;
     }
 
-    public final ParsedTemplateNode prev() {
+    public final ParserNode prev() {
         return prev;
     }
 
-    public final ParsedTemplateNode next() {
+    public final ParserNode next() {
         return next;
     }
 
-    public final ParsedTemplateNode parent() {
+    public final ParserNode parent() {
         return parent;
     }
 
-    public final List<ParsedTemplateNode> children() {
+    public final List<ParserNode> children() {
         return children;
     }
 
@@ -106,11 +149,39 @@ public abstract class ParsedTemplateNode {
         return properties;
     }
 
+    public final int fromPos() {
+        return fromPos;
+    }
+
+    public final int fromLine() {
+        return fromLine;
+    }
+
+    public final int fromCol() {
+        return fromCol;
+    }
+
+    public final int toPos() {
+        return toPos;
+    }
+
+    public final int toLine() {
+        return toLine;
+    }
+
+    public final int toCol() {
+        return toCol;
+    }
+
     public final void visit(ParseTreeVisitor visitor) {
-        visitor.enter(type(), this);
-        for (ParsedTemplateNode node : children)
-            node.visit(visitor);
-        visitor.exit(type(), this);
+        ParserNodeType type = type();
+        if (!type.isTerminal()) {
+            NodeType ntype = (NodeType) type;
+            visitor.enter(ntype, this);
+            for (ParserNode node : children)
+                node.visit(visitor);
+            visitor.exit(ntype, this);
+        }
     }
 
     public JsonSyntaxException error(String problem) {

@@ -1,6 +1,6 @@
 package net.shadew.json.template.parser;
 
-public enum AssignType {
+public enum AssignType implements Expectable {
     SET("=", null),
     ADD("+=", BinaryOperatorType.ADD),
     SUB("-=", BinaryOperatorType.SUB),
@@ -20,5 +20,10 @@ public enum AssignType {
     AssignType(String symbol, BinaryOperatorType operator) {
         this.symbol = symbol;
         this.operator = operator;
+    }
+
+    @Override
+    public String errorName() {
+        return "'" + symbol + "'";
     }
 }

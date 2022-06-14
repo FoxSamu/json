@@ -16,7 +16,7 @@ public class LexerTests {
 
         while (token.getType() != TokenType.EOF) {
             lexer.token(token);
-            System.out.println(token.getType().getErrorName() + " (value: " + token.getValue() + ")");
+            System.out.println(token.getType().errorName() + " (value: " + token.getValue() + ")");
         }
     }
 }

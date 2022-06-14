@@ -7,7 +7,7 @@ import java.util.List;
 import net.shadew.json.template.Instructions;
 import net.shadew.json.template.JsonTemplate;
 
-public class DocumentNode extends ParsedTemplateNode implements EntityNode.EntityBlockBase<DocumentNode> {
+public class DocumentNode extends ParserNode implements EntityNode.EntityBlockBase<DocumentNode> {
     public final List<EntityNode> entities = new ArrayList<>();
 
     @Override
@@ -16,7 +16,7 @@ public class DocumentNode extends ParsedTemplateNode implements EntityNode.Entit
     }
 
     @Override
-    protected List<ParsedTemplateNode> childList() {
+    protected List<ParserNode> childList() {
         return List.copyOf(entities);
     }
 
@@ -39,11 +39,11 @@ public class DocumentNode extends ParsedTemplateNode implements EntityNode.Entit
         return new DocumentNode();
     }
 
-    public static DocumentNode document(ParsedTemplateNode... entities) {
+    public static DocumentNode document(ParserNode... entities) {
         return document().append(entities);
     }
 
-    public static DocumentNode document(Collection<? extends ParsedTemplateNode> entities) {
+    public static DocumentNode document(Collection<? extends ParserNode> entities) {
         return document().append(entities);
     }
 

@@ -13,7 +13,7 @@ import net.shadew.json.template.Instructions;
 
 import static net.shadew.json.template.Instruction.*;
 
-public abstract class EntityNode extends ParsedTemplateNode {
+public abstract class EntityNode extends ParserNode {
     @Override
     public EntityNode asEntity() {
         return this;
@@ -76,7 +76,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.of(val);
         }
 
@@ -159,7 +159,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.of(key, val);
         }
 
@@ -218,7 +218,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.of(expr);
         }
 
@@ -244,7 +244,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new If(cond);
     }
 
-    public static If ifBlock(ExpressionNode cond, ParsedTemplateNode... entities) {
+    public static If ifBlock(ExpressionNode cond, ParserNode... entities) {
         return ifBlock(cond).append(entities);
     }
 
@@ -298,8 +298,8 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
-            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+        protected List<ParserNode> childList() {
+            ArrayList<ParserNode> children = new ArrayList<>();
             children.add(condition);
             children.addAll(entities);
             children.addAll(elseIfBlocks);
@@ -367,7 +367,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new ElseIf(cond);
     }
 
-    public static ElseIf elseIfBlock(ExpressionNode cond, ParsedTemplateNode... entities) {
+    public static ElseIf elseIfBlock(ExpressionNode cond, ParserNode... entities) {
         return elseIfBlock(cond).append(entities);
     }
 
@@ -375,7 +375,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new ElseIf();
     }
 
-    public static class ElseIf extends ParsedTemplateNode implements EntityBlockBase<ElseIf> {
+    public static class ElseIf extends ParserNode implements EntityBlockBase<ElseIf> {
         public ExpressionNode condition;
         public final List<EntityNode> entities = new ArrayList<>();
 
@@ -397,8 +397,8 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
-            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+        protected List<ParserNode> childList() {
+            ArrayList<ParserNode> children = new ArrayList<>();
             children.add(condition);
             children.addAll(entities);
             return List.copyOf(children);
@@ -420,11 +420,11 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
     }
 
-    public static Else elseBlock(ParsedTemplateNode... entities) {
+    public static Else elseBlock(ParserNode... entities) {
         return elseBlock().append(entities);
     }
 
-    public static class Else extends ParsedTemplateNode implements EntityBlockBase<Else> {
+    public static class Else extends ParserNode implements EntityBlockBase<Else> {
         public final List<EntityNode> entities = new ArrayList<>();
 
         @Override
@@ -433,7 +433,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.copyOf(entities);
         }
 
@@ -457,7 +457,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new ForIn(var, iterate);
     }
 
-    public static ForIn forInBlock(String var, ExpressionNode iterate, ParsedTemplateNode... entities) {
+    public static ForIn forInBlock(String var, ExpressionNode iterate, ParserNode... entities) {
         return forInBlock(var, iterate).append(entities);
     }
 
@@ -494,8 +494,8 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
-            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+        protected List<ParserNode> childList() {
+            ArrayList<ParserNode> children = new ArrayList<>();
             children.add(iterate);
             children.addAll(entities);
             return List.copyOf(children);
@@ -537,7 +537,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new ForInObj(kvar, vvar, iterate);
     }
 
-    public static ForInObj forInObjBlock(String kvar, String vvar, ExpressionNode iterate, ParsedTemplateNode... entities) {
+    public static ForInObj forInObjBlock(String kvar, String vvar, ExpressionNode iterate, ParserNode... entities) {
         return forInObjBlock(kvar, vvar, iterate).append(entities);
     }
 
@@ -576,8 +576,8 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
-            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+        protected List<ParserNode> childList() {
+            ArrayList<ParserNode> children = new ArrayList<>();
             children.add(iterate);
             children.addAll(entities);
             return List.copyOf(children);
@@ -624,7 +624,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new ForFromTo(var, from, to);
     }
 
-    public static ForFromTo forFromToBlock(String var, ExpressionNode from, ExpressionNode to, ParsedTemplateNode... entities) {
+    public static ForFromTo forFromToBlock(String var, ExpressionNode from, ExpressionNode to, ParserNode... entities) {
         return forFromToBlock(var, from, to).append(entities);
     }
 
@@ -663,8 +663,8 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
-            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+        protected List<ParserNode> childList() {
+            ArrayList<ParserNode> children = new ArrayList<>();
             children.add(from);
             children.add(to);
             children.addAll(entities);
@@ -737,7 +737,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.of();
         }
 
@@ -782,7 +782,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.of();
         }
 
@@ -809,7 +809,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.of();
         }
 
@@ -891,7 +891,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.of(expr);
         }
 
@@ -961,7 +961,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
+        protected List<ParserNode> childList() {
             return List.copyOf(entities);
         }
 
@@ -1028,8 +1028,8 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
-            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+        protected List<ParserNode> childList() {
+            ArrayList<ParserNode> children = new ArrayList<>();
             children.add(value);
             children.addAll(cases);
             if (elseBlock != null)
@@ -1107,7 +1107,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new Case(cond);
     }
 
-    public static Case caseBlock(ExpressionNode cond, ParsedTemplateNode... entities) {
+    public static Case caseBlock(ExpressionNode cond, ParserNode... entities) {
         return caseBlock(cond).append(entities);
     }
 
@@ -1115,7 +1115,7 @@ public abstract class EntityNode extends ParsedTemplateNode {
         return new Case();
     }
 
-    public static class Case extends ParsedTemplateNode implements EntityBlockBase<Case> {
+    public static class Case extends ParserNode implements EntityBlockBase<Case> {
         public ExpressionNode cond;
         public final List<EntityNode> entities = new ArrayList<>();
 
@@ -1137,8 +1137,8 @@ public abstract class EntityNode extends ParsedTemplateNode {
         }
 
         @Override
-        protected List<ParsedTemplateNode> childList() {
-            ArrayList<ParsedTemplateNode> children = new ArrayList<>();
+        protected List<ParserNode> childList() {
+            ArrayList<ParserNode> children = new ArrayList<>();
             children.add(cond);
             children.addAll(entities);
             return List.copyOf(children);
@@ -1190,20 +1190,20 @@ public abstract class EntityNode extends ParsedTemplateNode {
             return entities().stream().map(EntityNode::asString).collect(Collectors.joining(", "));
         }
 
-        default T append(ParsedTemplateNode node) {
+        default T append(ParserNode node) {
             entities().add(node.asEntity());
             return (T) this;
         }
 
-        default T append(ParsedTemplateNode... nodes) {
-            for (ParsedTemplateNode node : nodes) {
+        default T append(ParserNode... nodes) {
+            for (ParserNode node : nodes) {
                 entities().add(node.asEntity());
             }
             return (T) this;
         }
 
-        default T append(Collection<? extends ParsedTemplateNode> nodes) {
-            for (ParsedTemplateNode node : nodes) {
+        default T append(Collection<? extends ParserNode> nodes) {
+            for (ParserNode node : nodes) {
                 entities().add(node.asEntity());
             }
             return (T) this;
@@ -1237,22 +1237,22 @@ public abstract class EntityNode extends ParsedTemplateNode {
             return (T) this;
         }
 
-        default T prepend(ParsedTemplateNode node) {
+        default T prepend(ParserNode node) {
             entities().add(0, node.asEntity());
             return (T) this;
         }
 
-        default T prepend(ParsedTemplateNode... nodes) {
+        default T prepend(ParserNode... nodes) {
             int i = 0;
-            for (ParsedTemplateNode node : nodes) {
+            for (ParserNode node : nodes) {
                 entities().add(i++, node.asEntity());
             }
             return (T) this;
         }
 
-        default T prepend(Collection<? extends ParsedTemplateNode> nodes) {
+        default T prepend(Collection<? extends ParserNode> nodes) {
             int i = 0;
-            for (ParsedTemplateNode node : nodes) {
+            for (ParserNode node : nodes) {
                 entities().add(i++, node.asEntity());
             }
             return (T) this;

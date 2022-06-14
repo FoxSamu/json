@@ -22,11 +22,14 @@ class LexerStates {
 
     static {
         LinkedHashMap<String, TokenType> symbols = new LinkedHashMap<>();
+        // Sorted by length!!!
+
         symbols.put(">>>=", TokenType.RRSH_IS);
 
         symbols.put(">>>", TokenType.RRSH);
         symbols.put("<<=", TokenType.LSH_IS);
         symbols.put(">>=", TokenType.RSH_IS);
+        symbols.put("...", TokenType.TRIPLE_PERIOD);
 
         symbols.put("<<", TokenType.LSH);
         symbols.put(">>", TokenType.RSH);

@@ -33,7 +33,7 @@ public class LoopDepthVisitor implements ParseTreeVisitor {
     private final Stack<Counter> counterStack = new Stack<>();
 
     @Override
-    public void enter(NodeType type, ParsedTemplateNode node) {
+    public void enter(NodeType type, ParserNode node) {
         if (SCOPES.contains(type)) {
             counterStack.push(new Counter());
         }
@@ -46,7 +46,7 @@ public class LoopDepthVisitor implements ParseTreeVisitor {
     }
 
     @Override
-    public void exit(NodeType type, ParsedTemplateNode node) {
+    public void exit(NodeType type, ParserNode node) {
         if (SCOPES.contains(type)) {
             counterStack.pop();
         }

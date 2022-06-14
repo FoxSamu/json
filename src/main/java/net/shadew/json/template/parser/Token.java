@@ -42,6 +42,30 @@ class Token {
         return value;
     }
 
+    public int getFromLine() {
+        return fromLine;
+    }
+
+    public int getFromCol() {
+        return fromCol;
+    }
+
+    public int getFromPos() {
+        return fromPos;
+    }
+
+    public int getToLine() {
+        return toLine;
+    }
+
+    public int getToCol() {
+        return toCol;
+    }
+
+    public int getToPos() {
+        return toPos;
+    }
+
     public JsonSyntaxException error(String problem) {
         return new JsonSyntaxException(fromPos, fromLine, fromCol, toPos, toLine, toCol, problem);
     }

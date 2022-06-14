@@ -4,16 +4,16 @@ import java.util.AbstractList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class SimpleChildList extends AbstractList<ParsedTemplateNode> {
-    private final List<Supplier<ParsedTemplateNode>> list;
+public class SimpleChildList extends AbstractList<ParserNode> {
+    private final List<Supplier<ParserNode>> list;
 
     @SafeVarargs
-    public SimpleChildList(Supplier<ParsedTemplateNode>... fields) {
+    public SimpleChildList(Supplier<ParserNode>... fields) {
         this.list = List.of(fields);
     }
 
     @Override
-    public ParsedTemplateNode get(int index) {
+    public ParserNode get(int index) {
         return list.get(index).get();
     }
 

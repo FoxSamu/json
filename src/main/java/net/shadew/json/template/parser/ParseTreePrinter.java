@@ -13,7 +13,7 @@ public class ParseTreePrinter implements ParseTreeVisitor {
     }
 
     @Override
-    public void enter(NodeType type, ParsedTemplateNode node) {
+    public void enter(NodeType type, ParserNode node) {
         out.println("    ".repeat(indent) + type + (node.children().size() > 0 || !node.properties().isEmpty() ? " {" : ""));
         indent++;
 
@@ -23,7 +23,7 @@ public class ParseTreePrinter implements ParseTreeVisitor {
     }
 
     @Override
-    public void exit(NodeType type, ParsedTemplateNode node) {
+    public void exit(NodeType type, ParserNode node) {
         indent--;
 
         if (node.children().size() > 0 || !node.properties().isEmpty())

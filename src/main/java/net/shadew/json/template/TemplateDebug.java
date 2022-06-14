@@ -13,4 +13,5 @@ public class TemplateDebug {
     public static BiConsumer<Execution, Execution.Frame> exitFrame = (exec, frame) -> { };
     public static BiConsumer<Execution, Instruction> instruction = (exec, insn) -> { };
     public static BiConsumer<Execution, Integer> branch = (exec, pos) -> { };
+    public static long sleepParser;
 }

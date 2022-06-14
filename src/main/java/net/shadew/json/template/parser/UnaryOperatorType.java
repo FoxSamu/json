@@ -5,7 +5,7 @@ import java.util.function.UnaryOperator;
 import net.shadew.json.JsonNode;
 import net.shadew.json.template.Operators;
 
-public enum UnaryOperatorType {
+public enum UnaryOperatorType implements Expectable {
     PLUS("+", Operators::unaryPlus),
     MINUS("-", Operators::neg),
     NOT("!", Operators::not),
@@ -19,5 +19,10 @@ public enum UnaryOperatorType {
     UnaryOperatorType(String symbol, UnaryOperator<JsonNode> operator) {
         this.symbol = symbol;
         this.operator = operator;
+    }
+
+    @Override
+    public String errorName() {
+        return "'" + symbol + "'";
     }
 }
