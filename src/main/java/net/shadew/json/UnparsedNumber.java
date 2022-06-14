@@ -102,12 +102,14 @@ class UnparsedNumber extends Number {
 
         boolean zero = integralZero && decimalZero;
         if (!zero) {
-            BigInteger i = new BigInteger(exponent);
-            int comp = i.compareTo(BigInteger.ZERO);
-            if (comp < 0) {
-                integral = null;
-            } else if (comp > 0 && i.compareTo(BigInteger.TEN) <= 0) {
-                integral += "0".repeat(i.intValue());
+            if (!exponent.isEmpty()) {
+                BigInteger i = new BigInteger(exponent);
+                int comp = i.compareTo(BigInteger.ZERO);
+                if (comp < 0) {
+                    integral = null;
+                } else if (comp > 0 && i.compareTo(BigInteger.TEN) <= 0) {
+                    integral += "0".repeat(i.intValue());
+                }
             }
         } else {
             integral = "0";
@@ -126,7 +128,13 @@ class UnparsedNumber extends Number {
         return full;
     }
 
+    boolean isZero() {
+        full();
+        return isZero;
+    }
+
     boolean isIntegral() {
+        full();
         return isIntegral;
     }
 
@@ -201,7 +209,7 @@ class UnparsedNumber extends Number {
 
     public static boolean isZero(Number number) {
         if (number instanceof UnparsedNumber)
-            return ((UnparsedNumber) number).isZero;
+            return ((UnparsedNumber) number).isZero();
         if (number instanceof UnparsedHexNumber)
             return ((UnparsedHexNumber) number).isZero();
         if (number instanceof BigInteger)
