@@ -5,34 +5,55 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.shadew.json.template.TemplateDebug;
+
 public class Grammar {
-    public final Rule mainRule;
-    public final List<Rule> rules;
-    public final Map<NonterminalType, List<Rule>> rulesByType;
+    // Rules in this grammar
+    public final List<Rule> rules; // All together
+    public final Rule mainRule; // Main
+    public final Map<Nonterminal, List<Rule>> rulesByNt; // By nonterminal
 
-    public final List<Item> items;
-    public final List<Item> mainItems;
-    public final Map<NonterminalType, List<Item>> itemsByType;
+    // Items in this grammar ('R := A B' --> 'R := :: A B', 'R := A :: B', 'R := A B ::')
+    public final List<Item> items; // All together
+    public final List<Item> mainItems; // Main
+    public final Map<Nonterminal, List<Item>> itemsByNt; // By nonterminal
+    public final Map<Rule, List<Item>> itemsByRule; // By rule
 
-    public final Map<Rule, List<Item>> itemsByRule;
+    public final Set<Nonterminal> nonterminals;
+    public final Set<TokenType> terminals;
 
-    public Grammar(List<Rule> rules, ParserNodeType main) {
+    // FIRST and FOLLOW sets of the nonterminals present in this grammar
+    public final Map<Nonterminal, Set<TokenType>> firstSets;
+    public final Map<Nonterminal, Set<TokenType>> followSets;
+
+    public Grammar(List<Rule> rules, GrammarSymbol main) {
         this.rules = Stream.concat(
             // Add main rule S := MAIN [eof]
-            Stream.of(mainRule = rule(Nonterminal.PARSER_START, main, TokenType.EOF).reduce2((m, eof) -> m)),
+            Stream.of(mainRule = rule(NonterminalType.PARSER_START, main, TokenType.EOF).reduce2((m, eof) -> m)),
             rules.stream()
         ).collect(Collectors.toUnmodifiableList());
 
-        Map<NonterminalType, List<Rule>> rulesByType = new HashMap<>();
+        // Sort rules by nonterminal and find all used nonterminals and terminals
+        Map<Nonterminal, List<Rule>> rulesByType = new HashMap<>();
+        Set<Nonterminal> nonterminals = new HashSet<>();
+        Set<TokenType> terminals = new HashSet<>();
         for (Rule rule : this.rules) {
-            if (rule.nonterminal != null)
-                rulesByType.computeIfAbsent(rule.nonterminal, k -> new ArrayList<>()).add(rule);
+            nonterminals.add(rule.lhs);
+            for (GrammarSymbol rhs : rule.rhs) {
+                if (rhs.isTerminal()) terminals.add(rhs.terminal());
+                else nonterminals.add(rhs.nonterminal());
+            }
+
+            rulesByType.computeIfAbsent(rule.lhs, k -> new ArrayList<>()).add(rule);
         }
-        for (Map.Entry<NonterminalType, List<Rule>> entry : rulesByType.entrySet()) {
+        for (Map.Entry<Nonterminal, List<Rule>> entry : rulesByType.entrySet()) {
             entry.setValue(List.copyOf(entry.getValue()));
         }
-        this.rulesByType = Map.copyOf(rulesByType);
+        this.rulesByNt = Map.copyOf(rulesByType);
+        this.nonterminals = Set.copyOf(nonterminals);
+        this.terminals = Set.copyOf(terminals);
 
+        // Generate items
         Map<Rule, List<Item>> itemsByRule = new HashMap<>();
         List<Item> items = new ArrayList<>();
         for (Rule rule : this.rules) {
@@ -49,14 +70,30 @@ public class Grammar {
         this.itemsByRule = Map.copyOf(itemsByRule);
         this.mainItems = itemsByRule.get(mainRule);
 
-        Map<NonterminalType, List<Item>> itemsByType = new HashMap<>();
+        // Sort items by nonterminal
+        Map<Nonterminal, List<Item>> itemsByType = new HashMap<>();
         for (Item item : items) {
-            itemsByType.computeIfAbsent(item.nonterminal, k -> new ArrayList<>()).add(item);
+            itemsByType.computeIfAbsent(item.lhs, k -> new ArrayList<>()).add(item);
         }
-        for (Map.Entry<NonterminalType, List<Item>> entry : itemsByType.entrySet()) {
+        for (Map.Entry<Nonterminal, List<Item>> entry : itemsByType.entrySet()) {
             entry.setValue(List.copyOf(entry.getValue()));
         }
-        this.itemsByType = Map.copyOf(itemsByType);
+        this.itemsByNt = Map.copyOf(itemsByType);
+
+        // Generate FIRST/FOLLOW sets
+        FirstFollowSetsGenerator gen = new FirstFollowSetsGenerator(this);
+        gen.computeFirstSets();
+        gen.computeFollowSets();
+        if (TemplateDebug.printFirstFollowSets) {
+            gen.debug();
+        }
+
+        Map<Nonterminal, Set<TokenType>> firstSets = new HashMap<>();
+        Map<Nonterminal, Set<TokenType>> followSets = new HashMap<>();
+        gen.firstSets.forEach((k, v) -> firstSets.put(k, Set.copyOf(v)));
+        gen.followSets.forEach((k, v) -> followSets.put(k, Set.copyOf(v)));
+        this.firstSets = Map.copyOf(firstSets);
+        this.followSets = Map.copyOf(followSets);
     }
 
     public ItemSet closure(Collection<Item> base) {
@@ -69,9 +106,9 @@ public class Grammar {
                 set.add(item);
 
                 if (item.next != null) {
-                    ParserNodeType nextType = item.next;
+                    GrammarSymbol nextType = item.next;
                     if (!nextType.isTerminal()) {
-                        List<Item> items = itemsByType.get(nextType.nonterminal());
+                        List<Item> items = itemsByNt.get(nextType.nonterminal());
                         for (Item add : items) {
                             if (add.statePos == 0)
                                 unprocessed.add(add);
@@ -111,20 +148,20 @@ public class Grammar {
             return this;
         }
 
-        public Grammar build(NonterminalType main) {
+        public Grammar build(Nonterminal main) {
             return new Grammar(rules, main);
         }
     }
 
-    public static RuleBuilder rule(NonterminalType nonterminal) {
+    public static RuleBuilder rule(Nonterminal nonterminal) {
         return new RuleBuilder(nonterminal);
     }
 
-    public static RuleBuilder rule(NonterminalType nonterminal, ParserNodeType... types) {
+    public static RuleBuilder rule(Nonterminal nonterminal, GrammarSymbol... types) {
         return new RuleBuilder(nonterminal).then(types);
     }
 
-    public static RuleBuilder rule(NonterminalType nonterminal, String def) {
+    public static RuleBuilder rule(Nonterminal nonterminal, String def) {
         return new RuleBuilder(nonterminal).then(parseDefinition(def));
     }
 
@@ -139,7 +176,7 @@ public class Grammar {
                     result.add(item);
         }
 
-        public void findAllWithNext(ParserNodeType next, ItemSet result) {
+        public void findAllWithNext(GrammarSymbol next, ItemSet result) {
             findAll(item -> item.next == next, result);
         }
 
@@ -159,18 +196,18 @@ public class Grammar {
     }
 
     public static class Item {
-        public final NonterminalType nonterminal;
+        public final Nonterminal lhs;
         public final Rule rule;
         public final int statePos;
-        public final ParserNodeType next;
+        public final GrammarSymbol next;
 
         public Item(Rule rule, int statePos) {
-            this.nonterminal = rule.nonterminal;
+            this.lhs = rule.lhs;
             this.rule = rule;
             this.statePos = statePos;
 
             if (statePos < rule.size) {
-                next = rule.definition.get(statePos);
+                next = rule.rhs.get(statePos);
             } else {
                 next = null;
             }
@@ -196,30 +233,30 @@ public class Grammar {
     }
 
     public static class Rule {
-        public final NonterminalType nonterminal;
-        public final List<ParserNodeType> definition;
+        public final Nonterminal lhs;
+        public final List<GrammarSymbol> rhs;
         public final int size;
         public final Reduction reduction;
 
-        public Rule(NonterminalType nonterminal, List<ParserNodeType> definition, Reduction reduction) {
-            this.nonterminal = nonterminal;
-            this.definition = List.copyOf(definition);
-            this.size = definition.size();
+        public Rule(Nonterminal lhs, List<GrammarSymbol> rhs, Reduction reduction) {
+            this.lhs = lhs;
+            this.rhs = List.copyOf(rhs);
+            this.size = rhs.size();
             this.reduction = reduction;
         }
 
         @Override
         public String toString() {
-            return nonterminal.ruleDefinitionName() + " := "
-                       + definition.stream().map(ParserNodeType::ruleDefinitionName).collect(Collectors.joining(" "));
+            return lhs.ruleDefinitionName() + " := "
+                       + rhs.stream().map(GrammarSymbol::ruleDefinitionName).collect(Collectors.joining(" "));
         }
 
         public String toStringWithStatePos(int statePos) {
-            StringBuilder builder = new StringBuilder(nonterminal.ruleDefinitionName());
+            StringBuilder builder = new StringBuilder(lhs.ruleDefinitionName());
             builder.append(" :=");
 
             int i = 0;
-            for (ParserNodeType type : definition) {
+            for (GrammarSymbol type : rhs) {
                 if (i == statePos)
                     builder.append(" ::");
                 builder.append(" ").append(type.ruleDefinitionName());
@@ -236,24 +273,24 @@ public class Grammar {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Rule rule = (Rule) o;
-            return nonterminal == rule.nonterminal && definition.equals(rule.definition);
+            return lhs == rule.lhs && rhs.equals(rule.rhs);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(nonterminal, definition);
+            return Objects.hash(lhs, rhs);
         }
     }
 
     public static class RuleBuilder {
-        public final NonterminalType nonterminal;
-        private final List<ParserNodeType> definition = new ArrayList<>();
+        public final Nonterminal nonterminal;
+        private final List<GrammarSymbol> definition = new ArrayList<>();
 
-        public RuleBuilder(NonterminalType nonterminal) {
+        public RuleBuilder(Nonterminal nonterminal) {
             this.nonterminal = nonterminal;
         }
 
-        public RuleBuilder then(ParserNodeType... def) {
+        public RuleBuilder then(GrammarSymbol... def) {
             definition.addAll(Arrays.asList(def));
             return this;
         }
@@ -304,29 +341,29 @@ public class Grammar {
         }
     }
 
-    private static final Map<String, ParserNodeType> DEF_NAMES;
+    private static final Map<String, GrammarSymbol> DEF_NAMES;
 
     static {
-        Map<String, ParserNodeType> defNames = new HashMap<>();
+        Map<String, GrammarSymbol> defNames = new HashMap<>();
         for (TokenType type : TokenType.values()) {
             defNames.put(type.ruleDefinitionName(), type);
         }
         for (NodeType type : NodeType.values()) {
             defNames.put(type.ruleDefinitionName(), type);
         }
-        for (Nonterminal type : Nonterminal.values()) {
+        for (NonterminalType type : NonterminalType.values()) {
             defNames.put(type.ruleDefinitionName(), type);
         }
         DEF_NAMES = Map.copyOf(defNames);
     }
 
-    private static ParserNodeType[] parseDefinition(String str) {
+    private static GrammarSymbol[] parseDefinition(String str) {
         String[] parts = str.trim().split(" +");
 
-        ParserNodeType[] types = new ParserNodeType[parts.length];
+        GrammarSymbol[] types = new GrammarSymbol[parts.length];
         int i = 0;
         for (String part : parts) {
-            ParserNodeType type = DEF_NAMES.get(part);
+            GrammarSymbol type = DEF_NAMES.get(part);
             if (type == null)
                 throw new IllegalArgumentException("No such terminal or non-terminal: " + part);
             types[i++] = type;
@@ -339,5 +376,143 @@ public class Grammar {
 
         NodeType type = NodeType.valueOf(parts[0].trim());
         return new RuleBuilder(type).then(parseDefinition(parts[1]));
+    }
+
+    private static class FirstFollowSetsGenerator {
+        final Grammar grammar;
+
+        final Map<Nonterminal, Set<TokenType>> firstSets = new LinkedHashMap<>();
+        final Map<List<GrammarSymbol>, Set<TokenType>> firstSetsW = new LinkedHashMap<>();
+        final Map<Nonterminal, Set<TokenType>> followSets = new LinkedHashMap<>();
+
+        boolean firstChanged = false;
+        boolean followChanged = false;
+
+        FirstFollowSetsGenerator(Grammar grammar) {
+            this.grammar = grammar;
+        }
+
+        Set<TokenType> firstSet(Nonterminal nt) {
+            return firstSets.computeIfAbsent(nt, k -> new LinkedHashSet<>());
+        }
+
+        Set<TokenType> firstSet(List<GrammarSymbol> r) {
+            return firstSetsW.computeIfAbsent(r, k -> new LinkedHashSet<>());
+        }
+
+        Set<TokenType> followSet(Nonterminal nt) {
+            return followSets.computeIfAbsent(nt, k -> new LinkedHashSet<>());
+        }
+
+        Set<TokenType> computeFirstSet(GrammarSymbol sym) {
+            if (sym.isTerminal()) {
+                return Set.of(sym.terminal());
+            } else {
+                Nonterminal nt = sym.nonterminal();
+                Set<TokenType> set = firstSet(nt);
+
+                for (Rule rule : grammar.rulesByNt.get(nt)) {
+                    firstChanged |= set.addAll(firstSet(rule.rhs));
+                }
+
+                return set;
+            }
+        }
+
+        Set<TokenType> computeFirstSet(List<GrammarSymbol> rule) {
+            Set<TokenType> set = firstSet(rule);
+            if (rule.size() == 0) { // R := epsilon
+                firstChanged |= set.add(null); // We represent epsilon by 'null'
+            } else {
+                GrammarSymbol fst = rule.get(0);
+                if (fst.isTerminal()) { // R := terminal R'
+                    firstChanged |= set.add(fst.terminal());
+                } else { // R := NONTERMINAL R'
+                    Nonterminal nt = fst.nonterminal();
+                    Set<TokenType> collectiveFirstSet = firstSet(nt);
+
+                    if (collectiveFirstSet.contains(null)) {
+                        // (Fi(A) \ EPS) U Fi(w')
+                        collectiveFirstSet.remove(null);
+
+                        for (TokenType type : collectiveFirstSet)
+                            if (type != null) firstChanged |= set.add(type);
+
+                        GrammarSymbol snd = rule.get(1);
+                        if (snd.isTerminal()) {
+                            firstChanged |= set.add(snd.terminal());
+                        } else {
+                            firstChanged |= set.addAll(firstSet(nt));
+                        }
+                    } else {
+                        // Fi(A)
+                        firstChanged |= set.addAll(collectiveFirstSet);
+                    }
+                }
+            }
+
+            return set;
+        }
+
+        void contributeToFollowSets(Rule rule) {
+            Nonterminal aj = rule.lhs;
+            Set<TokenType> foaj = followSet(aj);
+
+            List<GrammarSymbol> def = rule.rhs;
+            for (int i = 0, l = rule.size; i < l; i++) {
+                GrammarSymbol sym = def.get(i);
+
+                if (!sym.isTerminal()) {
+                    Nonterminal ai = sym.nonterminal();
+                    Set<TokenType> foai = followSet(ai);
+
+                    List<GrammarSymbol> rem = List.copyOf(def.subList(i + 1, l));
+
+                    if (rem.isEmpty()) {
+                        followChanged |= foai.addAll(foaj);
+                    } else {
+                        Set<TokenType> first = computeFirstSet(rem);
+
+                        for (TokenType f : first)
+                            if (f != null) followChanged |= foai.add(f);
+
+                        if (foai.contains(null))
+                            followChanged |= foai.addAll(foaj);
+                    }
+                }
+            }
+        }
+
+        void computeFirstSets() {
+            do {
+                firstChanged = false;
+                for (Map.Entry<Nonterminal, List<Rule>> e : grammar.rulesByNt.entrySet()) {
+                    for (Rule rule : e.getValue()) {
+                        computeFirstSet(rule.rhs);
+                    }
+                    computeFirstSet(e.getKey());
+                }
+            } while (firstChanged);
+        }
+
+        void computeFollowSets() {
+            followSet(NonterminalType.PARSER_START).add(TokenType.EOF);
+            do {
+                followChanged = false;
+                for (Rule rule : grammar.rules) {
+                    contributeToFollowSets(rule);
+                }
+            } while (followChanged);
+        }
+
+        void debug() {
+            System.out.println("FIRST/FOLLOW set report:");
+            for (Map.Entry<Nonterminal, Set<TokenType>> firstSets : firstSets.entrySet()) {
+                System.out.println("- FIRST(" + firstSets.getKey() + "): " + firstSets.getValue());
+            }
+            for (Map.Entry<Nonterminal, Set<TokenType>> followSets : followSets.entrySet()) {
+                System.out.println("- FOLLOW(" + followSets.getKey() + "): " + followSets.getValue());
+            }
+        }
     }
 }

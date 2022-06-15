@@ -18,28 +18,28 @@ public class ParserDefinition {
             rule(NodeType.ENT_VALUE, "EXPRESSION_SUM")
                 .reduce1(n -> EntityNode.value(n.as(ExpressionNode.class))),
 
-            rule(Nonterminal.EXPRESSION_SUM, "EXPRESSION_SUM '+' EXPRESSION_PROD")
+            rule(NonterminalType.EXPRESSION_SUM, "EXPRESSION_SUM '+' EXPRESSION_PROD")
                 .reduce3((lhs, plus, rhs) -> ExpressionNode.binaryAdd(lhs.asExpr(), rhs.asExpr())),
 
-            rule(Nonterminal.EXPRESSION_SUM, "EXPRESSION_SUM '-' EXPRESSION_PROD")
+            rule(NonterminalType.EXPRESSION_SUM, "EXPRESSION_SUM '-' EXPRESSION_PROD")
                 .reduce3((lhs, plus, rhs) -> ExpressionNode.binarySub(lhs.asExpr(), rhs.asExpr())),
 
-            rule(Nonterminal.EXPRESSION_SUM, "EXPRESSION_PROD")
+            rule(NonterminalType.EXPRESSION_SUM, "EXPRESSION_PROD")
                 .reduce1(ParserNode::asExpr),
 
-            rule(Nonterminal.EXPRESSION_PROD, "EXPRESSION_PROD '*' EXPRESSION_BASE")
+            rule(NonterminalType.EXPRESSION_PROD, "EXPRESSION_PROD '*' EXPRESSION_BASE")
                 .reduce3((lhs, plus, rhs) -> ExpressionNode.binaryMul(lhs.asExpr(), rhs.asExpr())),
 
-            rule(Nonterminal.EXPRESSION_PROD, "EXPRESSION_PROD '/' EXPRESSION_BASE")
+            rule(NonterminalType.EXPRESSION_PROD, "EXPRESSION_PROD '/' EXPRESSION_BASE")
                 .reduce3((lhs, plus, rhs) -> ExpressionNode.binaryDiv(lhs.asExpr(), rhs.asExpr())),
 
-            rule(Nonterminal.EXPRESSION_PROD, "EXPRESSION_BASE")
+            rule(NonterminalType.EXPRESSION_PROD, "EXPRESSION_BASE")
                 .reduce1(ParserNode::asExpr),
 
-            rule(Nonterminal.EXPRESSION_BASE, "EXPR_LITERAL")
+            rule(NonterminalType.EXPRESSION_BASE, "EXPR_LITERAL")
                 .reduce1(ParserNode::asExpr),
 
-            rule(Nonterminal.EXPRESSION_BASE, "EXPR_VARIABLE")
+            rule(NonterminalType.EXPRESSION_BASE, "EXPR_VARIABLE")
                 .reduce1(ParserNode::asExpr),
 
             rule(NodeType.EXPR_LITERAL, "[num]")

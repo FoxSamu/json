@@ -81,7 +81,7 @@ public abstract class ParserNode {
     }
 
     protected abstract List<ParserNode> childList();
-    public abstract ParserNodeType type();
+    public abstract GrammarSymbol type();
     public abstract EntityNode asEntity();
     public abstract String asString();
 
@@ -174,7 +174,7 @@ public abstract class ParserNode {
     }
 
     public final void visit(ParseTreeVisitor visitor) {
-        ParserNodeType type = type();
+        GrammarSymbol type = type();
         if (!type.isTerminal()) {
             NodeType ntype = (NodeType) type;
             visitor.enter(ntype, this);

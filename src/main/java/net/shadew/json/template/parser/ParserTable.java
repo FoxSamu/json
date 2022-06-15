@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.shadew.json.template.TemplateDebug;
+
 import static net.shadew.json.template.parser.Grammar.*;
 
 public class ParserTable {
@@ -21,13 +23,13 @@ public class ParserTable {
         return states[state].action(terminal);
     }
 
-    public int goTo(int state, NonterminalType nonterminal) {
+    public int goTo(int state, Nonterminal nonterminal) {
         return states[state].goTo(nonterminal);
     }
 
     public static class State {
         private final Action[] actionTable = new Action[TokenType.AMOUNT];
-        private final int[] gotoTable = new int[NonterminalType.AMOUNT];
+        private final int[] gotoTable = new int[Nonterminal.AMOUNT];
 
         public State() {
             Arrays.fill(gotoTable, -1);
@@ -37,7 +39,7 @@ public class ParserTable {
             actionTable[terminal.ordinal()] = action;
         }
 
-        public void setGoTo(NonterminalType nonterminal, int goTo) {
+        public void setGoTo(Nonterminal nonterminal, int goTo) {
             gotoTable[nonterminal.index()] = goTo;
         }
 
@@ -45,7 +47,7 @@ public class ParserTable {
             return actionTable[terminal.ordinal()];
         }
 
-        public int goTo(NonterminalType nonterminal) {
+        public int goTo(Nonterminal nonterminal) {
             return gotoTable[nonterminal.index()];
         }
     }
@@ -99,26 +101,23 @@ public class ParserTable {
 
     // https://en.wikipedia.org/wiki/LR_parser#Table_construction
     public static ParserTable generate(Grammar grammar) {
-        Set<NonterminalType> involvedNonterminals = new LinkedHashSet<>();
-        Set<TokenType> involvedTerminals = new LinkedHashSet<>();
-
         class TransitionTableRow {
             final ItemSet itemSet;
-            final Map<ParserNodeType, Integer> transitions = new HashMap<>();
+            final Map<GrammarSymbol, Integer> transitions = new HashMap<>();
 
             TransitionTableRow(ItemSet itemSet) {
                 this.itemSet = itemSet;
             }
 
-            void transition(ParserNodeType type, int to) {
+            void transition(GrammarSymbol type, int to) {
                 transitions.put(type, to);
             }
 
-            int transition(ParserNodeType type) {
+            int transition(GrammarSymbol type) {
                 return transitions.getOrDefault(type, -1);
             }
 
-            private String transitionString(ParserNodeType type) {
+            private String transitionString(GrammarSymbol type) {
                 int t = transition(type);
                 if (t < 0) return "___";
                 return String.format("% 3d", t);
@@ -127,16 +126,16 @@ public class ParserTable {
             @Override
             public String toString() {
                 return Stream.concat(
-                    involvedTerminals.stream().map(t -> t.ruleDefinitionName() + " -> " + transitionString(t)),
-                    involvedNonterminals.stream().map(t -> t.ruleDefinitionName() + " -> " + transitionString(t))
+                    grammar.terminals.stream().map(t -> t.ruleDefinitionName() + " -> " + transitionString(t)),
+                    grammar.nonterminals.stream().map(t -> t.ruleDefinitionName() + " -> " + transitionString(t))
                 ).collect(Collectors.joining("; "));
             }
         }
 
-        Set<ParserNodeType> nextReachable = new LinkedHashSet<>();
+        Set<GrammarSymbol> nextReachable = new LinkedHashSet<>();
         List<TransitionTableRow> transitionTable = new ArrayList<>();
         List<ItemSet> setsToProcess = new ArrayList<>();
-        Set<ItemSet> processed = new HashSet<>();
+        Map<ItemSet, Integer> processed = new HashMap<>();
 
         ItemSet withNext = new ItemSet();
         ItemSet nextUnclosured = new ItemSet();
@@ -146,18 +145,11 @@ public class ParserTable {
         int index = 0;
         while (!setsToProcess.isEmpty()) {
             ItemSet current = setsToProcess.remove(0);
-
-            //assert !processed.contains(current) : "Already processed an item set like " + current;
-            processed.add(current);
-
-            getNext(current, nextReachable);
-            split(nextReachable, involvedNonterminals, involvedTerminals);
-
             TransitionTableRow row = new TransitionTableRow(current);
 
-            for (ParserNodeType type : nextReachable) {
-                index++;
-                row.transition(type, index);
+            getNextReachable(current, nextReachable);
+
+            for (GrammarSymbol type : nextReachable) {
 
                 withNext.clear();
                 nextUnclosured.clear();
@@ -167,10 +159,29 @@ public class ParserTable {
                 }
 
                 ItemSet next = grammar.closure(nextUnclosured);
-                setsToProcess.add(next);
+                int i;
+                if (processed.containsKey(next)) {
+                    i = processed.get(next);
+                } else {
+                    i = ++index;
+                    processed.put(next, i);
+                    setsToProcess.add(next);
+                }
+
+                row.transition(type, i);
             }
 
             transitionTable.add(row);
+        }
+
+        if (TemplateDebug.printTransitionTable) {
+            System.out.println("Transition table report");
+
+            int i = 0;
+            for (TransitionTableRow r : transitionTable) {
+                System.out.printf("% 4d | %s | %s%n", i, r, r.itemSet);
+                i++;
+            }
         }
 
         List<State> states = new ArrayList<>();
@@ -180,8 +191,8 @@ public class ParserTable {
             //System.out.printf("% 4d | %s   SET: %s%n", i, row, row.itemSet);
 
             State state = new State();
-            for (Map.Entry<ParserNodeType, Integer> e : row.transitions.entrySet()) {
-                ParserNodeType type = e.getKey();
+            for (Map.Entry<GrammarSymbol, Integer> e : row.transitions.entrySet()) {
+                GrammarSymbol type = e.getKey();
                 int then = e.getValue();
 
                 if (type.isTerminal()) {
@@ -192,31 +203,34 @@ public class ParserTable {
             }
 
             // Can generate accept
-            if (row.itemSet.contains(item -> item.nonterminal == Nonterminal.PARSER_START
-                                                 && item.next == TokenType.EOF)) {
+            if (row.itemSet.contains(item -> item.lhs == NonterminalType.PARSER_START && item.next == TokenType.EOF)) {
                 state.setAction(TokenType.EOF, accept());
             }
 
             Item reducable = row.itemSet.first(item -> item.next == null);
             if (reducable != null) {
+                Set<TokenType> followSet = grammar.followSets.get(reducable.lhs);
                 Action reduce = reduce(reducable.rule);
-                for (TokenType involved : involvedTerminals) {
-                    if (state.action(involved) == null)
+                for (TokenType involved : grammar.terminals) {
+                    if (followSet.contains(involved)) {
                         state.setAction(involved, reduce);
+                    }
                 }
             }
 
-            System.out.printf(
-                "% 4d | %s%n", i,
-                Stream.concat(
-                    involvedTerminals.stream().map(t -> {
-                        Action a = state.action(t);
-                        if (a == null) return t.ruleDefinitionName() + " -> ---";
-                        return t.ruleDefinitionName() + " -> " + state.action(t).name();
-                    }),
-                    involvedNonterminals.stream().map(t -> t.ruleDefinitionName() + " -> " + state.goTo(t))
-                ).collect(Collectors.joining("; "))
-            );
+            if (TemplateDebug.printParserTable) {
+                System.out.printf(
+                    "% 4d | %s%n", i,
+                    Stream.concat(
+                        grammar.terminals.stream().map(t -> {
+                            Action a = state.action(t);
+                            if (a == null) return t.ruleDefinitionName() + " -> ---";
+                            return t.ruleDefinitionName() + " -> " + state.action(t).name();
+                        }),
+                        grammar.nonterminals.stream().map(t -> t.ruleDefinitionName() + " -> " + state.goTo(t))
+                    ).collect(Collectors.joining("; "))
+                );
+            }
             states.add(state);
 
             i++;
@@ -225,21 +239,14 @@ public class ParserTable {
         return new ParserTable(states.toArray(State[]::new));
     }
 
-    private static void getNext(Collection<Item> items, Set<ParserNodeType> out) {
+    private static void getNextReachable(Collection<Item> items, Set<GrammarSymbol> out) {
         out.clear();
 
         for (Item item : items) {
-            ParserNodeType type = item.next;
+            GrammarSymbol type = item.next;
             if (type != null) {
                 out.add(type);
             }
         }
-    }
-
-    private static void split(Set<ParserNodeType> in, Set<NonterminalType> nonterminal, Set<TokenType> terminal) {
-        in.forEach(type -> {
-            if (type.isTerminal()) terminal.add(type.terminal());
-            else nonterminal.add(type.nonterminal());
-        });
     }
 }

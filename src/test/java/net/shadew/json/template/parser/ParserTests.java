@@ -9,10 +9,18 @@ import net.shadew.json.template.TemplateDebug;
 
 public class ParserTests {
     @Test
+    void testFirstFollowSets() {
+        TemplateDebug.debug = true;
+        TemplateDebug.printFirstFollowSets = true;
+
+        ParserDefinition.grammar();
+    }
+
+    @Test
     void test() throws JsonSyntaxException {
         TemplateDebug.debug = true;
 
-        TemplateLexer lexer = new TemplateLexer(new StringReader("0 + 1 * 2 + 3"));
+        TemplateLexer lexer = new TemplateLexer(new StringReader("0 + 1 * 2 - 3"));
         ParserNode node = TemplateParser.parse(lexer);
 
         System.out.println();

@@ -1,6 +1,6 @@
 package net.shadew.json.template.parser;
 
-enum TokenType implements ParserNodeType {
+enum TokenType implements GrammarSymbol {
     BOOLEAN("[bool]", "boolean"),
     IDENTIFIER("[id]", "identifier"),
     NUMBER("[num]", "number"),

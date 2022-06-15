@@ -1,6 +1,6 @@
 package net.shadew.json.template.parser;
 
-public enum NodeType implements NonterminalType {
+public enum NodeType implements Nonterminal {
     DOCUMENT("document"),
 
     EXPR_LITERAL("literal"),

@@ -14,4 +14,9 @@ public class TemplateDebug {
     public static BiConsumer<Execution, Instruction> instruction = (exec, insn) -> { };
     public static BiConsumer<Execution, Integer> branch = (exec, pos) -> { };
     public static long sleepParser;
+
+    // Parser table generation
+    public static boolean printParserTable;
+    public static boolean printTransitionTable;
+    public static boolean printFirstFollowSets;
 }

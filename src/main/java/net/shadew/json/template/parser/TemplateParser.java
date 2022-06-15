@@ -51,7 +51,7 @@ class TemplateParser {
             nodes[i] = pop();
         }
 
-        int next = table.goTo(state(), rule.nonterminal);
+        int next = table.goTo(state(), rule.lhs);
         push(reduction.reduce(nodes));
         state(next);
     }
@@ -106,6 +106,16 @@ class TemplateParser {
         lookahead();
         while (!accepted) {
             ParserTable.Action action = table.action(state(), lookahead.getType());
+
+            if (TemplateDebug.debug && TemplateDebug.sleepParser > 0) {
+                System.out.println(action.name());
+                try {
+                    Thread.sleep(TemplateDebug.sleepParser);
+                } catch (InterruptedException exc) {
+                    return;
+                }
+            }
+
             if (action == null) {
                 ParserTable.State state = table.state(state());
                 List<String> expected = new ArrayList<>();
@@ -116,15 +126,6 @@ class TemplateParser {
                 throw lookahead.error("Expected " + String.join(", ", expected));
             }
             action.accept(this);
-
-            if (TemplateDebug.debug && TemplateDebug.sleepParser > 0) {
-                System.out.println(action.name());
-                try {
-                    Thread.sleep(TemplateDebug.sleepParser);
-                } catch (InterruptedException exc) {
-                    return;
-                }
-            }
         }
     }
 

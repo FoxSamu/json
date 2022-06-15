@@ -3,7 +3,7 @@ package net.shadew.json.template.parser;
 public interface NodePredicate {
     boolean matches(ParserNode node);
 
-    static NodePredicate type(ParserNodeType type) {
+    static NodePredicate type(GrammarSymbol type) {
         return node -> node.type() == type;
     }
 
