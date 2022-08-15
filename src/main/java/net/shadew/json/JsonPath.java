@@ -325,7 +325,7 @@ public final class JsonPath {
             return ROOT;
         }
 
-        Step[] compiled = steps.toArray(Step[]::new);
+        Step[] compiled = steps.toArray(new Step[0]);
         return new JsonPath(compiled);
     }
 
