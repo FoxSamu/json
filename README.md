@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.3.1`.
+The current version is `0.3.2`.
 
 ## Installing
 
@@ -45,9 +45,9 @@ Soon™
 
 The artifact can be downloaded from my Maven repository:
 
-- **[Download v0.3.1](https://maven.shadew.net/net/shadew/json/0.3.1/json-0.3.1.jar)**
-- **[Download sources v0.3.1](https://maven.shadew.net/net/shadew/json/0.3.1/json-0.3.1-sources.jar)**
-- **[All artifacts for v0.3.1](https://maven.shadew.net/net/shadew/json/0.3.1/)**
+- **[Download v0.3.2](https://maven.shadew.net/net/shadew/json/0.3.2/json-0.3.2.jar)**
+- **[Download sources v0.3.2](https://maven.shadew.net/net/shadew/json/0.3.2/json-0.3.2-sources.jar)**
+- **[All artifacts for v0.3.12](https://maven.shadew.net/net/shadew/json/0.3.2/)**
 
 ## Usage
 
@@ -279,6 +279,9 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.3.2
+- Fixed `NoSuchMethodError` with Android not desugaring `toArray(IntFunction)`
 
 ### 0.3.1
 - Fixed floating point numbers between 0 and 1 being rounded to 0 in `JsonNode.number()`
