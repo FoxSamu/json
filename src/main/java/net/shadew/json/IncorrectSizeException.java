@@ -22,10 +22,22 @@ public class IncorrectSizeException extends IncorrectArrayLengthException {
         super(makeMessage(length, required));
     }
 
+    public IncorrectSizeException(int length, int min, int max) {
+        super(makeMessage(length, min, max));
+    }
+
     private static String makeMessage(int length, int required) {
         return String.format(
             "Unmatched array length, required %d, found %d",
             required,
+            length
+        );
+    }
+
+    private static String makeMessage(int length, int min, int max) {
+        return String.format(
+            "Unmatched array length, required %d-%d, found %d",
+            min, max,
             length
         );
     }

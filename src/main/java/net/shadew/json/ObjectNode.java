@@ -1,5 +1,7 @@
 package net.shadew.json;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -21,6 +23,377 @@ final class ObjectNode extends AbstractConstructNode {
 
     @Override
     public JsonNode ifObject(Consumer<JsonNode> action) {
+        action.accept(this);
+        return this;
+    }
+
+    @Override
+    public JsonType type(String key) {
+        if (!has(key)) return null;
+        return get(key).type();
+    }
+
+    @Override
+    public boolean isNull(String key) {
+        if (!has(key)) return false;
+        return get(key).isNull();
+    }
+
+    @Override
+    public boolean isString(String key) {
+        if (!has(key)) return false;
+        return get(key).isString();
+    }
+
+    @Override
+    public boolean isNumber(String key) {
+        if (!has(key)) return false;
+        return get(key).isNumber();
+    }
+
+    @Override
+    public boolean isBoolean(String key) {
+        if (!has(key)) return false;
+        return get(key).isBoolean();
+    }
+
+    @Override
+    public boolean isObject(String key) {
+        if (!has(key)) return false;
+        return get(key).isObject();
+    }
+
+    @Override
+    public boolean isArray(String key) {
+        if (!has(key)) return false;
+        return get(key).isArray();
+    }
+
+    @Override
+    public boolean isPrimitive(String key) {
+        if (!has(key)) return false;
+        return get(key).isPrimitive();
+    }
+
+    @Override
+    public boolean isConstruct(String key) {
+        if (!has(key)) return false;
+        return get(key).isConstruct();
+    }
+
+    @Override
+    public boolean is(String key, JsonType type) {
+        if (!has(key)) return false;
+        return get(key).is(type);
+    }
+
+    @Override
+    public boolean is(String key, JsonType... types) {
+        if (!has(key)) return false;
+        return get(key).is(types);
+    }
+
+    @Override
+    public JsonNode requireHas(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNull(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNull();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotNull(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotNull();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireString(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireString();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotString(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotString();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNumber(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNumber();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotNumber(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotNumber();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireBoolean(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireBoolean();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotBoolean(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotBoolean();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireObject(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireObject();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotObject(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotObject();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireArray(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireArray();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotArray(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotArray();
+        return this;
+    }
+
+    @Override
+    public JsonNode requirePrimitive(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requirePrimitive();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotPrimitive(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotPrimitive();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireConstruct(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireConstruct();
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNotConstruct(String key) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNotConstruct();
+        return this;
+    }
+
+    @Override
+    public JsonNode require(String key, JsonType type) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).require(type);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNot(String key, JsonType type) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNot(type);
+        return this;
+    }
+
+    @Override
+    public JsonNode require(String key, JsonType... types) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).require(types);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireNot(String key, JsonType... types) {
+        if (!has(key)) throw new MissingKeyException(key);
+        get(key).requireNot(types);
+        return this;
+    }
+
+    @Override
+    public JsonNode ifHas(String key, Consumer<JsonNode> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            action.accept(n);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifString(String key, BiConsumer<JsonNode, String> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifString(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifNumber(String key, BiConsumer<JsonNode, Number> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifNumber(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifByte(String key, BiConsumer<JsonNode, Byte> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifByte(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifShort(String key, BiConsumer<JsonNode, Short> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifShort(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifInt(String key, BiConsumer<JsonNode, Integer> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifInt(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifLong(String key, BiConsumer<JsonNode, Long> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifLong(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifFloat(String key, BiConsumer<JsonNode, Float> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifFloat(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifDouble(String key, BiConsumer<JsonNode, Double> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifDouble(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBigInteger(String key, BiConsumer<JsonNode, BigInteger> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifBigInteger(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBigDecimal(String key, BiConsumer<JsonNode, BigDecimal> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifBigDecimal(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifBoolean(String key, BiConsumer<JsonNode, Boolean> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifBoolean(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifNull(String key, Consumer<JsonNode> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifNull(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifArray(String key, Consumer<JsonNode> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifArray(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifObject(String key, Consumer<JsonNode> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifObject(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifPrimitive(String key, Consumer<JsonNode> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifPrimitive(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifConstruct(String key, Consumer<JsonNode> action) {
+        JsonNode n = get(key);
+        if (n != null) {
+            n.ifConstruct(action);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonNode ifConstruct(Consumer<JsonNode> action) {
         action.accept(this);
         return this;
     }

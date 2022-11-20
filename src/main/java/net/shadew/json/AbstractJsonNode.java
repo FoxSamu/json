@@ -399,6 +399,33 @@ public abstract class AbstractJsonNode implements JsonNode {
     }
 
     @Override
+    public JsonNode requireMinSize(int length) {
+        require(JsonType.ARRAY, JsonType.OBJECT);
+        int s = size();
+        if (s < length)
+            throw new IncorrectSizeException(s, length);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireMaxSize(int length) {
+        require(JsonType.ARRAY, JsonType.OBJECT);
+        int s = size();
+        if (s > length)
+            throw new IncorrectSizeException(s, length);
+        return this;
+    }
+
+    @Override
+    public JsonNode requireSize(int min, int max) {
+        require(JsonType.ARRAY, JsonType.OBJECT);
+        int s = size();
+        if (s < min || s > max)
+            throw new IncorrectSizeException(s, min, max);
+        return this;
+    }
+
+    @Override
     public String[] asStringArray(int fixedLength) {
         requireArray();
         requireSize(fixedLength);
@@ -486,11 +513,13 @@ public abstract class AbstractJsonNode implements JsonNode {
     }
 
     @Override
+    @Deprecated
     public JsonNode query(String path) {
         return query(JsonPath.parse(path));
     }
 
     @Override
+    @Deprecated
     public JsonNode query(JsonPath path) {
         return path.query(this);
     }

@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
  * <p>
  * A {@link JsonPath} instance is immutable and any modifying method will return a modified copy of the original.
  */
+@Deprecated
 public final class JsonPath {
     /**
      * The root path, a.k.a. the path that references the root element in a JSON tree. The root path is the path that

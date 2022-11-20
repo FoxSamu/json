@@ -60,7 +60,7 @@ import net.shadew.json.codec.JsonRepresentable;
  * <li>{@link #boolObject(Map)} creates an object with booleans</li>
  * </ul>
  * <p>
- * Java's default methods, {@link #equals}, {@link #hashCode} and {@link #toString} work on {@link JsonNode} instances.
+ * Java's default methods, {@link Object#equals}, {@link Object#hashCode} and {@link Object#toString} work on {@link JsonNode} instances.
  * Converting a node to a string will generate a quick and compact JSON representation of the node. This is useful for
  * debugging purposes, but it's not recommended when writing to a file or sending over a network.
  */
@@ -136,10 +136,10 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     }
 
     /**
-     * Returns a number-type node with the given number value, {@link #ZERO} if the given number is zero, or {@link
-     * #NULL} if the given number is null. Even though any valid {@link Number} subclass is valid, it is recommended to
-     * use only Java's builtin number types (primitives, {@link BigInteger}, {@link BigDecimal}, etc.). Other number
-     * types may cause unexpected or unpredictable behaviour.
+     * Returns a number-type node with the given number value, {@link #ZERO} if the given number is zero, or
+     * {@link #NULL} if the given number is null. Even though any valid {@link Number} subclass is valid, it is
+     * recommended to use only Java's builtin number types (primitives, {@link BigInteger}, {@link BigDecimal}, etc.).
+     * Other number types may cause unexpected or unpredictable behaviour.
      *
      * @param value The number value
      * @return The JSON number node
@@ -424,8 +424,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Returns a new mutable object node, initially filled with the elements from the given map. Elements are inserted
-     * in the given map's iteration order (which is preserved). Any null element is automatically replaced with {@link
-     * #NULL}.
+     * in the given map's iteration order (which is preserved). Any null element is automatically replaced with
+     * {@link #NULL}.
      *
      * @param elems The elements to be initially in the object
      * @return The JSON object node
@@ -439,8 +439,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Returns a new mutable object node, initially filled with the strings from the given map. Elements are inserted in
-     * the given map's iteration order (which is preserved). Any null element is automatically replaced with {@link
-     * #NULL}.
+     * the given map's iteration order (which is preserved). Any null element is automatically replaced with
+     * {@link #NULL}.
      *
      * @param elems The strings to be initially in the object
      * @return The JSON object node
@@ -456,8 +456,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Returns a new mutable object node, initially filled with the numbers from the given map. Elements are inserted in
-     * the given map's iteration order (which is preserved). Any null element is automatically replaced with {@link
-     * #NULL}.
+     * the given map's iteration order (which is preserved). Any null element is automatically replaced with
+     * {@link #NULL}.
      *
      * @param elems The numbers to be initially in the object
      * @return The JSON object node
@@ -473,8 +473,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Returns a new mutable object node, initially filled with the booleans from the given map. Elements are inserted
-     * in the given map's iteration order (which is preserved). Any null element is automatically replaced with {@link
-     * #NULL}.
+     * in the given map's iteration order (which is preserved). Any null element is automatically replaced with
+     * {@link #NULL}.
      *
      * @param elems The booleans to be initially in the object
      * @return The JSON object node
@@ -512,8 +512,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * <li>Any {@link Iterable} is converted to an array node with the iterated elements</li>
      * <li>Any {@link Iterator} is converted to an array node with the remaining elements</li>
      * <li>Any {@link Enumeration} is converted to an array node with the remaining elements</li>
-     * <li>Any {@link Map} is converted to an object node with the contained elements, keys converted to string as by {@link #toString()}</li>
-     * <li>Any {@link Dictionary} is converted to an object node with the contained elements, keys converted to string as by {@link #toString()}</li>
+     * <li>Any {@link Map} is converted to an object node with the contained elements, keys converted to string as by {@link Object#toString()}</li>
+     * <li>Any {@link Dictionary} is converted to an object node with the contained elements, keys converted to string as by {@link Object#toString()}</li>
      * <li>Any array type (primitive or not) is converted to an array node with the contained elements</li>
      * <li>Any other object is converted to a string like {@link Object#toString()}</li>
      * </ul>
@@ -1051,6 +1051,545 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException If the action is null
      */
     JsonNode ifConstruct(Consumer<JsonNode> action);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Checks on object elements
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the {@linkplain JsonType type} of the node returned by {@link #get(String)}.
+     *
+     * @return The type of the node, or null if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonType type(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#NULL null} node.
+     *
+     * @return Whether the node is a null node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isNull(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#STRING string} node.
+     *
+     * @return Whether the node is a string node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isString(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number} node.
+     *
+     * @return Whether the node is a number node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isNumber(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#BOOLEAN boolean} node.
+     *
+     * @return Whether the node is a boolean node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isBoolean(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is an {@linkplain JsonType#OBJECT object} node.
+     *
+     * @return Whether the node is an object node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isObject(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is an {@linkplain JsonType#ARRAY array} node.
+     *
+     * @return Whether the node is an array node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isArray(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#isPrimitive() primitive}
+     * node.
+     *
+     * @return Whether the node is a primitive node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isPrimitive(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#isConstruct() construct}
+     * node.
+     *
+     * @return Whether the node is a construct node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean isConstruct(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is of the specified type.
+     *
+     * @return Whether the node is a specific type, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean is(String key, JsonType type);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is of one of the specified types.
+     *
+     * @return Whether the node is one of the specified types, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean is(String key, JsonType... types);
+
+    /**
+     * Throws a {@link MissingKeyException} when this object node does not have the specified key.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHas(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#NULL null}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not null or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNull(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#NULL null}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is null or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotNull(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#STRING string}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not string or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireString(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#STRING string}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is string or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotString(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#NUMBER number}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not number or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNumber(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#NUMBER number}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is number or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotNumber(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#BOOLEAN boolean}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not boolean or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireBoolean(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#BOOLEAN boolean}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is boolean or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotBoolean(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#OBJECT object}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not object or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireObject(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#OBJECT object}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is object or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotObject(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#ARRAY array}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not array or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireArray(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#ARRAY array}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is array or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotArray(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#isPrimitive() primitive}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not primitive or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requirePrimitive(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#isPrimitive() primitive}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is primitive or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotPrimitive(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
+     * {@linkplain JsonType#isConstruct() construct}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not construct or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireConstruct(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
+     * {@linkplain JsonType#isConstruct() construct}
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is construct or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNotConstruct(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not the given type
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not the given type or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode require(String key, JsonType type);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is the given type
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is the given type or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNot(String key, JsonType type);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not one of the given
+     * types
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not one of the given types or when this node is not an object
+     *                                node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode require(String key, JsonType... types);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is one of the given
+     * types
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is one of the given types or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireNot(String key, JsonType... types);
+
+    /**
+     * Performs the given action if the specified key is mapped in this object.. The consumer must take the
+     * {@link JsonNode} mapping as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifHas(String key, Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#STRING string}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the string value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifString(String key, BiConsumer<JsonNode, String> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the number value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifNumber(String key, BiConsumer<JsonNode, Number> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the byte value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifByte(String key, BiConsumer<JsonNode, Byte> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the short value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifShort(String key, BiConsumer<JsonNode, Short> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the int value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifInt(String key, BiConsumer<JsonNode, Integer> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the long value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifLong(String key, BiConsumer<JsonNode, Long> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the float value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifFloat(String key, BiConsumer<JsonNode, Float> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the double value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifDouble(String key, BiConsumer<JsonNode, Double> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the {@link BigInteger} value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifBigInteger(String key, BiConsumer<JsonNode, BigInteger> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * The consumer must take two arguments: the {@link JsonNode}, and the {@link BigDecimal} value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifBigDecimal(String key, BiConsumer<JsonNode, BigDecimal> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a
+     * {@linkplain JsonType#BOOLEAN boolean}. The consumer must take two arguments: the {@link JsonNode}, and the
+     * boolean value of the node.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifBoolean(String key, BiConsumer<JsonNode, Boolean> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is {@linkplain JsonType#NULL null} (JSON
+     * null). The consumer must take the {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifNull(String key, Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain JsonType#ARRAY array}.
+     * The consumer must take the {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifArray(String key, Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain JsonType#OBJECT object}.
+     * The consumer must take the {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifObject(String key, Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a
+     * {@linkplain JsonType#isPrimitive() primitive}. The consumer must take the {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifPrimitive(String key, Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a
+     * {@linkplain JsonType#isConstruct() construct}. The consumer must take the {@link JsonNode} as argument.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifConstruct(String key, Consumer<JsonNode> action);
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1648,6 +2187,43 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireSize(int size);
 
     /**
+     * Enforces this array or object to have at least the specified number of elements, throwing an
+     * {@link IncorrectSizeException} when it is not the correct size.
+     *
+     * @param size The expected minimum size of this node
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this is not an array or object
+     * @throws IncorrectSizeException When this object or array is not at least of the given length
+     */
+    JsonNode requireMinSize(int size);
+
+    /**
+     * Enforces this array or object to have at most the specified number of elements, throwing an
+     * {@link IncorrectSizeException} when it is not the correct size.
+     *
+     * @param size The expected maximum size of this node
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this is not an array or object
+     * @throws IncorrectSizeException When this object or array is not at most of the given length
+     */
+    JsonNode requireMaxSize(int size);
+
+    /**
+     * Enforces this array or object to have an amount of elements in the given range, throwing an
+     * {@link IncorrectSizeException} when it is not the correct size.
+     *
+     * @param minSize The expected minimum size of this node
+     * @param maxSize The expected maximum size of this node
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException If this is not an array or object
+     * @throws IncorrectSizeException When this object or array is not of the required length
+     */
+    JsonNode requireSize(int minSize, int maxSize);
+
+    /**
      * Removes all elements from this array or object.
      *
      * @return This instance for chaining
@@ -1729,8 +2305,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode set(String key, JsonNode value);
 
     /**
-     * Replaces or adds a new string element at the specified key in this object. A null value is converted to {@link
-     * #NULL}. A null key is treated as a literal key "null".
+     * Replaces or adds a new string element at the specified key in this object. A null value is converted to
+     * {@link #NULL}. A null key is treated as a literal key "null".
      *
      * @param key   The key to set at
      * @param value The new value
@@ -1742,8 +2318,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode set(String key, String value);
 
     /**
-     * Replaces or adds a new number element at the specified key in this object. A null value is converted to {@link
-     * #NULL}. A null key is treated as a literal key "null".
+     * Replaces or adds a new number element at the specified key in this object. A null value is converted to
+     * {@link #NULL}. A null key is treated as a literal key "null".
      *
      * @param key   The key to set at
      * @param value The new value
@@ -1755,8 +2331,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode set(String key, Number value);
 
     /**
-     * Replaces or adds a new boolean element at the specified key in this object. A null value is converted to {@link
-     * #NULL}. A null key is treated as a literal key "null".
+     * Replaces or adds a new boolean element at the specified key in this object. A null value is converted to
+     * {@link #NULL}. A null key is treated as a literal key "null".
      *
      * @param key   The key to set at
      * @param value The new value
@@ -1880,6 +2456,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *                                   query {@code b} from {@code a} while {@code a} was not found in root)
      * @throws NullPointerException      When the given path is null
      */
+    @Deprecated
     JsonNode query(String path);
 
     /**
@@ -1895,7 +2472,9 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *                                   query {@code b} from {@code a} while {@code a} was not found in root)
      * @throws NullPointerException      When the given path is null
      */
+    @Deprecated
     JsonNode query(JsonPath path);
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Misc
@@ -1922,8 +2501,8 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode copy();
 
     /**
-     * Implementation of {@link JsonRepresentable}. This method will return this node, as it is already a {@link
-     * JsonNode}.
+     * Implementation of {@link JsonRepresentable}. This method will return this node, as it is already a
+     * {@link JsonNode}.
      *
      * @return This node.
      */

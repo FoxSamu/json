@@ -1,5 +1,7 @@
 package net.shadew.json;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -41,6 +43,251 @@ abstract class AbstractPrimitiveNode extends AbstractJsonNode {
     @Override
     public JsonNode requireNotConstruct() {
         return this;
+    }
+
+    @Override
+    public JsonType type(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isNull(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isString(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isNumber(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isBoolean(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isObject(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isArray(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isPrimitive(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean isConstruct(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean is(String key, JsonType type) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public boolean is(String key, JsonType... types) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireHas(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNull(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotNull(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireString(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotString(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNumber(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotNumber(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireBoolean(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotBoolean(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireObject(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotObject(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireArray(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotArray(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requirePrimitive(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotPrimitive(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireConstruct(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNotConstruct(String key) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode require(String key, JsonType type) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNot(String key, JsonType type) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode require(String key, JsonType... types) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode requireNot(String key, JsonType... types) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifHas(String key, Consumer<JsonNode> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifString(String key, BiConsumer<JsonNode, String> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifNumber(String key, BiConsumer<JsonNode, Number> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifByte(String key, BiConsumer<JsonNode, Byte> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifShort(String key, BiConsumer<JsonNode, Short> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifInt(String key, BiConsumer<JsonNode, Integer> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifLong(String key, BiConsumer<JsonNode, Long> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifFloat(String key, BiConsumer<JsonNode, Float> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifDouble(String key, BiConsumer<JsonNode, Double> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifBigInteger(String key, BiConsumer<JsonNode, BigInteger> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifBigDecimal(String key, BiConsumer<JsonNode, BigDecimal> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifBoolean(String key, BiConsumer<JsonNode, Boolean> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifNull(String key, Consumer<JsonNode> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifArray(String key, Consumer<JsonNode> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifObject(String key, Consumer<JsonNode> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifPrimitive(String key, Consumer<JsonNode> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
+    }
+
+    @Override
+    public JsonNode ifConstruct(String key, Consumer<JsonNode> action) {
+        throw new IncorrectTypeException(type(), JsonType.OBJECT);
     }
 
     @Override

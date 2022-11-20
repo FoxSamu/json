@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.3.2`.
+The current version is `0.4`.
 
 ## Installing
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "net.shadew:json:0.3"
+    implementation "net.shadew:json:0.4"
 }
 ```
 
@@ -45,9 +45,9 @@ Soon™
 
 The artifact can be downloaded from my Maven repository:
 
-- **[Download v0.3.2](https://maven.shadew.net/net/shadew/json/0.3.2/json-0.3.2.jar)**
-- **[Download sources v0.3.2](https://maven.shadew.net/net/shadew/json/0.3.2/json-0.3.2-sources.jar)**
-- **[All artifacts for v0.3.12](https://maven.shadew.net/net/shadew/json/0.3.2/)**
+- **[Download v0.4](https://maven.shadew.net/net/shadew/json/0.4/json-0.4.jar)**
+- **[Download sources v0.4](https://maven.shadew.net/net/shadew/json/0.4/json-0.3.2-sources.jar)**
+- **[All artifacts for v0.4](https://maven.shadew.net/net/shadew/json/0.4/)**
 
 ## Usage
 
@@ -93,63 +93,8 @@ try {
 
 The method will return a `JsonNode` instance, or throw a checked `JsonSyntaxException` when parsing fails. When parsing
 a `File`, a `FileNotFoundException` could also occur. Any other `IOException` that occurs is thrown as
-an `UncheckedIOException`, they are usually more critical. Catch an `UncheckedIOException` if you want to handle those
+an `UncheckedIOException`, they are usually fatal. Catch an `UncheckedIOException` if you want to handle those
 too.
-
-### Using JSON paths
-
-JSON paths are JavaScript-like paths that navigate to a place within the JSON tree. A `JsonPath` holds a pre-parsed JSON
-path. Suppose you have the following JSON:
-
-```json
-[
-  {
-    "name": "Lottie Mills",
-    "friends": [
-      { "id": 0, "name": "Priscilla Hahn" },
-      { "id": 1, "name": "Odom Lynch" },
-      { "id": 2, "name": "Rojas Mccormick" }
-    ]
-  },
-  {
-    "name": "Middleton Hayden",
-    "friends": [
-      { "id": 0, "name": "Charlene Munoz" },
-      { "id": 1, "name": "Rios Casey" },
-      { "id": 2, "name": "Chase Schroeder" }
-    ]
-  }
-]
-```
-
-You want to find the name of the first friend of every person in the array. You can pre-parse and reuse a `JsonPath`
-instance to save performance (just like compiling a `Pattern`).
-
-```java
-JsonNode tree = parseJsonInSomeWayOrAnother();
-JsonPath path = JsonPath.parse("friends[0].name");
-
-// Iteration over a JsonNode automatically asserts the node
-// is an array, throwing an IncorrectTypeException in case
-// it is not an array
-for (JsonNode person : tree) {
-    System.out.println(person.query(path).asString());
-}
-
-// Prints:
-// Priscilla Hahn
-// Charlene Munoz
-
-// Another, less practical way to do it would be
-for (JsonNode person : tree) {
-    System.out.println(
-        person.get("friends")
-              .get(0)
-              .get("name")
-              .asString()
-    );
-}
-```
 
 ### Serializing
 
@@ -280,6 +225,12 @@ I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
 
+### 0.4
+- Added new methods for checking values of object elements (i.e. `isBoolean(String key)`)
+- Added `MissingKeyException` that can be thrown when a required key is missing
+- Fixed `isPrimitive` returning true for all JSON structures and `isConstruct` returning false for all JSON structures
+- Deprecated `JsonPath` and `JsonNode.query(...)` methods
+
 ### 0.3.2
 - Fixed `NoSuchMethodError` with Android not desugaring `toArray(IntFunction)`
 
@@ -316,7 +267,7 @@ Initial release
 
 **[See LICENSE for full license](LICENSE)**
 
-Copyright 2021 Shadew
+Copyright 2022 Sam&umacr;
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
 License. You may obtain a copy of the License at
