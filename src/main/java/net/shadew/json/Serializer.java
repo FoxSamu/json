@@ -245,7 +245,7 @@ class Serializer {
         addSpaces(remainingSpace); // Keep the spacing of the colon here, otherwise it might not align properly
     }
 
-    private void writeValue(JsonNode value) throws IOException {
+    void writeValue(JsonNode value) throws IOException {
         if (value.isNull()) writeNull();
         else if (value.isBoolean()) writeBoolean(value.asBoolean());
         else if (value.isNumber()) writeNumber(value.asBigDecimal());
@@ -255,19 +255,26 @@ class Serializer {
         else assert false; // Cannot happen if correctly implemented
     }
 
-    private void writeJson(JsonNode node) throws IOException {
+    void prefix() throws IOException {
         if (config.makeNonExecutable()) {
             output.append(CharUtil.NOEXEC_LF);
         }
+    }
 
-        node.require(JsonType.ARRAY, JsonType.OBJECT);
-        writeValue(node);
+    void suffix() throws IOException {
         if (config.newlineAtEnd()) {
             addNewline();
         }
 
         validIds.clear();
         stringToJsonCache.clear();
+    }
+
+    void writeJson(JsonNode node) throws IOException {
+        prefix();
+        node.require(JsonType.ARRAY, JsonType.OBJECT);
+        writeValue(node);
+        suffix();
     }
 
     static void serialize(JsonNode node, Appendable output, FormattingConfig config) throws IOException {
