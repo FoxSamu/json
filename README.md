@@ -39,7 +39,24 @@ dependencies {
 
 ### Maven
 
-Soon™
+```xml
+<repositories>
+    <!-- Add my repository -->
+    <repository>
+        <id>Shadew Maven</id>
+        <url>https://maven.shadew.net/</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <!-- Add the artifact -->
+    <dependency>
+        <groupId>net.shadew</groupId>
+        <artifactId>json</artifactId>
+        <version>0.4</version>
+    </dependency>
+</dependencies>
+```
 
 ### Download
 
