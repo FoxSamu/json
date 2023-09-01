@@ -17,7 +17,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 This library is in development and the API can change at any time. Do not expect this library to be stable.
 
-The current version is `0.4`.
+The current version is `0.5`.
 
 ## Installing
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "net.shadew:json:0.4"
+    implementation "dev.runefox:json:0.5"
 }
 ```
 
@@ -43,7 +43,7 @@ dependencies {
 <repositories>
     <!-- Add my repository -->
     <repository>
-        <id>Shadew Maven</id>
+        <id>Runefox Maven</id>
         <url>https://maven.shadew.net/</url>
     </repository>
 </repositories>
@@ -51,26 +51,26 @@ dependencies {
 <dependencies>
     <!-- Add the artifact -->
     <dependency>
-        <groupId>net.shadew</groupId>
+        <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.4</version>
+        <version>0.5</version>
     </dependency>
 </dependencies>
 ```
 
 ### Download
 
-The artifact can be downloaded from my Maven repository:
+You can also manually download the artifacts my Maven repository:
 
-- **[Download v0.4](https://maven.shadew.net/net/shadew/json/0.4/json-0.4.jar)**
-- **[Download sources v0.4](https://maven.shadew.net/net/shadew/json/0.4/json-0.3.2-sources.jar)**
-- **[All artifacts for v0.4](https://maven.shadew.net/net/shadew/json/0.4/)**
+- **[Download v0.5](https://maven.shadew.net/dev/runefox/json/0.5/json-0.5.jar)**
+- **[Download sources v0.5](https://maven.shadew.net/dev/runefox/json/0.5/json-0.5-sources.jar)**
+- **[All artifacts for v0.5](https://maven.shadew.net/dev/runefox/json/0.5/)**
 
 ## Usage
 
 ### Setup
 
-First you want a `net.shadew.json.Json` instance. This instance is used to parse and serialize JSON trees. Each `Json`
+First you want a `dev.runefox.json.Json` instance. This instance is used to parse and serialize JSON trees. Each `Json`
 instance manages one specific configuration, if you need multiple configurations, you need multiple `Json` instances.
 
 ```java
@@ -171,7 +171,7 @@ for debugging only. For production, use `Json#serialize`.
 
 ### Codecs
 
-Codecs are a handy tool to easily encode and decode Java objects into JSON trees and vice versa. All the logic for this can be found in a separate package: `net.shadew.json.codec`.
+Codecs are a handy tool to easily encode and decode Java objects into JSON trees and vice versa. All the logic for this can be found in a separate package: `dev.runefox.json.codec`.
 
 The main type that is important in defining codecs is the `JsonCodec` interface. This interface contains many base codec definitions, for primitives and other basic Java types. You can use codecs of other types to define new codecs.
 
@@ -242,6 +242,15 @@ I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
 
+### 0.5
+- **Changed base package name and artifact group from `net.shadew` to `dev.runefox`**
+- Added `merge(...)` which merges an object into the main object
+- Added `JsonNode.arrayCollector(...)` that takes a mapping function to quickly map Java objects to JSON in a `Stream`.
+- Added `JsonNode.objectCollector(...)` that takes two mapping functions to collect elements into an object.
+- Added `wrap()` to quickly wrap a node into a new array and `wrap(...)` to quickly wrap a node into a new object under a given key.
+- The `JsonNode.numberArray(...)` methods taking primitives no longer accept varargs, except for the one taking `Number` objects, because the Java compiler would find it ambiguous otherwise.
+- Fixed serializer expecting an object or array despite `FormattingConfig.anyValue` being set to true.
+
 ### 0.4
 - Added new methods for checking values of object elements (i.e. `isBoolean(String key)`)
 - Added `MissingKeyException` that can be thrown when a required key is missing
@@ -256,7 +265,7 @@ I am working on hosting the compiled JavaDoc online.
 
 ### 0.3
 - Added the codec system for easy encoding and decoding of Java objects to/from JSON trees
-- Fixed `toString` returning `net.shadew.json.BooleanNode@.....` for boolean types, making `toString` JSON data not parsable
+- Fixed `toString` returning `dev.runefox.json.BooleanNode@.....` for boolean types, making `toString` JSON data not parsable
 - A new unchecked exception, `JsonException`, is now the superclass of all the exceptions thrown by the assertions in `JsonNode` methods, as well as exceptions thrown from codecs
 - Added `JsonNode.arrayCollector()` for easily collecting all `JsonNode`s in a `Stream` into an array node
 - The numeric values returned from `JsonNode`s should now be closer to the actual value stored in the JSON data

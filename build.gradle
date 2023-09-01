@@ -3,8 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
-group 'net.shadew'
-version '0.4'
+group 'dev.runefox'
+version '0.5'
 
 repositories {
     mavenCentral()
