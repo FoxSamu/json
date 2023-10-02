@@ -255,7 +255,7 @@ class Serializer {
         else assert false; // Cannot happen if correctly implemented
     }
 
-    private void writeJson(JsonNode node) throws IOException {
+    void writeJson(JsonNode node) throws IOException {
         if (config.makeNonExecutable()) {
             output.append(CharUtil.NOEXEC_LF);
         }

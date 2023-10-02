@@ -11,6 +11,8 @@ class Parser {
     private final Stack<State> stateStack = new Stack<>();
     private boolean end = false;
 
+    private boolean stream = false;
+
     private static final TokenType[] VALUE_TOKENS = {
         TokenType.NULL,
         TokenType.NUMBER,
@@ -34,6 +36,10 @@ class Parser {
     TokenType[] valueTokensOr(TokenType other) {
         valueTokensOr[0] = other;
         return valueTokensOr;
+    }
+
+    void streamed() {
+        stream = true;
     }
 
     void end() {
@@ -71,6 +77,10 @@ class Parser {
         return type.cast(valueStack.pop());
     }
 
+    boolean hasValue() {
+        return !valueStack.empty();
+    }
+
     JsonSyntaxException expected(TokenType type) {
         return reader.error("Expected " + type.getErrorName());
     }
@@ -79,7 +89,7 @@ class Parser {
         return reader.error(Stream.of(types).map(TokenType::getErrorName).collect(Collectors.joining(", ", "Expected ", "")));
     }
 
-    private void parse0(JsonReader reader, ParsingConfig config) throws JsonSyntaxException {
+    void parse0(JsonReader reader, ParsingConfig config) throws JsonSyntaxException {
         this.reader = reader;
         valueStack.clear();
         stateStack.clear();
@@ -92,6 +102,12 @@ class Parser {
             ? config.anyValue() ? Json5State.VALUE : Json5State.ROOT
             : config.anyValue() ? JsonState.VALUE : JsonState.ROOT
         );
+        if (stream) {
+            // In stream mode, if we find EOF instead of a document, this
+            // state will make sure the parser does not fail and instead
+            // just stops.
+            stateStack.push(StreamState.PROBABLE_EOF);
+        }
         end = false;
 
         while (!end) {
@@ -107,6 +123,17 @@ class Parser {
 
     private interface State {
         void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException;
+    }
+
+    private enum StreamState implements State {
+        PROBABLE_EOF {
+            @Override
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+                if (next == TokenType.EOF)
+                    parser.end();
+                parser.popState();
+            }
+        }
     }
 
     private enum JsonState implements State {
@@ -276,7 +303,7 @@ class Parser {
         END_OF_FILE {
             @Override
             public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
-                if (next != TokenType.EOF)
+                if (next != TokenType.EOF && !parser.stream)
                     throw parser.expected(TokenType.EOF);
                 parser.end();
             }
@@ -454,7 +481,7 @@ class Parser {
         END_OF_FILE {
             @Override
             public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
-                if (next != TokenType.EOF)
+                if (next != TokenType.EOF && !parser.stream)
                     throw parser.expected(TokenType.EOF);
                 parser.end();
             }

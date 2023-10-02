@@ -8,8 +8,8 @@ import java.nio.charset.Charset;
  * 5 data, and various other options.
  *
  * {@link Json} instances can be obtained via a builder: {@link #jsonBuilder()}, {@link #json5Builder()}, but
- * ready-to-use presets can also be obtained via {@link #json()}, {@link #json5()}, {@link #compactJson()} and {@link
- * #compactJson5()} (the latter two will print compact JSON, while the other two print pretty JSON).
+ * ready-to-use presets can also be obtained via {@link #json()}, {@link #json5()}, {@link #compactJson()} and
+ * {@link #compactJson5()} (the latter two will print compact JSON, while the other two print pretty JSON).
  */
 public class Json {
     private static final FormattingConfig DEFAULT_FORMAT_CONFIG = FormattingConfig.pretty();
@@ -121,6 +121,82 @@ public class Json {
     }
 
     /**
+     * Parses a {@link Reader} as a stream of JSON documents. The reader will be closed when the returned stream is
+     * closed. Not closing the returned stream will simply result in the reader not being closed. It has no other
+     * consequences.
+     *
+     * @param reader The reader to parse
+     * @return A {@link JsonInput} to read
+     *
+     * @throws NullPointerException If the reader is null
+     * @throws IOException          If an I/O error occurs
+     */
+    public JsonInput input(Reader reader) throws IOException {
+        if (reader == null)
+            throw new NullPointerException();
+        return new JsonInputImpl(createReader(reader), parseConfig);
+    }
+
+    /**
+     * Parses a {@link String} as a stream of JSON documents.
+     *
+     * @param string The string to parse
+     * @return A {@link JsonInput} to read
+     *
+     * @throws NullPointerException If the string is null
+     */
+    public JsonInput input(String string) throws JsonSyntaxException {
+        if (string == null)
+            throw new NullPointerException();
+        try {
+            return input(new StringReader(string));
+        } catch (JsonSyntaxException e) {
+            throw e;
+        } catch (IOException e) {
+            // This is not supposed to happen
+            throw new AssertionError("String reader throws IOException?!");
+        }
+    }
+
+    /**
+     * Parses an {@link InputStream} as a stream of JSON documents, using the
+     * {@linkplain Charset#defaultCharset() default charset}. The reader will be closed when the returned stream is
+     * closed. Not closing the returned stream will simply result in the reader not being closed. It has no other
+     * consequences.
+     *
+     * @param stream The input stream to parse
+     * @return A {@link JsonInput} to read
+     *
+     * @throws NullPointerException If the stream is null
+     * @throws JsonSyntaxException  When the JSON has invalid syntax
+     * @throws IOException          If an I/O error occurs
+     */
+    public JsonInput input(InputStream stream) throws IOException {
+        if (stream == null)
+            throw new NullPointerException();
+        return input(new InputStreamReader(stream));
+    }
+
+    /**
+     * Parses the contents of a {@link File} as a stream of JSON documents. The returned stream must be closed in order
+     * to close the file stream.
+     *
+     * @param file The file to parse
+     * @return A {@link JsonInput} to read
+     *
+     * @throws NullPointerException  If the file is null
+     * @throws FileNotFoundException When the file cannot be found, is a directory, or could not be opened for some
+     *                               other reason
+     * @throws IOException           If an I/O error occurs
+     */
+    public JsonInput input(File file) throws IOException {
+        if (file == null)
+            throw new NullPointerException();
+        Reader reader = new BufferedReader(new FileReader(file));
+        return input(reader);
+    }
+
+    /**
      * Serializes JSON to a {@link Writer}. The writer will <strong>not</strong> be closed.
      *
      * @param writer The writer to serialize to
@@ -214,6 +290,83 @@ public class Json {
         return builder.toString();
     }
 
+
+
+
+    /**
+     * Opens a stream to write multiple JSON documents to a {@link Writer}. The writer will be closed when the returned
+     * stream is closed. Not closing the returned stream has no other effects than not closing the writer, simply
+     * closing the writer is also enough.
+     *
+     * @param writer The writer to serialize to
+     * @return A {@link JsonOutput} to stream documents to
+     *
+     * @throws NullPointerException   If any parameter is null
+     * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
+     *                                allow any value
+     */
+    public JsonOutput output(Writer writer) {
+        if (writer == null)
+            throw new NullPointerException();
+        return new JsonOutputImpl(writer, writer, formatConfig);
+    }
+
+    /**
+     * Opens a stream to write multiple JSON documents to an {@link OutputStream}, using the
+     * {@linkplain Charset#defaultCharset() default charset}. The stream will be closed when the returned stream is
+     * closed. Not closing the returned stream has no other effects than not closing the writer, simply closing the
+     * given stream is also enough.
+     *
+     * @param stream The output stream to serialize to
+     * @return A {@link JsonOutput} to stream documents to
+     *
+     * @throws NullPointerException   If any parameter is null
+     * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
+     *                                allow any value
+     */
+    public JsonOutput output(OutputStream stream) {
+        if (stream == null)
+            throw new NullPointerException();
+        return output(new OutputStreamWriter(stream));
+    }
+
+    /**
+     * Opens a stream to write multiple JSON documents to a {@link File}. The returned stream must be closed to close
+     * the file stream.
+     *
+     * @param file The file to serialize to
+     * @return A {@link JsonOutput} to stream documents to
+     *
+     * @throws NullPointerException   If any parameter is null
+     * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
+     *                                allow any value
+     * @throws FileNotFoundException  If the file does not exist and cannot be created
+     * @throws IOException            If the file is a directory, or when an I/O error occurs
+     */
+    public JsonOutput output(File file) throws IOException {
+        if (file == null)
+            throw new NullPointerException();
+        Writer writer = new BufferedWriter(new FileWriter(file));
+        return output(writer);
+    }
+
+    /**
+     * Opens a stream to write multiple JSON documents to a {@link StringBuilder}.
+     *
+     * @param builder The builder to serialize to
+     * @throws NullPointerException   If any parameter is null
+     * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
+     *                                allow any value
+     */
+    public JsonOutput output(StringBuilder builder) {
+        if (builder == null)
+            throw new NullPointerException();
+
+        return new JsonOutputImpl(builder, () -> { }, formatConfig);
+    }
+
+
+
     /**
      * Returns a builder with the standard JSON as defaults, with pretty formatting.
      *
@@ -233,8 +386,8 @@ public class Json {
     }
 
     /**
-     * Returns a standard JSON preset with {@linkplain ParsingConfig#standard() standard parsing} and {@linkplain
-     * FormattingConfig#pretty() pretty formatting}.
+     * Returns a standard JSON preset with {@linkplain ParsingConfig#standard() standard parsing} and
+     * {@linkplain FormattingConfig#pretty() pretty formatting}.
      *
      * @return A standard JSON preset
      */
@@ -243,8 +396,8 @@ public class Json {
     }
 
     /**
-     * Returns a JSON 5 preset with {@linkplain ParsingConfig#standard() standard parsing} and {@linkplain
-     * FormattingConfig#pretty() pretty formatting}.
+     * Returns a JSON 5 preset with {@linkplain ParsingConfig#standard() standard parsing} and
+     * {@linkplain FormattingConfig#pretty() pretty formatting}.
      *
      * @return A JSON 5 preset
      */
@@ -253,8 +406,8 @@ public class Json {
     }
 
     /**
-     * Returns a standard JSON preset with {@linkplain ParsingConfig#standard() standard parsing} and {@linkplain
-     * FormattingConfig#compact() compact formatting}.
+     * Returns a standard JSON preset with {@linkplain ParsingConfig#standard() standard parsing} and
+     * {@linkplain FormattingConfig#compact() compact formatting}.
      *
      * @return A standard JSON preset
      */
@@ -263,8 +416,8 @@ public class Json {
     }
 
     /**
-     * Returns a JSON 5 preset with {@linkplain ParsingConfig#standard() standard parsing} and {@linkplain
-     * FormattingConfig#compact() compact formatting}.
+     * Returns a JSON 5 preset with {@linkplain ParsingConfig#standard() standard parsing} and
+     * {@linkplain FormattingConfig#compact() compact formatting}.
      *
      * @return A JSON 5 preset
      */

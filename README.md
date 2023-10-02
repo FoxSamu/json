@@ -10,6 +10,7 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 - Easy to use JSON tree representation with little as possible `instanceof` checks and casts
 - Quick and easy parsing of files and JSON strings
 - Quick serialization with a high variety of formatting options
+- Reading and writing of streams containing multiple JSON documents (such as over socket streams)
 - Support for the [JSON 5 specification][json5-spec].
 
 ## Work in progress
@@ -18,7 +19,7 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.5`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+The current version is `0.5.1`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
 The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
 
@@ -32,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "dev.runefox:json:0.5"
+    implementation "dev.runefox:json:0.5.1"
 }
 ```
 
@@ -61,9 +62,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.5](https://maven.shadew.net/dev/runefox/json/0.5/json-0.5.jar)**
-- **[Download sources v0.5](https://maven.shadew.net/dev/runefox/json/0.5/json-0.5-sources.jar)**
-- **[All artifacts for v0.5](https://maven.shadew.net/dev/runefox/json/0.5/)**
+- **[Download v0.5.1](https://maven.shadew.net/dev/runefox/json/0.5.1/json-0.5.1.jar)**
+- **[Download sources v0.5.1](https://maven.shadew.net/dev/runefox/json/0.5.1/json-0.5.1-sources.jar)**
+- **[All artifacts for v0.5.1](https://maven.shadew.net/dev/runefox/json/0.5.1/)**
 
 ## Usage
 
@@ -234,6 +235,47 @@ public static final JsonCodec<Person> CODEC = new RecordCodec<>() {
 
 Note that a `RecordCodec` always produces and requires a JSON object. It cannot handle arrays or primitives. See the static methods of `JsonCodec` for other ways to construct codecs.
 
+
+### Stream reading and writing
+
+In 0.5.1, it is now possible to read or write multiple JSON documents through one single stream. This can be useful for e.g. networking or databases. The default parsing methods of `Json` boldly assume that you are just streaming one document and then closing the stream, and will throw a syntax error if the end of the stream is not reached after reading the document. 
+
+The `JsonInput` interface resolves this. Using `JsonInput`, you can read as many JSON documents from one single stream as you like. Documents in such streams are considered to be separated by nothing but the syntax of JSON, and optionally some spaces (e.g. `{} {} [][]` is a stream of four different documents). You can obtain a `JsonInput`, just like you can parse a single document, from the `Json` instance. The returned `JsonInput` will abide the parsing configuration of your `Json` instance like usual (thus, `Json.json5()` will allow you to read JSON 5 documents).
+
+```java
+Json json = ...;  // something not null
+JsonNode myJsonNode;
+
+try (JsonInput input = json.input(...)) {
+    myJsonNode = input.read();
+}
+```
+
+Note that it is crucial to close your `JsonInput` object, you can use a try-with-resources block for this or just do it manually. Closing the input closes the underlying streams.
+
+A similar interface exists for outgoing traffic: `JsonOutput`. It works in a very similar fashion as serializing, also abiding the formatting config of the `Json` object it is created with.
+
+```java
+Json json = ...;
+
+try (JsonOutput output = json.output(...)) {
+    output.write(myJsonNode);
+}
+```
+
+Once again, closing your stream is crucial, so that the underlying streams are closed.
+
+`JsonInput` and `JsonOutput` are thread safe, meaning that only one thread can read from or write to them at a time.
+
+
+### Java 9 modules support
+
+To use this library in a project that uses Java 9 modules, do the following in your `module-info.java`:
+```java
+requires dev.runefox.json;
+```
+
+
 ## Documentation
 
 Documentation is being worked on. The most commonly needed parts of the library are well documented with JavaDoc comments. More documentation coming
@@ -242,6 +284,10 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.5.1
+- Added support for streaming multiple JSON documents over a single stream, through two new interfaces `JsonInput` and `JsonOutput`.
+- The project now has a named module and can now be used as a dependency in other module-based projects.
 
 ### 0.5
 - **Changed base package name and artifact group from `net.shadew` to `dev.runefox`**
