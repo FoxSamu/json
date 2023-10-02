@@ -7,8 +7,7 @@ the [JSON standard specification][json-spec] and the extended [JSON 5 specificat
 
 This library is shaped around easy analyzation and manipulation of JSON data.
 
-- Easy to use JSON tree representation with little as possible `instanceof` checks and casts.
-- Navigating JSON trees like JavaScript objects using path strings (i.e. `friends[3].name`)
+- Easy to use JSON tree representation with little as possible `instanceof` checks and casts
 - Quick and easy parsing of files and JSON strings
 - Quick serialization with a high variety of formatting options
 - Support for the [JSON 5 specification][json5-spec].
