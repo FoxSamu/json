@@ -14,13 +14,13 @@ This library is shaped around easy analyzation and manipulation of JSON data.
 
 ## Work in progress
 
-This library is in development and the API can change at any time. Do not expect this library to be stable.
-
-The current version is `0.5`.
+This library is in development and the API can change at any time, although at this point it has become relatively stable. I try to make API changes as smooth as possible.
 
 ## Installing
 
-The artifact can be installed from my Maven repository.
+The current version is `0.5`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+
+The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
 
 ### Gradle
 
@@ -59,7 +59,7 @@ dependencies {
 
 ### Download
 
-You can also manually download the artifacts my Maven repository:
+You can also manually download the artifacts manually from my Maven repository:
 
 - **[Download v0.5](https://maven.shadew.net/dev/runefox/json/0.5/json-0.5.jar)**
 - **[Download sources v0.5](https://maven.shadew.net/dev/runefox/json/0.5/json-0.5-sources.jar)**
@@ -71,6 +71,8 @@ You can also manually download the artifacts my Maven repository:
 
 First you want a `dev.runefox.json.Json` instance. This instance is used to parse and serialize JSON trees. Each `Json`
 instance manages one specific configuration, if you need multiple configurations, you need multiple `Json` instances.
+There is a lot to configure. But not to worry, the `Json` class provides some quick factory methods for the most common
+configurations.
 
 ```java
 // Create a preconfigured JSON instance
@@ -234,7 +236,7 @@ Note that a `RecordCodec` always produces and requires a JSON object. It cannot 
 
 ## Documentation
 
-Documentation is being worked on. Parts of the library are documented with JavaDoc comments. More documentation coming
+Documentation is being worked on. The most commonly needed parts of the library are well documented with JavaDoc comments. More documentation coming
 in later versions.
 
 I am working on hosting the compiled JavaDoc online.
