@@ -53,7 +53,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.5</version>
+        <version>0.5.1</version>
     </dependency>
 </dependencies>
 ```
