@@ -171,6 +171,90 @@ Use a different indentation (2 spaces, instead of the default of 4).
 Another way to serialize JSON is by calling `toString` on a `JsonNode`. However, this is less optimal and is intended
 for debugging only. For production, use `Json#serialize`.
 
+### Using `JsonNode`s
+
+The central part of this library is the `JsonNode` interface. This interface abstractly represents any JSON data in any form. You don't need to worry about the implementation, this is all managed by the library. In fact, you should not be making a custom implementation in the first place. `JsonNode` has a bunch of constants and factory methods to retrieve new instances to serialize.
+
+```java
+// Create a new object
+JsonNode obj = JsonNode.object();
+
+// Create a new array
+JsonNode arr = JsonNode.array();
+
+// Create a new string
+JsonNode str = JsonNode.string("Hello");
+
+// Obtain the boolean `true`
+JsonNode bool = JsonNode.TRUE; // Or JsonNode.bool(true)
+```
+
+The library differentiates between two primary classes of JSON types: primitives and constructs.
+- Primitives are simple values: numbers, booleans, strings and `null`. They are immutable and can be put into a constant and reused.
+- Constructs are compound values: objects and arrays. They are mutable instances of `JsonNode`.
+
+`JsonNode` is a huge interface, exposing many methods to obtain and manipulate JSON data. Many of such methods only work on certain
+types of data. The library tries to be lenient in this, but not too lenient. It also performs the necessary type checking for
+you. For example, if you call `node.length()`, it implicitly asserts your data has a length (that is, it must be an object, array or string).
+You can also manually assert the types of your data using various `require` methods.
+
+```java
+obj.requireObject();  // fine
+arr.requireObject();  // not fine!
+
+obj.length();  // fine
+arr.length();  // also fine
+str.length();  // also fine
+bool.length(); // not fine!
+
+for (JsonNode element : arr) { // fine
+}
+
+for (JsonNode element : obj) { // not fine!
+    // Instead you can do: forEachEntry or get an entrySet
+}
+```
+
+Objects and arrays can be queried and manipulated using various functions: `get`, `set`, `remove` and in case of arrays: `add`.
+As shown above, arrays can be iterated using a for-each loop.
+
+```java
+JsonNode nums = JsonNode.numberArray(1, 2, 3, 4, 5, 6.7);
+
+System.out.println(nums.get(3) * 10 + nums.get(1)); // 42
+
+nums.add("impostor"); // Same as nums.add(JsonNode.string("impostor"))
+
+for (JsonNode elem : nums) {
+    System.out.println(elem.asInt());
+}
+// Above loop prints (newlines omitted for brevity):
+// 1 2 3 4 5 6    (see how it truncates the non-integral value)
+//
+// (but then...)
+// Uncaught dev.runefox.json.IncorrectTypeException: Unmatched types, required NUMBER, found STRING
+
+
+for (JsonNode elem : nums) {
+    System.out.println(elem.asString());
+}
+// Note that asString converts all primitives to strings. Above loop prints:
+// 1 2 3 4 5 6.7 impostor
+//
+// Use asExactString if you don't want the conversion of other primitives to strings
+```
+
+### Numeric flexibility
+
+Whenever the library parses a number, it doesn't really convert it to an actual numeric value internally. Instead, it
+keeps the string representation of the number and lazily parses it whenever different types of the number are requested.
+This is done using a custom implementation of `java.lang.Number`. The benefit of this is that as many precision is kept
+as possible. Let's say the JSON data has an extremely large integer, then retrieving it as a `long` will cause overflow,
+and a `double` will become `Infinity`. But when retrieved as a `BigInteger`, the exact value is retained.
+
+The specific implementation of this is encapsulated by the library,
+you don't need to worry about it.
+
 ### Codecs
 
 Codecs are a handy tool to easily encode and decode Java objects into JSON trees and vice versa. All the logic for this can be found in a separate package: `dev.runefox.json.codec`.
