@@ -1,6 +1,7 @@
 package dev.runefox.json;
 
 import java.io.Closeable;
+import java.io.Flushable;
 
 /**
  * The output sibling of {@link JsonInput}. {@link JsonOutput} provides a stream-like interface to send out a stream of
@@ -12,7 +13,7 @@ import java.io.Closeable;
  *
  * @see JsonInput
  */
-public interface JsonOutput extends Closeable {
+public interface JsonOutput extends Closeable, Flushable {
     /**
      * Writes a single {@link JsonNode} to this output. This method blocks until another thread is done writing to the
      * stream.
@@ -28,4 +29,7 @@ public interface JsonOutput extends Closeable {
      */
     @Override
     void close();
+
+    @Override
+    void flush();
 }

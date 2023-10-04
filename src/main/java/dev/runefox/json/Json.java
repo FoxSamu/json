@@ -308,7 +308,7 @@ public class Json {
     public JsonOutput output(Writer writer) {
         if (writer == null)
             throw new NullPointerException();
-        return new JsonOutputImpl(writer, writer, formatConfig);
+        return new JsonOutputImpl(writer, writer, writer, formatConfig);
     }
 
     /**
@@ -362,7 +362,7 @@ public class Json {
         if (builder == null)
             throw new NullPointerException();
 
-        return new JsonOutputImpl(builder, () -> { }, formatConfig);
+        return new JsonOutputImpl(builder, () -> { }, () -> { }, formatConfig);
     }
 
 
