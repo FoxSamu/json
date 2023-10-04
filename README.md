@@ -369,6 +369,9 @@ I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
 
+### 0.5.2
+- Added `flush()` to `JsonOutput`
+
 ### 0.5.1
 - Added support for streaming multiple JSON documents over a single stream, through two new interfaces `JsonInput` and `JsonOutput`.
 - The project now has a named module and can now be used as a dependency in other module-based projects.
