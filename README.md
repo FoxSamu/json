@@ -19,7 +19,7 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.5.1`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+The current version is `0.5.2`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
 The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "dev.runefox:json:0.5.1"
+    implementation "dev.runefox:json:0.5.2"
 }
 ```
 
@@ -53,7 +53,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.5.1</version>
+        <version>0.5.2</version>
     </dependency>
 </dependencies>
 ```
@@ -62,9 +62,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.5.1](https://maven.shadew.net/dev/runefox/json/0.5.1/json-0.5.1.jar)**
-- **[Download sources v0.5.1](https://maven.shadew.net/dev/runefox/json/0.5.1/json-0.5.1-sources.jar)**
-- **[All artifacts for v0.5.1](https://maven.shadew.net/dev/runefox/json/0.5.1/)**
+- **[Download v0.5.2](https://maven.shadew.net/dev/runefox/json/0.5.2/json-0.5.2.jar)**
+- **[Download sources v0.5.2](https://maven.shadew.net/dev/runefox/json/0.5.2/json-0.5.2-sources.jar)**
+- **[All artifacts for v0.5.2](https://maven.shadew.net/dev/runefox/json/0.5.2/)**
 
 ## Usage
 
