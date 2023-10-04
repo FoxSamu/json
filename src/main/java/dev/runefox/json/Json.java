@@ -70,17 +70,10 @@ public class Json {
      * @throws NullPointerException If the string is null
      * @throws JsonSyntaxException  When the JSON has invalid syntax
      */
-    public JsonNode parse(String string) throws JsonSyntaxException {
+    public JsonNode parse(String string) throws IOException {
         if (string == null)
             throw new NullPointerException();
-        try {
-            return parse(new StringReader(string));
-        } catch (JsonSyntaxException e) {
-            throw e;
-        } catch (IOException e) {
-            // This is not supposed to happen
-            throw new AssertionError("String reader throws IOException?!");
-        }
+        return parse(new StringReader(string));
     }
 
     /**
@@ -124,14 +117,18 @@ public class Json {
      * Parses a {@link Reader} as a stream of JSON documents. The reader will be closed when the returned stream is
      * closed. Not closing the returned stream will simply result in the reader not being closed. It has no other
      * consequences.
+     * <p>
+     * The parsing technique used internally makes sure that the parser does not load a lookahead token at the end of a
+     * document. Otherwise, it would not be possible to read a document from a stream without blocking and waiting for
+     * the first token of the next document to arrive.
+     * </p>
      *
      * @param reader The reader to parse
      * @return A {@link JsonInput} to read
      *
      * @throws NullPointerException If the reader is null
-     * @throws IOException          If an I/O error occurs
      */
-    public JsonInput input(Reader reader) throws IOException {
+    public JsonInput input(Reader reader) {
         if (reader == null)
             throw new NullPointerException();
         return new JsonInputImpl(createReader(reader), parseConfig);
@@ -145,17 +142,10 @@ public class Json {
      *
      * @throws NullPointerException If the string is null
      */
-    public JsonInput input(String string) throws JsonSyntaxException {
+    public JsonInput input(String string) throws IOException {
         if (string == null)
             throw new NullPointerException();
-        try {
-            return input(new StringReader(string));
-        } catch (JsonSyntaxException e) {
-            throw e;
-        } catch (IOException e) {
-            // This is not supposed to happen
-            throw new AssertionError("String reader throws IOException?!");
-        }
+        return input(new StringReader(string));
     }
 
     /**
@@ -163,6 +153,11 @@ public class Json {
      * {@linkplain Charset#defaultCharset() default charset}. The reader will be closed when the returned stream is
      * closed. Not closing the returned stream will simply result in the reader not being closed. It has no other
      * consequences.
+     * <p>
+     * The parsing technique used internally makes sure that the parser does not load a lookahead token at the end of a
+     * document. Otherwise, it would not be possible to read a document from a stream without blocking and waiting for
+     * the first token of the next document to arrive.
+     * </p>
      *
      * @param stream The input stream to parse
      * @return A {@link JsonInput} to read

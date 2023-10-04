@@ -160,6 +160,20 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     }
 
     /**
+     * Returns a new mutable array node, initially filled with the given element. Any null element is automatically
+     * converted to {@link #NULL}.
+     *
+     * @param elems The element in the array
+     * @return The JSON array node
+     */
+    static JsonNode array(JsonNode elems) {
+        if (elems == null)
+            throw new NullPointerException();
+
+        return new ArrayNode(new JsonNode[] {elems});
+    }
+
+    /**
      * Returns a new mutable array node, initially filled with the given elements. Any null element is automatically
      * converted to {@link #NULL}.
      *

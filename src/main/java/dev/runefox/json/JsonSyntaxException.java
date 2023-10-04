@@ -31,6 +31,34 @@ public class JsonSyntaxException extends IOException {
         this.problem = problem;
     }
 
+    public String problem() {
+        return problem;
+    }
+
+    public int fromIndex() {
+        return fromIndex;
+    }
+
+    public int fromLine() {
+        return fromLine;
+    }
+
+    public int fromCol() {
+        return fromCol;
+    }
+
+    public int toIndex() {
+        return toIndex;
+    }
+
+    public int toLine() {
+        return toLine;
+    }
+
+    public int toCol() {
+        return toCol;
+    }
+
     @Override
     public String getMessage() {
         return "Line " + fromLine + ", col " + fromCol + ": " + problem;

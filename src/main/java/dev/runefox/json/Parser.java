@@ -1,5 +1,6 @@
 package dev.runefox.json;
 
+import java.io.IOException;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -89,12 +90,11 @@ class Parser {
         return reader.error(Stream.of(types).map(TokenType::getErrorName).collect(Collectors.joining(", ", "Expected ", "")));
     }
 
-    void parse0(JsonReader reader, ParsingConfig config) throws JsonSyntaxException {
+    void parse0(JsonReader reader, ParsingConfig config) throws IOException {
         this.reader = reader;
         valueStack.clear();
         stateStack.clear();
-        if (config.anyValue()) {
-            // Must push EOF because we aren't using ROOT
+        if (!stream) {
             stateStack.push(JsonState.END_OF_FILE);
         }
         stateStack.push(
@@ -103,32 +103,29 @@ class Parser {
             : config.anyValue() ? JsonState.VALUE : JsonState.ROOT
         );
         if (stream) {
-            // In stream mode, if we find EOF instead of a document, this
-            // state will make sure the parser does not fail and instead
-            // just stops.
             stateStack.push(StreamState.PROBABLE_EOF);
         }
         end = false;
 
-        while (!end) {
+        while (!end && !stateStack.empty()) {
             stateStack.peek().parseToken(reader.peekToken(), reader, this);
         }
     }
 
-    public static JsonNode parse(JsonReader reader, ParsingConfig config) throws JsonSyntaxException {
+    public static JsonNode parse(JsonReader reader, ParsingConfig config) throws IOException {
         Parser parser = PARSER_INSTANCE.get();
         parser.parse0(reader, config);
         return parser.popValue(JsonNode.class);
     }
 
     private interface State {
-        void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException;
+        void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException;
     }
 
     private enum StreamState implements State {
         PROBABLE_EOF {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.EOF)
                     parser.end();
                 parser.popState();
@@ -139,16 +136,16 @@ class Parser {
     private enum JsonState implements State {
         ROOT {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.OBJECT_START) {
                     reader.readToken();
-                    parser.switchPushState(BEGIN_OBJECT, END_OF_FILE);
+                    parser.switchState(BEGIN_OBJECT);
                     parser.pushValue(JsonNode.object());
                     return;
                 }
                 if (next == TokenType.ARRAY_START) {
                     reader.readToken();
-                    parser.switchPushState(BEGIN_ARRAY, END_OF_FILE);
+                    parser.switchState(BEGIN_ARRAY);
                     parser.pushValue(JsonNode.array());
                     return;
                 }
@@ -157,7 +154,7 @@ class Parser {
         },
         VALUE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.OBJECT_START) {
                     reader.readToken();
                     parser.switchState(BEGIN_OBJECT);
@@ -200,7 +197,7 @@ class Parser {
         },
         BEGIN_ARRAY {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.ARRAY_END) {
                     reader.readToken();
                     parser.popState();
@@ -218,7 +215,7 @@ class Parser {
         },
         ARRAY_AFTER_VALUE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 JsonNode value = parser.popValue(JsonNode.class);
                 parser.peekValue(JsonNode.class).add(value);
 
@@ -239,7 +236,7 @@ class Parser {
         },
         BEGIN_OBJECT {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.OBJECT_END) {
                     reader.readToken();
                     parser.popState();
@@ -256,7 +253,7 @@ class Parser {
         },
         OBJECT_KEY {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.STRING) {
                     parser.pushValue(reader.readString());
                     parser.switchState(OBJECT_AFTER_KEY);
@@ -268,7 +265,7 @@ class Parser {
         },
         OBJECT_AFTER_KEY {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.COLON) {
                     reader.readToken();
                     parser.switchPushState(VALUE, OBJECT_AFTER_VALUE);
@@ -280,7 +277,7 @@ class Parser {
         },
         OBJECT_AFTER_VALUE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 JsonNode value = parser.popValue(JsonNode.class);
                 String key = parser.popValue(String.class);
                 parser.peekValue(JsonNode.class).set(key, value);
@@ -302,7 +299,7 @@ class Parser {
         },
         END_OF_FILE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next != TokenType.EOF && !parser.stream)
                     throw parser.expected(TokenType.EOF);
                 parser.end();
@@ -313,16 +310,16 @@ class Parser {
     private enum Json5State implements State {
         ROOT {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.OBJECT_START) {
                     reader.readToken();
-                    parser.switchPushState(OBJECT_BEFORE_KEY, END_OF_FILE);
+                    parser.switchState(OBJECT_BEFORE_KEY);
                     parser.pushValue(JsonNode.object());
                     return;
                 }
                 if (next == TokenType.ARRAY_START) {
                     reader.readToken();
-                    parser.switchPushState(ARRAY_BEFORE_VALUE, END_OF_FILE);
+                    parser.switchState(ARRAY_BEFORE_VALUE);
                     parser.pushValue(JsonNode.array());
                     return;
                 }
@@ -331,7 +328,7 @@ class Parser {
         },
         VALUE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.OBJECT_START) {
                     reader.readToken();
                     parser.switchState(OBJECT_BEFORE_KEY);
@@ -374,7 +371,7 @@ class Parser {
         },
         ARRAY_BEFORE_VALUE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.ARRAY_END) {
                     reader.readToken();
                     parser.popState();
@@ -391,7 +388,7 @@ class Parser {
         },
         ARRAY_AFTER_VALUE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 JsonNode value = parser.popValue(JsonNode.class);
                 parser.peekValue(JsonNode.class).add(value);
 
@@ -412,7 +409,7 @@ class Parser {
         },
         OBJECT_BEFORE_KEY {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.OBJECT_END) {
                     reader.readToken();
                     parser.popState();
@@ -429,7 +426,7 @@ class Parser {
         },
         OBJECT_KEY {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.STRING) {
                     parser.pushValue(reader.readString());
                     parser.switchState(OBJECT_AFTER_KEY);
@@ -446,7 +443,7 @@ class Parser {
         },
         OBJECT_AFTER_KEY {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 if (next == TokenType.COLON) {
                     reader.readToken();
                     parser.switchPushState(VALUE, OBJECT_AFTER_VALUE);
@@ -458,7 +455,7 @@ class Parser {
         },
         OBJECT_AFTER_VALUE {
             @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
+            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws IOException {
                 JsonNode value = parser.popValue(JsonNode.class);
                 String key = parser.popValue(String.class);
                 parser.peekValue(JsonNode.class).set(key, value);
@@ -476,14 +473,6 @@ class Parser {
                 }
 
                 throw parser.expected(TokenType.COMMA, TokenType.OBJECT_END);
-            }
-        },
-        END_OF_FILE {
-            @Override
-            public void parseToken(TokenType next, JsonReader reader, Parser parser) throws JsonSyntaxException {
-                if (next != TokenType.EOF && !parser.stream)
-                    throw parser.expected(TokenType.EOF);
-                parser.end();
             }
         }
     }

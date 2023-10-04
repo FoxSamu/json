@@ -41,6 +41,18 @@ abstract class AbstractLexer {
         this.reader = reader;
     }
 
+    public int pos() {
+        return pos;
+    }
+
+    public int line() {
+        return line;
+    }
+
+    public int col() {
+        return col;
+    }
+
     void skipNonExecutePrefixes() throws IOException {
         int len = CharUtil.NOEXEC_CRLF.length();
         char[] buf = new char[len];

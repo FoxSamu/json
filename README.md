@@ -19,7 +19,7 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.5.2`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+The current version is `0.6`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
 The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "dev.runefox:json:0.5.2"
+    implementation "dev.runefox:json:0.6"
 }
 ```
 
@@ -53,7 +53,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.5.2</version>
+        <version>0.6</version>
     </dependency>
 </dependencies>
 ```
@@ -62,9 +62,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.5.2](https://maven.shadew.net/dev/runefox/json/0.5.2/json-0.5.2.jar)**
-- **[Download sources v0.5.2](https://maven.shadew.net/dev/runefox/json/0.5.2/json-0.5.2-sources.jar)**
-- **[All artifacts for v0.5.2](https://maven.shadew.net/dev/runefox/json/0.5.2/)**
+- **[Download v0.6](https://maven.shadew.net/dev/runefox/json/0.6/json-0.6.jar)**
+- **[Download sources v0.6](https://maven.shadew.net/dev/runefox/json/0.6/json-0.6-sources.jar)**
+- **[All artifacts for v0.6](https://maven.shadew.net/dev/runefox/json/0.6/)**
 
 ## Usage
 
@@ -105,15 +105,12 @@ A JSON file or string is easily parsed using one of the `parse` methods of your 
 try {
     JsonNode tree = json.parse(new File("json/file.json"));
     // Read data from tree
-} catch (JsonSyntaxException | FileNotFoundException exc) {
+} catch (IOException exc) {
     // Handle your exceptions appropriately
 }
 ```
 
-The method will return a `JsonNode` instance, or throw a checked `JsonSyntaxException` when parsing fails. When parsing
-a `File`, a `FileNotFoundException` could also occur. Any other `IOException` that occurs is thrown as
-an `UncheckedIOException`, they are usually fatal. Catch an `UncheckedIOException` if you want to handle those
-too.
+The method will return a `JsonNode` instance, or throw a checked `JsonSyntaxException` when parsing fails. Most often, other `IOException`s can occur as well. You should handle these appropriately.
 
 ### Serializing
 
@@ -369,8 +366,15 @@ I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
 
+### 0.6
+- `JsonSyntaxException` now provides getters for the exact location and problem of the error.
+- Added various new `JsonCodec`s for different `TemporalAccessor` types.
+- There are now instance methods on `JsonCodec` that create wrapper codecs. They all have an equivalent static factory method.
+- Parsing and serializing now throws `IOException`s instead of `UncheckedIOException`s.
+- Fixed the issue causing `JsonInput` trying to read from the stream beyond the end of the document, causing a blocking stream (such as a socket stream) to block even though an entire document has been read and is ready to be handled.
+
 ### 0.5.2
-- Added `flush()` to `JsonOutput`
+- Added `flush()` to `JsonOutput`.
 
 ### 0.5.1
 - Added support for streaming multiple JSON documents over a single stream, through two new interfaces `JsonInput` and `JsonOutput`.

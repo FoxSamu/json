@@ -5,11 +5,12 @@ import dev.runefox.json.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
-class CombinedCodec<A> implements JsonCodec<A> {
+class AlternatingCodec<A> implements JsonCodec<A> {
     private final List<JsonCodec<A>> options;
 
-    CombinedCodec(List<JsonCodec<A>> options) {
+    AlternatingCodec(List<JsonCodec<A>> options) {
         this.options = options;
     }
 
@@ -19,6 +20,7 @@ class CombinedCodec<A> implements JsonCodec<A> {
         for (JsonCodec<A> codec : options) {
             try {
                 return codec.encode(obj);
+            } catch (NoCodecImplementation ignored) {
             } catch (JsonException exc) {
                 if (exceptions == null)
                     exceptions = new ArrayList<>();
@@ -42,6 +44,7 @@ class CombinedCodec<A> implements JsonCodec<A> {
         for (JsonCodec<A> codec : options) {
             try {
                 return codec.decode(json);
+            } catch (NoCodecImplementation ignored) {
             } catch (JsonException exc) {
                 if (exceptions == null)
                     exceptions = new ArrayList<>();
@@ -57,5 +60,15 @@ class CombinedCodec<A> implements JsonCodec<A> {
         JsonCodecException exc = new JsonCodecException("Could not decode");
         exceptions.forEach(exc::addSuppressed);
         throw exc;
+    }
+
+    @Override
+    public JsonCodec<A> alternatively(JsonCodec<A> option) {
+        return new AlternatingCodec<>(
+            List.copyOf(Stream.concat(
+                options.stream(),
+                Stream.of(option)
+            ).toList())
+        );
     }
 }

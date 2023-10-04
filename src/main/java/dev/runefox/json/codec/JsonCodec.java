@@ -6,6 +6,10 @@ import dev.runefox.json.JsonType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQuery;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -47,8 +51,8 @@ public interface JsonCodec<A> {
     JsonNode encode(A obj);
 
     /**
-     * Decodes the specified JSON tree back into an object. By convention, any JSON structure returned by the {@link
-     * #encode} method of this same codec must be decodable.
+     * Decodes the specified JSON tree back into an object. By convention, any JSON structure returned by the
+     * {@link #encode} method of this same codec must be decodable.
      *
      * @param json The object to be decoded
      * @return The decoded object
@@ -181,6 +185,85 @@ public interface JsonCodec<A> {
         wrapExceptions(json -> java.util.UUID.fromString(json.asString()))
     );
 
+
+    /**
+     * The codec that encodes a {@link Instant}, as a string. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<Instant> INSTANT = instant(DateTimeFormatter.ISO_INSTANT);
+
+    /**
+     * The codec that encodes a {@link LocalDate}, as a string. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<LocalDate> LOCAL_DATE = localDate(DateTimeFormatter.ISO_LOCAL_DATE);
+
+    /**
+     * The codec that encodes a {@link LocalDateTime}, as a string. It fails decoding when the input JSON is not a
+     * string representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<LocalDateTime> LOCAL_DATE_TIME = localDateTime(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+    /**
+     * The codec that encodes a {@link LocalTime}, as a string. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<LocalTime> LOCAL_TIME = localTime(DateTimeFormatter.ISO_LOCAL_TIME);
+
+    /**
+     * The codec that encodes a {@link OffsetDateTime}, as a string. It fails decoding when the input JSON is not a
+     * string representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<OffsetDateTime> OFFSET_DATE_TIME = offsetDateTime(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+    /**
+     * The codec that encodes a {@link OffsetTime}, as a string. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<OffsetTime> OFFSET_TIME = offsetTime(DateTimeFormatter.ISO_OFFSET_TIME);
+
+    /**
+     * The codec that encodes a {@link Year}, as a string or int. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format, or a valid year number. Null values are not accepted.
+     */
+    JsonCodec<Year> YEAR = alternatives(
+        year(TemporalCodec.YEAR_FMT),
+        of(
+            yr -> JsonNode.number(yr.getValue()),
+            wrapExceptions(node -> Year.of(node.asInt()))
+        )
+    );
+
+    /**
+     * The codec that encodes a {@link Month}, as a string or int. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format, or a valid month number. Null values are not accepted.
+     */
+    JsonCodec<Month> MONTH = alternatives(
+        month(TemporalCodec.MONTH_FMT),
+        of(
+            yr -> JsonNode.number(yr.getValue()),
+            wrapExceptions(node -> Month.of(node.asInt()))
+        )
+    );
+
+    /**
+     * The codec that encodes a {@link YearMonth}, as a string. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<YearMonth> YEAR_MONTH = yearMonth(TemporalCodec.YEAR_MONTH_FMT);
+
+    /**
+     * The codec that encodes a {@link MonthDay}, as a string. It fails decoding when the input JSON is not a string
+     * representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<MonthDay> MONTH_DAY = monthDay(TemporalCodec.MONTH_DAY_FMT);
+
+    /**
+     * The codec that encodes a {@link ZonedDateTime}, as a string. It fails decoding when the input JSON is not a
+     * string representing a valid ISO format. Null values are not accepted.
+     */
+    JsonCodec<ZonedDateTime> ZONED_DATE_TIME = zonedDateTime(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+
     /**
      * Creates a codec for {@link JsonEncodable}s.
      *
@@ -211,7 +294,11 @@ public interface JsonCodec<A> {
      */
     @SafeVarargs
     static <A> JsonCodec<A> alternatives(JsonCodec<A>... options) {
-        return new CombinedCodec<>(List.of(options));
+        return new AlternatingCodec<>(List.of(options));
+    }
+
+    default JsonCodec<A> alternatively(JsonCodec<A> option) {
+        return alternatives(this, option);
     }
 
     /**
@@ -228,6 +315,18 @@ public interface JsonCodec<A> {
     }
 
     /**
+     * Maps a codec to encode another object than the base codec does, by converting the object back to the type of the
+     * base codec, and vice versa when decoding.
+     *
+     * @param map   The function that creates the new object from the base object
+     * @param unmap The function that converts the new object into the base object
+     * @return The mapped codec
+     */
+    default <N> JsonCodec<N> map(Function<A, N> map, Function<N, A> unmap) {
+        return map(this, map, unmap);
+    }
+
+    /**
      * Creates a codec that uses the specific functions as implementations of {@link #encode} and {@link #decode}. Use
      * of this is discouraged, just as implementing {@link JsonCodec} yourself. However, it might be handy to use this
      * when you want to encode your object as a simple JSON type, because it allows you to use lambdas instead of an
@@ -239,6 +338,33 @@ public interface JsonCodec<A> {
      */
     static <A> JsonCodec<A> of(Function<A, JsonNode> encode, Function<JsonNode, A> decode) {
         return new BasicCodec<>(encode, decode);
+    }
+
+
+    /**
+     * Creates a codec that encodes using the given implementation, and fails decoding immediately. This can be useful
+     * in alternating codecs.
+     *
+     * @param encode The encoder
+     * @return The created codec
+     */
+    static <A> JsonCodec<A> encodeOnly(Function<A, JsonNode> encode) {
+        return new BasicCodec<>(encode, node -> {
+            throw new NoCodecImplementation();
+        });
+    }
+
+    /**
+     * Creates a codec that decodes using the given implementation, and fails encoding immediately. This can be useful
+     * in alternating codecs.
+     *
+     * @param decode The decoder
+     * @return The created codec
+     */
+    static <A> JsonCodec<A> decodeOnly(Function<JsonNode, A> decode) {
+        return new BasicCodec<>(obj -> {
+            throw new NoCodecImplementation();
+        }, decode);
     }
 
     /**
@@ -269,6 +395,15 @@ public interface JsonCodec<A> {
     }
 
     /**
+     * Returns a codec that encodes a {@link List}, of which all elements are encoded using this codec.
+     *
+     * @return The list codec
+     */
+    default JsonCodec<List<A>> listOf() {
+        return listOf(this);
+    }
+
+    /**
      * Returns a codec that encodes a {@link List}, of which all elements are encoded using the given codec.
      *
      * @param elementCodec The codec for the elements of the list
@@ -277,6 +412,16 @@ public interface JsonCodec<A> {
      */
     static <A> JsonCodec<List<A>> listOf(JsonCodec<A> elementCodec, int maxLen) {
         return new ListCodec<>(elementCodec, maxLen);
+    }
+
+    /**
+     * Returns a codec that encodes a {@link List}, of which all elements are encoded using this codec.
+     *
+     * @param maxLen The maximum amount of elements that this list may contain, inclusive
+     * @return The list codec
+     */
+    default JsonCodec<List<A>> listOf(int maxLen) {
+        return listOf(this, maxLen);
     }
 
     /**
@@ -292,6 +437,17 @@ public interface JsonCodec<A> {
     }
 
     /**
+     * Returns a codec that encodes a {@link List}, of which all elements are encoded using this codec.
+     *
+     * @param minLen The minimum amount of elements that this list may contain, inclusive
+     * @param maxLen The maximum amount of elements that this list may contain, inclusive
+     * @return The list codec
+     */
+    default JsonCodec<List<A>> listOf(int minLen, int maxLen) {
+        return listOf(this, minLen, maxLen);
+    }
+
+    /**
      * Returns a codec that encodes a {@link Set}, of which all elements are encoded using the given codec.
      *
      * @param elementCodec The codec for the elements of the set
@@ -299,6 +455,15 @@ public interface JsonCodec<A> {
      */
     static <A> JsonCodec<Set<A>> setOf(JsonCodec<A> elementCodec) {
         return new SetCodec<>(elementCodec);
+    }
+
+    /**
+     * Returns a codec that encodes a {@link Set}, of which all elements are encoded using this codec.
+     *
+     * @return The set codec
+     */
+    default JsonCodec<Set<A>> setOf() {
+        return setOf(this);
     }
 
     /**
@@ -320,15 +485,38 @@ public interface JsonCodec<A> {
     }
 
     /**
-     * Returns a codec that encodes a {@link Map}, of which all values are encoded using the given codec. The keys are
-     * mapped to and from strings using the given functions. Not to be confused with {@link #map} which does something
-     * else.
+     * Returns a codec that encodes a {@link Map}, of which all values are encoded using this codec. The keys are mapped
+     * to and from strings using the given functions. Not to be confused with {@link #map} which does something else.
+     * <p>
+     * Note: any exception thrown by the mapping functions will be wrapped in a {@link JsonCodecException}. So if you
+     * use {@link Integer} keys, you can safely use the method reference {@link Integer#parseInt Integer::parseInt},
+     * without having to care about dealing with the {@link NumberFormatException} if a key is invalid.
+     *
+     * @param keyToString Function that converts a key to a string representation that can be converted back to a key
+     * @param stringToKey Function that converts a string representation back into a key
+     * @return The map codec
+     */
+    default <K> JsonCodec<Map<K, A>> mapOf(Function<K, String> keyToString, Function<String, K> stringToKey) {
+        return mapOf(this, keyToString, stringToKey);
+    }
+
+    /**
+     * Returns a codec that encodes a {@link Map}, of which all values are encoded using the given codec.
      *
      * @param elementCodec The codec for the values of the map
      * @return The map codec
      */
     static <A> JsonCodec<Map<String, A>> mapOf(JsonCodec<A> elementCodec) {
         return new MapCodec<>(elementCodec, Function.identity(), Function.identity());
+    }
+
+    /**
+     * Returns a codec that encodes a {@link Map}, of which all values are encoded using this codec.
+     *
+     * @return The map codec
+     */
+    default JsonCodec<Map<String, A>> mapOf() {
+        return mapOf(this);
     }
 
     /**
@@ -599,7 +787,7 @@ public interface JsonCodec<A> {
      * @param max   The maximum value (inclusive)
      * @return The created codec
      */
-    static <A extends Comparable<A>> JsonCodec<A> in(JsonCodec<A> codec, A min, A max) {
+    static <A extends Comparable<? super A>> JsonCodec<A> in(JsonCodec<A> codec, A min, A max) {
         return new ComparableInCodec<>(codec, min, max);
     }
 
@@ -610,7 +798,7 @@ public interface JsonCodec<A> {
      * @param max   The maximum value (inclusive)
      * @return The created codec
      */
-    static <A extends Comparable<A>> JsonCodec<A> under(JsonCodec<A> codec, A max) {
+    static <A extends Comparable<? super A>> JsonCodec<A> under(JsonCodec<A> codec, A max) {
         return new ComparableUnderCodec<>(codec, max);
     }
 
@@ -621,8 +809,66 @@ public interface JsonCodec<A> {
      * @param min   The minimum value (inclusive)
      * @return The created codec
      */
-    static <A extends Comparable<A>> JsonCodec<A> above(JsonCodec<A> codec, A min) {
+    static <A extends Comparable<? super A>> JsonCodec<A> above(JsonCodec<A> codec, A min) {
         return new ComparableAboveCodec<>(codec, min);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes all {@link Comparable}s in the given range
+     *
+     * @param codec The base codec, that encodes any value of the same type
+     * @param min   The minimum value (inclusive)
+     * @param max   The maximum value (inclusive)
+     * @return The created codec
+     */
+    static <A> JsonCodec<A> in(JsonCodec<A> codec, A min, A max, Comparator<? super A> comp) {
+        return new ComparatorInCodec<>(codec, min, max, comp);
+    }
+
+    default JsonCodec<A> in(A min, A max, Comparator<? super A> comp) {
+        return in(this, min, max, comp);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes all {@link Comparable}s up to a given value
+     *
+     * @param codec The base codec, that encodes any value of the same type
+     * @param max   The maximum value (inclusive)
+     * @return The created codec
+     */
+    static <A> JsonCodec<A> under(JsonCodec<A> codec, A max, Comparator<? super A> comp) {
+        return new ComparatorUnderCodec<>(codec, max, comp);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes all {@link Comparable}s up to a given value
+     *
+     * @param max The maximum value (inclusive)
+     * @return The created codec
+     */
+    default JsonCodec<A> under(A max, Comparator<? super A> comp) {
+        return under(this, max, comp);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes all {@link Comparable}s from a given value
+     *
+     * @param codec The base codec, that encodes any value of the same type
+     * @param min   The minimum value (inclusive)
+     * @return The created codec
+     */
+    static <A> JsonCodec<A> above(JsonCodec<A> codec, A min, Comparator<? super A> comp) {
+        return new ComparatorAboveCodec<>(codec, min, comp);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes all {@link Comparable}s from a given value
+     *
+     * @param min The minimum value (inclusive)
+     * @return The created codec
+     */
+    default JsonCodec<A> above(A min, Comparator<? super A> comp) {
+        return above(this, min, comp);
     }
 
     /**
@@ -719,6 +965,18 @@ public interface JsonCodec<A> {
     }
 
     /**
+     * Returns a codec that performs an additional check on the value encoded or decoded by this codec.
+     *
+     * @param predicate The check, if it returns false the codec fails
+     * @param error     The error function, only called when the given predicate returns false, to compute the error
+     *                  message
+     * @return The checked codec
+     */
+    default JsonCodec<A> check(Predicate<A> predicate, Function<A, String> error) {
+        return check(this, predicate, error);
+    }
+
+    /**
      * Returns a codec that performs an additional check on the value encoded or decoded by the given base codec.
      *
      * @param codec     The base codec
@@ -729,6 +987,18 @@ public interface JsonCodec<A> {
      */
     static <A> JsonCodec<A> check(JsonCodec<A> codec, Predicate<A> predicate, Supplier<String> error) {
         return new CheckCodec<>(codec, predicate, a -> error.get());
+    }
+
+    /**
+     * Returns a codec that performs an additional check on the value encoded or decoded by this codec.
+     *
+     * @param predicate The check, if it returns false the codec fails
+     * @param error     The error function, only called when the given predicate returns false, to compute the error
+     *                  message
+     * @return The checked codec
+     */
+    default JsonCodec<A> check(Predicate<A> predicate, Supplier<String> error) {
+        return check(this, predicate, error);
     }
 
     /**
@@ -744,6 +1014,17 @@ public interface JsonCodec<A> {
     }
 
     /**
+     * Returns a codec that performs an additional check on the value encoded or decoded by this codec.
+     *
+     * @param predicate The check, if it returns false the codec fails
+     * @param error     The error message
+     * @return The checked codec
+     */
+    default JsonCodec<A> check(Predicate<A> predicate, String error) {
+        return check(this, predicate, error);
+    }
+
+    /**
      * Returns a codec that performs an additional check on the value encoded or decoded by the given base codec. It
      * will use a default error message {@link "Invalid value ...."} (with the erroneous value in place of the
      * periods).
@@ -754,6 +1035,17 @@ public interface JsonCodec<A> {
      */
     static <A> JsonCodec<A> check(JsonCodec<A> codec, Predicate<A> predicate) {
         return new CheckCodec<>(codec, predicate, a -> "Invalid value " + a);
+    }
+
+    /**
+     * Returns a codec that performs an additional check on the value encoded or decoded by this codec. It will use a
+     * default error message {@link "Invalid value ...."} (with the erroneous value in place of the periods).
+     *
+     * @param predicate The check, if it returns false the codec fails
+     * @return The checked codec
+     */
+    default JsonCodec<A> check(Predicate<A> predicate) {
+        return check(this, predicate);
     }
 
     /**
@@ -805,5 +1097,343 @@ public interface JsonCodec<A> {
             int len = str.length();
             return len <= maxLen;
         }, str -> "String '" + str + "' length is above limit " + maxLen + "");
+    }
+
+
+
+    // TODO Document these
+
+    static <T extends TemporalAccessor> JsonCodec<T> temporal(DateTimeFormatter formatter, TemporalQuery<T> query) {
+        return new TemporalCodec<>(formatter, query);
+    }
+
+
+    static <T extends TemporalAccessor & Comparable<T>> JsonCodec<T> temporalIn(DateTimeFormatter formatter, T min, T max, TemporalQuery<T> query) {
+        return in(new TemporalCodec<>(formatter, query), min, max);
+    }
+
+    static <T extends TemporalAccessor & Comparable<T>> JsonCodec<T> temporalAbove(DateTimeFormatter formatter, T min, TemporalQuery<T> query) {
+        return above(new TemporalCodec<>(formatter, query), min);
+    }
+
+    static <T extends TemporalAccessor & Comparable<T>> JsonCodec<T> temporalUnder(DateTimeFormatter formatter, T max, TemporalQuery<T> query) {
+        return under(new TemporalCodec<>(formatter, query), max);
+    }
+
+
+    static JsonCodec<Instant> instant(DateTimeFormatter formatter) {
+        return temporal(formatter, Instant::from);
+    }
+
+    static JsonCodec<Instant> instantIn(DateTimeFormatter formatter, Instant min, Instant max) {
+        return in(instant(formatter), min, max);
+    }
+
+    static JsonCodec<Instant> instantAbove(DateTimeFormatter formatter, Instant min) {
+        return above(instant(formatter), min);
+    }
+
+    static JsonCodec<Instant> instantUnder(DateTimeFormatter formatter, Instant max) {
+        return under(instant(formatter), max);
+    }
+
+    static JsonCodec<Instant> instantIn(Instant min, Instant max) {
+        return in(INSTANT, min, max);
+    }
+
+    static JsonCodec<Instant> instantAbove(Instant min) {
+        return above(INSTANT, min);
+    }
+
+    static JsonCodec<Instant> instantUnder(Instant max) {
+        return under(INSTANT, max);
+    }
+
+
+    static JsonCodec<LocalDate> localDate(DateTimeFormatter formatter) {
+        return temporal(formatter, LocalDate::from);
+    }
+
+    static JsonCodec<LocalDate> localDateIn(DateTimeFormatter formatter, LocalDate min, LocalDate max) {
+        return in(localDate(formatter), min, max);
+    }
+
+    static JsonCodec<LocalDate> localDateAbove(DateTimeFormatter formatter, LocalDate min) {
+        return above(localDate(formatter), min);
+    }
+
+    static JsonCodec<LocalDate> localDateUnder(DateTimeFormatter formatter, LocalDate max) {
+        return under(localDate(formatter), max);
+    }
+
+    static JsonCodec<LocalDate> localDateIn(LocalDate min, LocalDate max) {
+        return in(LOCAL_DATE, min, max);
+    }
+
+    static JsonCodec<LocalDate> localDateAbove(LocalDate min) {
+        return above(LOCAL_DATE, min);
+    }
+
+    static JsonCodec<LocalDate> localDateUnder(LocalDate max) {
+        return under(LOCAL_DATE, max);
+    }
+
+
+    static JsonCodec<LocalDateTime> localDateTime(DateTimeFormatter formatter) {
+        return temporal(formatter, LocalDateTime::from);
+    }
+
+    static JsonCodec<LocalDateTime> localDateTimeIn(DateTimeFormatter formatter, LocalDateTime min, LocalDateTime max) {
+        return in(localDateTime(formatter), min, max);
+    }
+
+    static JsonCodec<LocalDateTime> localDateTimeAbove(DateTimeFormatter formatter, LocalDateTime min) {
+        return above(localDateTime(formatter), min);
+    }
+
+    static JsonCodec<LocalDateTime> localDateTimeUnder(DateTimeFormatter formatter, LocalDateTime max) {
+        return under(localDateTime(formatter), max);
+    }
+
+    static JsonCodec<LocalDateTime> localDateTimeIn(LocalDateTime min, LocalDateTime max) {
+        return in(LOCAL_DATE_TIME, min, max);
+    }
+
+    static JsonCodec<LocalDateTime> localDateTimeAbove(LocalDateTime min) {
+        return above(LOCAL_DATE_TIME, min);
+    }
+
+    static JsonCodec<LocalDateTime> localDateTimeUnder(LocalDateTime max) {
+        return under(LOCAL_DATE_TIME, max);
+    }
+
+
+    static JsonCodec<LocalTime> localTime(DateTimeFormatter formatter) {
+        return temporal(formatter, LocalTime::from);
+    }
+
+    static JsonCodec<LocalTime> localTimeIn(DateTimeFormatter formatter, LocalTime min, LocalTime max) {
+        return in(localTime(formatter), min, max);
+    }
+
+    static JsonCodec<LocalTime> localTimeAbove(DateTimeFormatter formatter, LocalTime min) {
+        return above(localTime(formatter), min);
+    }
+
+    static JsonCodec<LocalTime> localTimeUnder(DateTimeFormatter formatter, LocalTime max) {
+        return under(localTime(formatter), max);
+    }
+
+    static JsonCodec<LocalTime> localTimeIn(LocalTime min, LocalTime max) {
+        return in(LOCAL_TIME, min, max);
+    }
+
+    static JsonCodec<LocalTime> localTimeAbove(LocalTime min) {
+        return above(LOCAL_TIME, min);
+    }
+
+    static JsonCodec<LocalTime> localTimeUnder(LocalTime max) {
+        return under(LOCAL_TIME, max);
+    }
+
+
+    static JsonCodec<OffsetDateTime> offsetDateTime(DateTimeFormatter formatter) {
+        return temporal(formatter, OffsetDateTime::from);
+    }
+
+    static JsonCodec<OffsetDateTime> offsetDateTimeIn(DateTimeFormatter formatter, OffsetDateTime min, OffsetDateTime max) {
+        return in(offsetDateTime(formatter), min, max);
+    }
+
+    static JsonCodec<OffsetDateTime> offsetDateTimeAbove(DateTimeFormatter formatter, OffsetDateTime min) {
+        return above(offsetDateTime(formatter), min);
+    }
+
+    static JsonCodec<OffsetDateTime> offsetDateTimeUnder(DateTimeFormatter formatter, OffsetDateTime max) {
+        return under(offsetDateTime(formatter), max);
+    }
+
+    static JsonCodec<OffsetDateTime> offsetDateTimeIn(OffsetDateTime min, OffsetDateTime max) {
+        return in(OFFSET_DATE_TIME, min, max);
+    }
+
+    static JsonCodec<OffsetDateTime> offsetDateTimeAbove(OffsetDateTime min) {
+        return above(OFFSET_DATE_TIME, min);
+    }
+
+    static JsonCodec<OffsetDateTime> offsetDateTimeUnder(OffsetDateTime max) {
+        return under(OFFSET_DATE_TIME, max);
+    }
+
+
+    static JsonCodec<OffsetTime> offsetTime(DateTimeFormatter formatter) {
+        return temporal(formatter, OffsetTime::from);
+    }
+
+    static JsonCodec<OffsetTime> offsetTimeIn(DateTimeFormatter formatter, OffsetTime min, OffsetTime max) {
+        return in(offsetTime(formatter), min, max);
+    }
+
+    static JsonCodec<OffsetTime> offsetTimeAbove(DateTimeFormatter formatter, OffsetTime min) {
+        return above(offsetTime(formatter), min);
+    }
+
+    static JsonCodec<OffsetTime> offsetTimeUnder(DateTimeFormatter formatter, OffsetTime max) {
+        return under(offsetTime(formatter), max);
+    }
+
+    static JsonCodec<OffsetTime> offsetTimeIn(OffsetTime min, OffsetTime max) {
+        return in(OFFSET_TIME, min, max);
+    }
+
+    static JsonCodec<OffsetTime> offsetTimeAbove(OffsetTime min) {
+        return above(OFFSET_TIME, min);
+    }
+
+    static JsonCodec<OffsetTime> offsetTimeUnder(OffsetTime max) {
+        return under(OFFSET_TIME, max);
+    }
+
+
+    static JsonCodec<Year> year(DateTimeFormatter formatter) {
+        return temporal(formatter, Year::from);
+    }
+
+    static JsonCodec<Year> yearIn(DateTimeFormatter formatter, Year min, Year max) {
+        return in(year(formatter), min, max);
+    }
+
+    static JsonCodec<Year> yearAbove(DateTimeFormatter formatter, Year min) {
+        return above(year(formatter), min);
+    }
+
+    static JsonCodec<Year> yearUnder(DateTimeFormatter formatter, Year max) {
+        return under(year(formatter), max);
+    }
+
+    static JsonCodec<Year> yearIn(Year min, Year max) {
+        return in(YEAR, min, max);
+    }
+
+    static JsonCodec<Year> yearAbove(Year min) {
+        return above(YEAR, min);
+    }
+
+    static JsonCodec<Year> yearUnder(Year max) {
+        return under(YEAR, max);
+    }
+
+
+    static JsonCodec<Month> month(DateTimeFormatter formatter) {
+        return temporal(formatter, Month::from);
+    }
+
+    static JsonCodec<Month> monthIn(DateTimeFormatter formatter, Month min, Month max) {
+        return in(month(formatter), min, max);
+    }
+
+    static JsonCodec<Month> monthAbove(DateTimeFormatter formatter, Month min) {
+        return above(month(formatter), min);
+    }
+
+    static JsonCodec<Month> monthUnder(DateTimeFormatter formatter, Month max) {
+        return under(month(formatter), max);
+    }
+
+    static JsonCodec<Month> monthIn(Month min, Month max) {
+        return in(MONTH, min, max);
+    }
+
+    static JsonCodec<Month> monthAbove(Month min) {
+        return above(MONTH, min);
+    }
+
+    static JsonCodec<Month> monthUnder(Month max) {
+        return under(MONTH, max);
+    }
+
+    static JsonCodec<YearMonth> yearMonth(DateTimeFormatter formatter) {
+        return temporal(formatter, YearMonth::from);
+    }
+
+    static JsonCodec<YearMonth> yearMonthIn(DateTimeFormatter formatter, YearMonth min, YearMonth max) {
+        return in(yearMonth(formatter), min, max);
+    }
+
+    static JsonCodec<YearMonth> yearMonthAbove(DateTimeFormatter formatter, YearMonth min) {
+        return above(yearMonth(formatter), min);
+    }
+
+    static JsonCodec<YearMonth> yearMonthUnder(DateTimeFormatter formatter, YearMonth max) {
+        return under(yearMonth(formatter), max);
+    }
+
+    static JsonCodec<YearMonth> yearMonthIn(YearMonth min, YearMonth max) {
+        return in(YEAR_MONTH, min, max);
+    }
+
+    static JsonCodec<YearMonth> yearMonthAbove(YearMonth min) {
+        return above(YEAR_MONTH, min);
+    }
+
+    static JsonCodec<YearMonth> yearMonthUnder(YearMonth max) {
+        return under(YEAR_MONTH, max);
+    }
+
+    static JsonCodec<MonthDay> monthDay(DateTimeFormatter formatter) {
+        return temporal(formatter, MonthDay::from);
+    }
+
+    static JsonCodec<MonthDay> monthDayIn(DateTimeFormatter formatter, MonthDay min, MonthDay max) {
+        return in(monthDay(formatter), min, max);
+    }
+
+    static JsonCodec<MonthDay> monthDayAbove(DateTimeFormatter formatter, MonthDay min) {
+        return above(monthDay(formatter), min);
+    }
+
+    static JsonCodec<MonthDay> monthDayUnder(DateTimeFormatter formatter, MonthDay max) {
+        return under(monthDay(formatter), max);
+    }
+
+    static JsonCodec<MonthDay> monthDayIn(MonthDay min, MonthDay max) {
+        return in(MONTH_DAY, min, max);
+    }
+
+    static JsonCodec<MonthDay> monthDayAbove(MonthDay min) {
+        return above(MONTH_DAY, min);
+    }
+
+    static JsonCodec<MonthDay> monthDayUnder(MonthDay max) {
+        return under(MONTH_DAY, max);
+    }
+
+
+    static JsonCodec<ZonedDateTime> zonedDateTime(DateTimeFormatter formatter) {
+        return temporal(formatter, ZonedDateTime::from);
+    }
+
+    static JsonCodec<ZonedDateTime> zonedDateTimeIn(DateTimeFormatter formatter, ZonedDateTime min, ZonedDateTime max) {
+        return in(zonedDateTime(formatter), min, max);
+    }
+
+    static JsonCodec<ZonedDateTime> zonedDateTimeAbove(DateTimeFormatter formatter, ZonedDateTime min) {
+        return above(zonedDateTime(formatter), min);
+    }
+
+    static JsonCodec<ZonedDateTime> zonedDateTimeUnder(DateTimeFormatter formatter, ZonedDateTime max) {
+        return under(zonedDateTime(formatter), max);
+    }
+
+    static JsonCodec<ZonedDateTime> zonedDateTimeIn(ZonedDateTime min, ZonedDateTime max) {
+        return in(ZONED_DATE_TIME, min, max);
+    }
+
+    static JsonCodec<ZonedDateTime> zonedDateTimeAbove(ZonedDateTime min) {
+        return above(ZONED_DATE_TIME, min);
+    }
+
+    static JsonCodec<ZonedDateTime> zonedDateTimeUnder(ZonedDateTime max) {
+        return under(ZONED_DATE_TIME, max);
     }
 }

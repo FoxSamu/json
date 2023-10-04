@@ -20,19 +20,15 @@ class LexerReader implements JsonReader {
         }
     }
 
-    private Token next() throws JsonSyntaxException {
+    private Token next() throws IOException {
         if (!hasNext) {
-            try {
-                lexer.token(nextToken);
-                hasNext = true;
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            lexer.token(nextToken);
+            hasNext = true;
         }
         return nextToken;
     }
 
-    private Token next(TokenType expectedType) throws JsonSyntaxException {
+    private Token next(TokenType expectedType) throws IOException {
         Token next = next();
         TokenType nextType = next.getType();
         if (nextType == expectedType) {
@@ -43,28 +39,28 @@ class LexerReader implements JsonReader {
     }
 
     @Override
-    public boolean readBoolean() throws JsonSyntaxException {
+    public boolean readBoolean() throws IOException {
         Token next = next(TokenType.BOOLEAN);
         hasNext = false;
         return (boolean) next.getValue();
     }
 
     @Override
-    public String readString() throws JsonSyntaxException {
+    public String readString() throws IOException {
         Token next = next(TokenType.STRING);
         hasNext = false;
         return (String) next.getValue();
     }
 
     @Override
-    public String readIdentifier() throws JsonSyntaxException {
+    public String readIdentifier() throws IOException {
         Token next = next(TokenType.IDENTIFIER);
         hasNext = false;
         return (String) next.getValue();
     }
 
     @Override
-    public String readKey() throws JsonSyntaxException {
+    public String readKey() throws IOException {
         Token next = next();
         TokenType nextType = next.getType();
         if (nextType == TokenType.STRING || nextType == TokenType.IDENTIFIER) {
@@ -76,61 +72,61 @@ class LexerReader implements JsonReader {
     }
 
     @Override
-    public Number readNumber() throws JsonSyntaxException {
+    public Number readNumber() throws IOException {
         Token next = next(TokenType.NUMBER);
         hasNext = false;
         return (Number) next.getValue();
     }
 
     @Override
-    public void readNull() throws JsonSyntaxException {
+    public void readNull() throws IOException {
         next(TokenType.NULL);
         hasNext = false;
     }
 
     @Override
-    public void readObjectStart() throws JsonSyntaxException {
+    public void readObjectStart() throws IOException {
         next(TokenType.OBJECT_START);
         hasNext = false;
     }
 
     @Override
-    public void readObjectEnd() throws JsonSyntaxException {
+    public void readObjectEnd() throws IOException {
         next(TokenType.OBJECT_END);
         hasNext = false;
     }
 
     @Override
-    public void readArrayStart() throws JsonSyntaxException {
+    public void readArrayStart() throws IOException {
         next(TokenType.ARRAY_START);
         hasNext = false;
     }
 
     @Override
-    public void readArrayEnd() throws JsonSyntaxException {
+    public void readArrayEnd() throws IOException {
         next(TokenType.ARRAY_END);
         hasNext = false;
     }
 
     @Override
-    public void readColon() throws JsonSyntaxException {
+    public void readColon() throws IOException {
         next(TokenType.COLON);
         hasNext = false;
     }
 
     @Override
-    public void readComma() throws JsonSyntaxException {
+    public void readComma() throws IOException {
         next(TokenType.COMMA);
         hasNext = false;
     }
 
     @Override
-    public TokenType peekToken() throws JsonSyntaxException {
+    public TokenType peekToken() throws IOException {
         return next().getType();
     }
 
     @Override
-    public void readToken() throws JsonSyntaxException {
+    public void readToken() throws IOException {
         next();
         hasNext = false;
     }
@@ -146,10 +142,10 @@ class LexerReader implements JsonReader {
 
     @Override
     public JsonSyntaxException error(String message) {
-        try {
-            return next().error(message);
-        } catch (JsonSyntaxException exc) {
-            return exc; // I mean, why not?
+        if (hasNext) {
+            return nextToken.error(message);
+        } else {
+            return lexer.error(message);
         }
     }
 }

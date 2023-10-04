@@ -2,21 +2,25 @@ package dev.runefox.json.codec;
 
 import dev.runefox.json.JsonNode;
 
-class ComparableInCodec<A extends Comparable<? super A>> implements JsonCodec<A> {
+import java.util.Comparator;
+
+class ComparatorInCodec<A> implements JsonCodec<A> {
     private final JsonCodec<A> codec;
     private final A min, max;
+    private final Comparator<? super A> comp;
 
-    ComparableInCodec(JsonCodec<A> codec, A min, A max) {
+    ComparatorInCodec(JsonCodec<A> codec, A min, A max, Comparator<? super A> comp) {
         this.codec = codec;
         this.min = min;
         this.max = max;
+        this.comp = comp;
 
-        if (max.compareTo(min) < 0)
+        if (comp.compare(max, min) < 0)
             throw new IllegalArgumentException("max < min");
     }
 
     private A check(A a) {
-        if (a.compareTo(min) < 0 || a.compareTo(max) > 0)
+        if (comp.compare(a, min) < 0 || comp.compare(a, max) > 0)
             throw new JsonCodecException("Value " + a + " out of range [" + min + ", " + max + "]");
         return a;
     }

@@ -1,9 +1,10 @@
 package dev.runefox.json;
 
+import dev.runefox.json.codec.JsonRepresentable;
+
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 
 class JsonOutputImpl implements JsonOutput {
     private final Serializer serializer = new Serializer();
@@ -20,7 +21,9 @@ class JsonOutputImpl implements JsonOutput {
     }
 
     @Override
-    public void write(JsonNode node) {
+    public void write(JsonRepresentable json) throws IOException {
+        JsonNode node = json.toJson();
+
         if (node == null)
             throw new NullPointerException();
         if (!config.anyValue())
@@ -28,29 +31,17 @@ class JsonOutputImpl implements JsonOutput {
 
         synchronized (serializer) {
             serializer.reset(output, config);
-            try {
-                serializer.writeJson(node);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            serializer.writeJson(node);
         }
     }
 
     @Override
-    public void close() {
-        try {
-            closeable.close();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public void close() throws IOException {
+        closeable.close();
     }
 
     @Override
-    public void flush() {
-        try {
-            flushable.flush();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public void flush() throws IOException {
+        flushable.flush();
     }
 }

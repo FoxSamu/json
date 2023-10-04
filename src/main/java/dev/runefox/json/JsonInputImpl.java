@@ -1,5 +1,7 @@
 package dev.runefox.json;
 
+import java.io.IOException;
+
 class JsonInputImpl implements JsonInput {
     private final JsonReader reader;
     private final Parser parser;
@@ -13,7 +15,7 @@ class JsonInputImpl implements JsonInput {
     }
 
     @Override
-    public JsonNode read() throws JsonSyntaxException {
+    public JsonNode read() throws IOException {
         synchronized (parser) {
             parser.parse0(reader, config);
             if (!parser.hasValue())
