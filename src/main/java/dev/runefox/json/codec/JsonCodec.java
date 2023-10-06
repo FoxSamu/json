@@ -825,6 +825,13 @@ public interface JsonCodec<A> {
         return new ComparatorInCodec<>(codec, min, max, comp);
     }
 
+    /**
+     * Returns a codec that encodes and decodes all {@link Comparable}s in the given range
+     *
+     * @param min The minimum value (inclusive)
+     * @param max The maximum value (inclusive)
+     * @return The created codec
+     */
     default JsonCodec<A> in(A min, A max, Comparator<? super A> comp) {
         return in(this, min, max, comp);
     }
