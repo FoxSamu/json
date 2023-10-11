@@ -356,6 +356,48 @@ To use this library in a project that uses Java 9 modules, do the following in y
 requires dev.runefox.json;
 ```
 
+### Kotlin
+
+Since 0.6.1, the library now integrates better with Kotlin:
+```kotlin
+val json = jsonObject()
+
+json["x"] = 3
+json["y"] = 5
+
+println(json)  // {"x": 3, "y": 5}
+```
+
+Some extra `JsonNode` factory methods were added to reduce the need of escaping reserved kotlin words in backticks. For
+example, `JsonNode.object()` would be called in kotlin as <code>JsonNode.\`object\`()</code>. This is ugly, and since 0.6.1, the `jsonObject()` function is available as a replacement to this. Additional functions like this are added for other types, to keep consistency.
+
+When using `JsonCodec`s, any object now has the `encoded` infix function, and `JsonNode` also has the reversed `decoded` infix function, allowing for the following syntax:
+```kotlin
+val json = LocalDateTime.now() encoded JsonCodec.LOCAL_DATE_TIME
+
+println(json decoded JsonCodec.LOCAL_DATE_TIME)
+```
+
+Since `JsonNode` has natural `get` and `set` methods, Kotlin allows you to call these using subscript notation:
+```kotlin
+arr[1]
+arr[2] = 3 // Converts 3 to a JsonNode automatically
+
+obj["key"]
+obj["foo"] = "bar" // also automatically converted to JsonNode
+```
+
+As an extra feature, elements can be added to an array node using `+=`:
+
+```kotlin
+val arr = jsonArray()
+arr += 1
+arr += 2
+arr += jsonObject()
+
+println(arr) // [1, 2, {}]
+```
+
 
 ## Documentation
 
@@ -365,6 +407,9 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.6.1
+- Introducing support for Kotlin.
 
 ### 0.6
 - `JsonSyntaxException` now provides getters for the exact location and problem of the error.
