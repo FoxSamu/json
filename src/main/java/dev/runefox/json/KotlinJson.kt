@@ -28,6 +28,19 @@ fun jsonBool(value: Boolean?): JsonNode = JsonNode.bool(value)
 fun jsonObject(): JsonNode = JsonNode.`object`()
 fun jsonArray(): JsonNode = JsonNode.array()
 
+operator fun JsonNode.invoke(config: (JsonNode) -> Unit): JsonNode {
+    config(this)
+    return this
+}
+
+fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
+    return jsonObject().invoke(config)
+}
+
+fun jsonArray(config: (JsonNode) -> Unit): JsonNode {
+    return jsonArray().invoke(config)
+}
+
 fun jsonArray(vararg nodes: JsonNode?): JsonNode = JsonNode.array(*nodes)
 fun jsonArray(vararg nodes: Int): JsonNode = JsonNode.numberArray(nodes)
 fun jsonArray(vararg nodes: Byte): JsonNode = JsonNode.numberArray(nodes)

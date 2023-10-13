@@ -360,12 +360,14 @@ requires dev.runefox.json;
 
 Since 0.6.1, the library now integrates better with Kotlin:
 ```kotlin
-val json = jsonObject()
+val json = jsonObject {
+    it["x"] = 3
+    it["y"] = 5
+}
 
-json["x"] = 3
-json["y"] = 5
+json["z"] = 9
 
-println(json)  // {"x": 3, "y": 5}
+println(json)  // {"x": 3, "y": 5, "z": 9}
 ```
 
 Some extra `JsonNode` factory methods were added to reduce the need of escaping reserved kotlin words in backticks. For
@@ -407,6 +409,9 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.6.2
+- In Kotlin, it is now possible to invoke `JsonNode`s with a function as argument to configure them.
 
 ### 0.6.1
 - Introducing support for Kotlin.
