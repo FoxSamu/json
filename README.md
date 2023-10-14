@@ -410,6 +410,10 @@ I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
 
+### 0.6.4
+- Kotlin is no longer a transitive dependency of the library. To use with Kotlin, the Kotlin dependency must be added
+  manually.
+
 ### 0.6.3
 - Properly support unsigned integer types in Kotlin.
 - Codecs for Kotlin's unsigned integer types, and range types.

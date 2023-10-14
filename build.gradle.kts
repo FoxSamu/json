@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "dev.runefox"
-version = "0.6.3"
+version = "0.6.4"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,11 @@ repositories {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-    implementation(kotlin("stdlib-jdk8"))
+
+    // Only compile main sources with kotlin, we're not running them
+    compileOnly(kotlin("stdlib-jdk8"))
+    // Test sources do run kotlin
+    testImplementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.test {
