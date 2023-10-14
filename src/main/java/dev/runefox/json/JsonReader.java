@@ -18,7 +18,7 @@ interface JsonReader {
     void readComma() throws IOException;
     TokenType peekToken() throws IOException;
     void readToken() throws IOException;
-    void close();
+    void close() throws IOException;
 
     JsonSyntaxException error(String message);
 }

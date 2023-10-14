@@ -1,7 +1,6 @@
 package dev.runefox.json;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 
 class LexerReader implements JsonReader {
     private final Token nextToken = new Token();
@@ -9,14 +8,10 @@ class LexerReader implements JsonReader {
 
     private final AbstractLexer lexer;
 
-    LexerReader(AbstractLexer lexer, boolean skipNonExecute) {
+    LexerReader(AbstractLexer lexer, boolean skipNonExecute) throws IOException {
         this.lexer = lexer;
         if (skipNonExecute) {
-            try {
-                lexer.skipNonExecutePrefixes();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            lexer.skipNonExecutePrefixes();
         }
     }
 
@@ -132,12 +127,8 @@ class LexerReader implements JsonReader {
     }
 
     @Override
-    public void close() {
-        try {
-            lexer.close();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public void close() throws IOException {
+        lexer.close();
     }
 
     @Override

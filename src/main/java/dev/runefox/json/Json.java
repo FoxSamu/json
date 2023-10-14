@@ -37,7 +37,7 @@ public class Json {
         parseConfig = j5 ? JSON5_PARSE_CONFIG : DEFAULT_PARSE_CONFIG;
     }
 
-    private JsonReader createReader(Reader reader) {
+    private JsonReader createReader(Reader reader) throws IOException {
         if (parseConfig.json5()) {
             return new LexerReader(new Json5Lexer(reader), parseConfig.allowNonExecutePrefix());
         } else {
@@ -127,8 +127,9 @@ public class Json {
      * @return A {@link JsonInput} to read
      *
      * @throws NullPointerException If the reader is null
+     * @throws IOException If an I/O error occurs
      */
-    public JsonInput input(Reader reader) {
+    public JsonInput input(Reader reader) throws IOException {
         if (reader == null)
             throw new NullPointerException();
         return new JsonInputImpl(createReader(reader), parseConfig);
@@ -141,6 +142,7 @@ public class Json {
      * @return A {@link JsonInput} to read
      *
      * @throws NullPointerException If the string is null
+     * @throws IOException          If an I/O error occurs
      */
     public JsonInput input(String string) throws IOException {
         if (string == null)

@@ -12,7 +12,10 @@ class EnumCodec<E extends Enum<E>> implements JsonCodec<E> {
     private final Map<String, E> fromName;
 
     EnumCodec(Class<E> type, Function<E, String> namer, Predicate<E> test) {
-        E[] values = type.getEnumConstants();
+        this(type.getEnumConstants(), namer, test);
+    }
+
+    EnumCodec(E[] values, Function<E, String> namer, Predicate<E> test) {
         JsonNode[] names = new JsonNode[values.length];
         Map<String, E> map = new HashMap<>();
         for (E e : values) {

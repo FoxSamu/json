@@ -19,7 +19,7 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.6`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+The current version is `0.7`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
 The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "dev.runefox:json:0.6"
+    implementation "dev.runefox:json:0.7"
 }
 ```
 
@@ -53,7 +53,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.6</version>
+        <version>0.7</version>
     </dependency>
 </dependencies>
 ```
@@ -62,9 +62,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.6](https://maven.shadew.net/dev/runefox/json/0.6/json-0.6.jar)**
-- **[Download sources v0.6](https://maven.shadew.net/dev/runefox/json/0.6/json-0.6-sources.jar)**
-- **[All artifacts for v0.6](https://maven.shadew.net/dev/runefox/json/0.6/)**
+- **[Download v0.7](https://maven.shadew.net/dev/runefox/json/0.7/json-0.7.jar)**
+- **[Download sources v0.7](https://maven.shadew.net/dev/runefox/json/0.7/json-0.7-sources.jar)**
+- **[All artifacts for v0.7](https://maven.shadew.net/dev/runefox/json/0.7/)**
 
 ## Usage
 
@@ -258,17 +258,9 @@ Codecs are a handy tool to easily encode and decode Java objects into JSON trees
 
 The main type that is important in defining codecs is the `JsonCodec` interface. This interface contains many base codec definitions, for primitives and other basic Java types. You can use codecs of other types to define new codecs.
 
-Say, you have a class like this:
+Say, you have a record class like this:
 ```java
-public class Person {
-    public final String firstName;
-    public final String lastName;
-    public String nickname; // Optional
-    
-    public Person(String first, String last) {
-        firstName = first;
-        lastName = last;
-    }
+public record Person(String firstName, String lastName, int age) {
 }
 ```
 The class contains a few fields and you preferably want to serialize it in a JSON structure like this:
@@ -276,45 +268,31 @@ The class contains a few fields and you preferably want to serialize it in a JSO
 {
     "first_name": "Lottie",
     "last_name": "Mills",
-    "nickname": "Lot"
+    "age": 32
 }
 ```
 In this scenario, you have a variety of options:
 - Implement `JsonCodec` manually
 - Make your class implement the `JsonEncodable` interface
-- Implement a `RecordCodec`
+- Implement a `RecordCodec`, which is useful for large objects
+- Use `ObjectCodecBuilder`
 
-The first option means you have to perform the checks for the presence and correctness of fields yourself. This might be preferred in some cases, but the codec system can do this for you. The second option is not really practical, as this is more useful for mutable types and your class is mostly immutable. Additionally, it will still require you to perform the same checks as with implementing `JsonCodec`.
+The first option means you have to perform the checks for the presence and correctness of fields yourself. This might be preferred in some cases, but the codec system can do this for you. The second option is not really practical, as this is more useful for mutable types and your class is mostly immutable. Additionally, it will still require you to perform the same checks as with implementing `JsonCodec`. The third option is a good solution but it's quite cumbersome for simple classes like this.
 
-The `RecordCodec` solves problems here. It allows you to read and write fields in the format you prefer, while the `RecordCodec` class keeps track of the validity of the JSON tree.
+The `ObjectCodecBuilder` solves problems here. It allows you to specify which fields to serialize, how to get them from your object and where to put them in the constructor.
 
 For the `Person` class, the codec implementation would look something like this:
 
 ```java
-public static final JsonCodec<Person> CODEC = new RecordCodec<>() {
-    @Override
-    protected Person decode(DecodeContext<Person> ctx) {
-        Person person = new Person(
-            ctx.field("first_name", JsonCodec.STRING),
-            ctx.field("last_name", JsonCodec.STRING)
-        );
-        // Applies the field only if it's present in the JSON object
-        ctx.applyField("nickname", JsonCodec.STRING, nickname -> person.nickname = nickname);
-        return person;
-    }
-
-    @Override
-    protected void encode(EncodeContext<Person> ctx, Person obj) {
-        ctx.field("first_name", JsonCodec.STRING, obj.firstName);
-        ctx.field("last_name", JsonCodec.STRING, obj.lastName);
-        if (obj.nickname != null)
-            // Set the optional field only if it's present
-            ctx.field("nickname", JsonCodec.STRING, obj.nickname);
-    }
-}
+public static final JsonCodec<Person> CODEC 
+    = ObjectCodecBuilder.of(Person.class)
+                        .with("first_name", JsonCodec.STRING, Person::firstName)
+                        .with("last_name", JsonCodec.STRING, Person::lastName)
+                        .with("age", JsonCodec.INT, Person::age)
+                        .build(Person::new)
 ```
 
-Note that a `RecordCodec` always produces and requires a JSON object. It cannot handle arrays or primitives. See the static methods of `JsonCodec` for other ways to construct codecs.
+This system is useful for classes with up to 16 serialized fields. Note that a this codec always produces and requires a JSON object. It cannot handle arrays or primitives. See the static methods of `JsonCodec` for other ways to construct codecs.
 
 
 ### Stream reading and writing
@@ -409,6 +387,11 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.7
+- Added `ObjectCodecBuilder`, a builder for `JsonCodec`s that significantly simplifies making codecs that serialize Java objects to JSON objects with similar fields.
+- `JsonCodec.ofEnum` now has overloads that accept an enum's `values()` array instead of a class instance.
+- Removed some more `UncheckedIOException` usages.
 
 ### 0.6.4
 - Kotlin is no longer a transitive dependency of the library. To use with Kotlin, the Kotlin dependency must be added

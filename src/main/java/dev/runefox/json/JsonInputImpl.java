@@ -26,7 +26,7 @@ class JsonInputImpl implements JsonInput {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         reader.close();
     }
 }

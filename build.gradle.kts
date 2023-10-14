@@ -1,3 +1,4 @@
+import dev.runefox.json.ObjectCodecTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -7,7 +8,7 @@ plugins {
 }
 
 group = "dev.runefox"
-version = "0.6.4"
+version = "0.7"
 
 repositories {
     mavenCentral()
@@ -53,12 +54,23 @@ publishing {
     }
 }
 
+tasks.register<ObjectCodecTask>("generateObjectCodec") {
+    maxParams = 16
+    pkg = "dev.runefox.json.codec"
+    out = file("${rootDir}/src/main/java")
+}
+
+tasks.compileJava {
+    dependsOn("generateObjectCodec")
+}
+
+
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "17"
 }
 
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "17"
 }

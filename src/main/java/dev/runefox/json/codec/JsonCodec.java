@@ -881,6 +881,86 @@ public interface JsonCodec<A> {
     /**
      * Returns a codec that encodes and decodes an enum to and from a string.
      *
+     * @param type  The array of all enum values, as returned by {@code .values()}.
+     * @param namer A function that returns a string that identifies an enum value. Must return a unique string for
+     *              every enum constant. This is called only before this method returns to set up a table of names
+     * @return The enum codec
+     */
+    static <E extends Enum<E>> JsonCodec<E> ofEnum(E[] type, Function<E, String> namer) {
+        return new EnumCodec<>(type, namer, e -> true);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes an enum to and from a string. All enum values between the given bounds
+     * are accepted. A null bound stands for the first or the last enum value (depending on which bound), and bounds are
+     * inclusive.
+     *
+     * @param type  The array of all enum values, as returned by {@code .values()}.
+     * @param namer A function that returns a string that identifies an enum value. Must return a unique string for
+     *              every enum constant. This is called only before this method returns to set up a table of names
+     * @param from  The first acceptable enum value (or null for the first enum value defined)
+     * @param to    The last acceptable enum value (or null for the last enum value defined)
+     * @return The enum codec
+     */
+    static <E extends Enum<E>> JsonCodec<E> ofEnumIn(E[] type, Function<E, String> namer, E from, E to) {
+        if (from == null && to == null)
+            return new EnumCodec<>(type, namer, e -> true);
+        if (from == null)
+            return new EnumCodec<>(type, namer, e -> e.compareTo(to) <= 0);
+        if (to == null)
+            return new EnumCodec<>(type, namer, e -> e.compareTo(from) >= 0);
+        return new EnumCodec<>(type, namer, e -> e.compareTo(from) >= 0 && e.compareTo(to) <= 0);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes an enum to and from a string, accepting only the given set of enum
+     * values.
+     *
+     * @param type    The array of all enum values, as returned by {@code .values()}.
+     * @param namer   A function that returns a string that identifies an enum value. Must return a unique string for
+     *                every enum constant. This is called only before this method returns to set up a table of names
+     * @param options The only enum values that are valid
+     * @return The enum codec
+     */
+    @SafeVarargs
+    static <E extends Enum<E>> JsonCodec<E> ofEnum(E[] type, Function<E, String> namer, E... options) {
+        Set<E> set = new HashSet<>(Arrays.asList(options));
+        return new EnumCodec<>(type, namer, set::contains);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes an enum to and from a string, accepting only the given set of enum
+     * values.
+     *
+     * @param type    The array of all enum values, as returned by {@code .values()}.
+     * @param namer   A function that returns a string that identifies an enum value. Must return a unique string for
+     *                every enum constant. This is called only before this method returns to set up a table of names
+     * @param options The only enum values that are valid
+     * @return The enum codec
+     */
+    static <E extends Enum<E>> JsonCodec<E> ofEnum(E[] type, Function<E, String> namer, Collection<? extends E> options) {
+        Set<E> set = new HashSet<>(options);
+        return new EnumCodec<>(type, namer, set::contains);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes an enum to and from a string, accepting only the enum values that pass
+     * the given check
+     *
+     * @param type  The array of all enum values, as returned by {@code .values()}.
+     * @param namer A function that returns a string that identifies an enum value. Must return a unique string for
+     *              every enum constant. This is called only before this method returns to set up a table of names
+     * @param check A predicate that returns true only for the enum values that are valid. This is called only before
+     *              this method returns to build a list of valid enum constants.
+     * @return The enum codec
+     */
+    static <E extends Enum<E>> JsonCodec<E> ofEnum(E[] type, Function<E, String> namer, Predicate<E> check) {
+        return new EnumCodec<>(type, namer, check);
+    }
+
+    /**
+     * Returns a codec that encodes and decodes an enum to and from a string.
+     *
      * @param type  The class of the enum
      * @param namer A function that returns a string that identifies an enum value. Must return a unique string for
      *              every enum constant. This is called only before this method returns to set up a table of names
