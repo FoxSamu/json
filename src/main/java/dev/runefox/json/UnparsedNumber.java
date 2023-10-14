@@ -11,6 +11,8 @@ class UnparsedNumber extends Number {
     private double value;
     private boolean hasIntValue;
     private long intValue;
+    private boolean hasUIntValue;
+    private long uintValue;
     private BigInteger bigIntValue;
     private BigDecimal bigValue;
     private boolean isZero;
@@ -119,6 +121,8 @@ class UnparsedNumber extends Number {
             hasValue = true;
             intValue = 0;
             hasIntValue = true;
+            uintValue = 0;
+            hasUIntValue = true;
         }
 
         this.full = full;
@@ -141,6 +145,19 @@ class UnparsedNumber extends Number {
     String integral() {
         if (integral == null) full();
         return integral;
+    }
+
+    public long unsignedLongValue() {
+        if (!hasUIntValue) {
+            try {
+                String i = integral();
+                uintValue = i == null ? bigDecimalValue().longValue() : Long.parseUnsignedLong(i);
+            } catch (NumberFormatException exc) {
+                uintValue = 0;
+            }
+            hasUIntValue = true;
+        }
+        return uintValue;
     }
 
     @Override

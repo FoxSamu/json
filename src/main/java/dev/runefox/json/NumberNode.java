@@ -115,17 +115,20 @@ final class NumberNode extends AbstractPrimitiveNode {
         if (bigInteger != null)
             return bigInteger;
 
-        if (number instanceof BigInteger)
-            return bigInteger = (BigInteger) number;
+        if (number instanceof BigInteger bi)
+            return bigInteger = bi;
 
-        if (number instanceof BigDecimal)
-            return bigInteger = ((BigDecimal) number).toBigInteger();
+        if (number instanceof BigDecimal bd)
+            return bigInteger = bd.toBigInteger();
 
-        if (number instanceof UnparsedNumber)
-            return bigInteger = ((UnparsedNumber) number).bigIntegerValue();
+        if (number instanceof UnparsedNumber un)
+            return bigInteger = un.bigIntegerValue();
 
-        if (number instanceof UnparsedHexNumber)
-            return bigInteger = ((UnparsedHexNumber) number).bigIntegerValue();
+        if (number instanceof UnparsedHexNumber uhn)
+            return bigInteger = uhn.bigIntegerValue();
+
+        if (number instanceof KotlinNumberWrapper knw)
+            return bigInteger = knw.toBigInteger();
 
         return bigInteger = asBigDecimal().toBigInteger();
     }
@@ -135,17 +138,20 @@ final class NumberNode extends AbstractPrimitiveNode {
         if (bigDecimal != null)
             return bigDecimal;
 
-        if (number instanceof BigInteger)
-            return bigDecimal = new BigDecimal((BigInteger) number);
+        if (number instanceof BigInteger bi)
+            return bigDecimal = new BigDecimal(bi);
 
-        if (number instanceof BigDecimal)
-            return bigDecimal = (BigDecimal) number;
+        if (number instanceof BigDecimal bd)
+            return bigDecimal = bd;
 
-        if (number instanceof UnparsedNumber)
-            return bigDecimal = ((UnparsedNumber) number).bigDecimalValue();
+        if (number instanceof UnparsedNumber un)
+            return bigDecimal = un.bigDecimalValue();
 
-        if (number instanceof UnparsedHexNumber)
-            return bigDecimal = ((UnparsedHexNumber) number).bigDecimalValue();
+        if (number instanceof UnparsedHexNumber uhn)
+            return bigDecimal = uhn.bigDecimalValue();
+
+        if (number instanceof KotlinNumberWrapper knw)
+            return bigDecimal = knw.toBigDecimal();
 
         return bigDecimal = BigDecimal.valueOf(asDouble());
     }
@@ -181,6 +187,18 @@ final class NumberNode extends AbstractPrimitiveNode {
     public String toString() {
         if (string != null)
             return string;
+
+        if (number instanceof KotlinNumberWrapper knw) {
+            return string = knw.represent();
+        }
+
+        if (number instanceof UnparsedNumber un) {
+            return string = un.toJsonValidString();
+        }
+
+        if (number instanceof UnparsedHexNumber uhn) {
+            return string = uhn.toJsonValidString();
+        }
 
         BigDecimal decimal = asBigDecimal();
         try {
