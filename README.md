@@ -19,7 +19,7 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.7`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+The current version is `0.7.1`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
 The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "dev.runefox:json:0.7"
+    implementation "dev.runefox:json:0.7.1"
 }
 ```
 
@@ -53,7 +53,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.7</version>
+        <version>0.7.1</version>
     </dependency>
 </dependencies>
 ```
@@ -62,9 +62,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.7](https://maven.shadew.net/dev/runefox/json/0.7/json-0.7.jar)**
-- **[Download sources v0.7](https://maven.shadew.net/dev/runefox/json/0.7/json-0.7-sources.jar)**
-- **[All artifacts for v0.7](https://maven.shadew.net/dev/runefox/json/0.7/)**
+- **[Download v0.7.1](https://maven.shadew.net/dev/runefox/json/0.7.1/json-0.7.1.jar)**
+- **[Download sources v0.7.1](https://maven.shadew.net/dev/runefox/json/0.7.1/json-0.7.1-sources.jar)**
+- **[All artifacts for v0.7.1](https://maven.shadew.net/dev/runefox/json/0.7.1/)**
 
 ## Usage
 
@@ -387,6 +387,9 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.7.1
+- Fixed NPE in `JsonNode.stream()`.
 
 ### 0.7
 - Added `ObjectCodecBuilder`, a builder for `JsonCodec`s that significantly simplifies making codecs that serialize Java objects to JSON objects with similar fields.

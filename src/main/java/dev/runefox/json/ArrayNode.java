@@ -457,7 +457,7 @@ final class ArrayNode extends AbstractConstructNode {
 
     @Override
     public Stream<JsonNode> stream() {
-        return values.stream();
+        return values().stream();
     }
 
     @Override

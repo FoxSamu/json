@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "dev.runefox"
-version = "0.7"
+version = "0.7.1"
 
 repositories {
     mavenCentral()
