@@ -53,7 +53,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.7.1</version>
+        <version>0.7.2</version>
     </dependency>
 </dependencies>
 ```
@@ -62,9 +62,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.7.1](https://maven.shadew.net/dev/runefox/json/0.7.1/json-0.7.1.jar)**
-- **[Download sources v0.7.1](https://maven.shadew.net/dev/runefox/json/0.7.1/json-0.7.1-sources.jar)**
-- **[All artifacts for v0.7.1](https://maven.shadew.net/dev/runefox/json/0.7.1/)**
+- **[Download v0.7.2](https://maven.shadew.net/dev/runefox/json/0.7.2/json-0.7.2.jar)**
+- **[Download sources v0.7.2](https://maven.shadew.net/dev/runefox/json/0.7.2/json-0.7.2-sources.jar)**
+- **[All artifacts for v0.7.2](https://maven.shadew.net/dev/runefox/json/0.7.2/)**
 
 ## Usage
 
@@ -336,6 +336,9 @@ requires dev.runefox.json;
 
 ### Kotlin
 
+Since 0.7.2 the Kotlin part is a separate artifact and must be added. It's named `jsonkt` and follows
+the same version as the main artifact.
+
 Since 0.6.1, the library now integrates better with Kotlin:
 ```kotlin
 val json = jsonObject {
@@ -387,6 +390,9 @@ in later versions.
 I am working on hosting the compiled JavaDoc online.
 
 ## Changelog
+
+### 0.7.2
+- Split JSON to separate artifact.
 
 ### 0.7.1
 - Fixed NPE in `JsonNode.stream()`.

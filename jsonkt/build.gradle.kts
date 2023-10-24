@@ -1,20 +1,24 @@
-import dev.runefox.json.ObjectCodecTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java")
     id("maven-publish")
+    kotlin("jvm") version "1.9.20-Beta2"
 }
 
-group = "dev.runefox"
-version = "0.7.2"
+group = rootProject.group
+version = rootProject.version
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+    implementation(rootProject)
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.test {
@@ -29,7 +33,7 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             groupId = "${project.group}"
-            artifactId = "json"
+            artifactId = "jsonkt"
             version = "${project.version}"
 
             from(components["java"])
@@ -47,12 +51,13 @@ publishing {
     }
 }
 
-tasks.register<ObjectCodecTask>("generateObjectCodec") {
-    maxParams = 16
-    pkg = "dev.runefox.json.codec"
-    out = file("${rootDir}/src/main/java")
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "17"
 }
 
-tasks.compileJava {
-    dependsOn("generateObjectCodec")
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "17"
 }
