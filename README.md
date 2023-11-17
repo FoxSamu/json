@@ -19,7 +19,7 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.7.1`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+The current version is `0.7.2`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
 The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation "dev.runefox:json:0.7.1"
+    implementation "dev.runefox:json:0.7.2"
 }
 ```
 
