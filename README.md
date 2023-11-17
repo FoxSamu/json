@@ -392,7 +392,7 @@ I am working on hosting the compiled JavaDoc online.
 ## Changelog
 
 ### 0.7.2
-- Split JSON to separate artifact.
+- Split Kotlin to separate artifact.
 
 ### 0.7.1
 - Fixed NPE in `JsonNode.stream()`.
