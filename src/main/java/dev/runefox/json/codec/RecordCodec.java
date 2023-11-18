@@ -1,7 +1,7 @@
 package dev.runefox.json.codec;
 
-import dev.runefox.json.JsonException;
 import dev.runefox.json.JsonNode;
+import dev.runefox.json.NodeException;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
@@ -127,7 +127,7 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         @Override
         public JsonNode field(String key) {
             if (!json.has(key))
-                throw new JsonCodecException("Expected key '" + key + "'");
+                throw new CodecException("Expected key '" + key + "'");
             return json.get(key);
         }
 
@@ -146,8 +146,8 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         private static <A> A decode(JsonCodec<A> codec, JsonNode node, String key) {
             try {
                 return codec.decode(node);
-            } catch (JsonException exc) {
-                throw new JsonCodecException(key + " > " + exc.getMessage(), exc);
+            } catch (NodeException exc) {
+                throw new CodecException(key + " > " + exc.getMessage(), exc);
             }
         }
 
@@ -172,8 +172,8 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
                 A obj = factory.apply(node);
                 obj.fromJson(node);
                 return obj;
-            } catch (JsonException exc) {
-                throw new JsonCodecException(key + " > " + exc.getMessage(), exc);
+            } catch (NodeException exc) {
+                throw new CodecException(key + " > " + exc.getMessage(), exc);
             }
         }
 
@@ -224,8 +224,8 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         private static <A extends JsonRepresentable> JsonNode encode(A obj, String key) {
             try {
                 return obj.toJson();
-            } catch (JsonException exc) {
-                throw new JsonCodecException(key + " > " + exc.getMessage(), exc);
+            } catch (NodeException exc) {
+                throw new CodecException(key + " > " + exc.getMessage(), exc);
             }
         }
 
@@ -257,8 +257,8 @@ public abstract class RecordCodec<A> implements JsonCodec<A> {
         private static <A> JsonNode encode(JsonCodec<A> codec, A obj, String key) {
             try {
                 return codec.encode(obj);
-            } catch (JsonException exc) {
-                throw new JsonCodecException(key + " > " + exc.getMessage(), exc);
+            } catch (NodeException exc) {
+                throw new CodecException(key + " > " + exc.getMessage(), exc);
             }
         }
 

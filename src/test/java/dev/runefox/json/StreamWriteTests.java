@@ -12,7 +12,7 @@ public class StreamWriteTests {
         {"a":3}{"b":5}{"c":8}[3]""";
 
     private static final Json JSON = Json.jsonBuilder().formatConfig(
-        FormattingConfig.compact()
+        JsonSerializingConfig.compact()
     ).build();
 
     @Test

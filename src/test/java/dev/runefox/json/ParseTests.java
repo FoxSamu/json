@@ -1,5 +1,6 @@
 package dev.runefox.json;
 
+import dev.runefox.json.impl.Debug;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,12 +11,12 @@ public class ParseTests {
     @BeforeEach
     void beforeEach() {
         Debug.debug = true;
-        Debug.tokenConsumer = token -> System.out.println(token.getType() + ": " + token.getValue());
+        Debug.tokenConsumer = token -> System.out.println(token.type() + ": " + token.value());
 
         json = Json.jsonBuilder().parseConfig(
-            ParsingConfig.standard()
-                         .anyValue(true)
-        ).formatConfig(FormattingConfig.prettyCompact()).build();
+            JsonParsingConfig.standard()
+                             .anyValue(true)
+        ).formatConfig(JsonSerializingConfig.prettyCompact()).build();
     }
 
     @Test

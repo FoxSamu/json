@@ -17,7 +17,7 @@ class ComparableInCodec<A extends Comparable<? super A>> implements JsonCodec<A>
 
     private A check(A a) {
         if (a.compareTo(min) < 0 || a.compareTo(max) > 0)
-            throw new JsonCodecException("Value " + a + " out of range [" + min + ", " + max + "]");
+            throw new CodecException("Value " + a + " out of range [" + min + ", " + max + "]");
         return a;
     }
 

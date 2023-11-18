@@ -1,7 +1,7 @@
 package dev.runefox.json.codec;
 
-import dev.runefox.json.JsonException;
 import dev.runefox.json.JsonNode;
+import dev.runefox.json.NodeException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,48 +16,48 @@ class AlternatingCodec<A> implements JsonCodec<A> {
 
     @Override
     public JsonNode encode(A obj) {
-        List<JsonException> exceptions = null;
+        List<NodeException> exceptions = null;
         for (JsonCodec<A> codec : options) {
             try {
                 return codec.encode(obj);
             } catch (NoCodecImplementation ignored) {
-            } catch (JsonException exc) {
+            } catch (NodeException exc) {
                 if (exceptions == null)
                     exceptions = new ArrayList<>();
                 exceptions.add(exc);
             }
         }
         if (exceptions == null)
-            throw new JsonCodecException("Could not encode");
+            throw new CodecException("Could not encode");
 
         if (exceptions.size() == 1)
             throw exceptions.get(0);
 
-        JsonCodecException exc = new JsonCodecException("Could not encode");
+        CodecException exc = new CodecException("Could not encode");
         exceptions.forEach(exc::addSuppressed);
         throw exc;
     }
 
     @Override
     public A decode(JsonNode json) {
-        List<JsonException> exceptions = null;
+        List<NodeException> exceptions = null;
         for (JsonCodec<A> codec : options) {
             try {
                 return codec.decode(json);
             } catch (NoCodecImplementation ignored) {
-            } catch (JsonException exc) {
+            } catch (NodeException exc) {
                 if (exceptions == null)
                     exceptions = new ArrayList<>();
                 exceptions.add(exc);
             }
         }
         if (exceptions == null)
-            throw new JsonCodecException("Could not decode");
+            throw new CodecException("Could not decode");
 
         if (exceptions.size() == 1)
             throw exceptions.get(0);
 
-        JsonCodecException exc = new JsonCodecException("Could not decode");
+        CodecException exc = new CodecException("Could not decode");
         exceptions.forEach(exc::addSuppressed);
         throw exc;
     }

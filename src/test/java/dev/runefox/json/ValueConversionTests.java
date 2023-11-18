@@ -1,5 +1,6 @@
 package dev.runefox.json;
 
+import dev.runefox.json.impl.UnparsedNumber;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

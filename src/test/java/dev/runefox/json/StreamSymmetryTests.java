@@ -19,7 +19,7 @@ public class StreamSymmetryTests {
     private JsonInput in;
 
     private static final Json JSON = Json.jsonBuilder().formatConfig(
-        FormattingConfig.compact()
+        JsonSerializingConfig.compact()
     ).build();
 
     private Closeable close;

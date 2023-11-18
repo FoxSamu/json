@@ -46,7 +46,7 @@ class TemporalCodec<T extends TemporalAccessor> implements JsonCodec<T> {
         try {
             return fmt.parse(json.asExactString(), q);
         } catch (DateTimeParseException exc) {
-            throw new JsonCodecException("Expected format " + fmt.toString() + ", got " + json.asExactString(), exc);
+            throw new CodecException("Expected format " + fmt.toString() + ", got " + json.asExactString(), exc);
         }
     }
 }

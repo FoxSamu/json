@@ -17,7 +17,7 @@ class ComparatorUnderCodec<A> implements JsonCodec<A> {
 
     private A check(A a) {
         if (comp.compare(a, max) > 0)
-            throw new JsonCodecException("Value " + a + " above limit " + max + "");
+            throw new CodecException("Value " + a + " above limit " + max + "");
         return a;
     }
 

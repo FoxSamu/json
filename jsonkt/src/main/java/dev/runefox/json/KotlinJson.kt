@@ -3,6 +3,9 @@
 package dev.runefox.json
 
 import dev.runefox.json.codec.JsonCodec
+import dev.runefox.json.impl.KotlinNumberWrapper
+import dev.runefox.json.impl.UnparsedHexNumber
+import dev.runefox.json.impl.UnparsedNumber
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -34,17 +37,17 @@ val JSON_EMPTY_STRING: JsonNode = JsonNode.EMPTY_STRING
 /**
  * Tests whether the JSON node is of the given type.
  */
-infix fun JsonNode.isType(type: JsonType): Boolean = this.`is`(type)
+infix fun JsonNode.isType(type: NodeType): Boolean = this.`is`(type)
 
 /**
  * Tests whether the JSON node is of one of the given types.
  */
-fun JsonNode.isType(vararg type: JsonType): Boolean = this.`is`(*type)
+fun JsonNode.isType(vararg type: NodeType): Boolean = this.`is`(*type)
 
 /**
  * Tests whether the JSON node is of this type.
  */
-operator fun JsonType.contains(node: JsonNode): Boolean {
+operator fun NodeType.contains(node: JsonNode): Boolean {
     return node isType this
 }
 

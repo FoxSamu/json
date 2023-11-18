@@ -1,6 +1,6 @@
 package dev.runefox.json;
 
-public class MissingKeyException extends JsonException {
+public class MissingKeyException extends NodeException {
     private final String key;
 
     public MissingKeyException(String key) {

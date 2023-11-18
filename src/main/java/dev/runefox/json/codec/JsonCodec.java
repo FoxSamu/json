@@ -1,8 +1,8 @@
 package dev.runefox.json.codec;
 
-import dev.runefox.json.JsonException;
 import dev.runefox.json.JsonNode;
-import dev.runefox.json.JsonType;
+import dev.runefox.json.NodeException;
+import dev.runefox.json.NodeType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -45,7 +45,7 @@ public interface JsonCodec<A> {
      * @param obj The object to be encoded
      * @return The encoded object, as a JSON tree
      *
-     * @throws JsonException If the object cannot be encoded into a valid JSON structure (i.e. one that can be decoded
+     * @throws NodeException If the object cannot be encoded into a valid JSON structure (i.e. one that can be decoded
      *                       by this codec)
      */
     JsonNode encode(A obj);
@@ -57,7 +57,7 @@ public interface JsonCodec<A> {
      * @param json The object to be decoded
      * @return The decoded object
      *
-     * @throws JsonException If the JSON structure is not valid (i.e. it cannot be decoded into a valid object).
+     * @throws NodeException If the JSON structure is not valid (i.e. it cannot be decoded into a valid object).
      */
     A decode(JsonNode json);
 
@@ -140,16 +140,16 @@ public interface JsonCodec<A> {
     JsonCodec<Character> CHAR = of(
         ch -> JsonNode.string(ch.toString()),
         json -> {
-            json.require(JsonType.NUMBER, JsonType.STRING);
+            json.require(NodeType.NUMBER, NodeType.STRING);
             if (json.isString()) {
                 String str = json.asExactString();
                 if (str.length() != 1)
-                    throw new JsonCodecException("Character expected, string length must be 1");
+                    throw new CodecException("Character expected, string length must be 1");
                 return str.charAt(0);
             }
             int i = json.asInt();
             if (i < 0 || i > Character.MAX_VALUE)
-                throw new JsonCodecException("Character expected, unicode value must be between 0 and " + Character.MAX_VALUE);
+                throw new CodecException("Character expected, unicode value must be between 0 and " + Character.MAX_VALUE);
             return (char) i;
         }
     );
@@ -162,16 +162,16 @@ public interface JsonCodec<A> {
     JsonCodec<Integer> CODE_POINT = of(
         ch -> JsonNode.string(new String(new int[] {ch}, 0, 1)),
         json -> {
-            json.require(JsonType.NUMBER, JsonType.STRING);
+            json.require(NodeType.NUMBER, NodeType.STRING);
             if (json.isString()) {
                 String str = json.asExactString();
                 if (str.codePointCount(0, str.length()) != 1)
-                    throw new JsonCodecException("Unicode code point expected, string length must be 1 code point");
+                    throw new CodecException("Unicode code point expected, string length must be 1 code point");
                 return str.codePointAt(0);
             }
             int i = json.asInt();
             if (i < 0 || i > Character.MAX_CODE_POINT)
-                throw new JsonCodecException("Unicode code point expected, unicode value must be between 0 and " + Character.MAX_CODE_POINT);
+                throw new CodecException("Unicode code point expected, unicode value must be between 0 and " + Character.MAX_CODE_POINT);
             return i;
         }
     );
@@ -368,7 +368,7 @@ public interface JsonCodec<A> {
     }
 
     /**
-     * Wraps a function and ensures all exceptions are thrown as {@link JsonException}s.
+     * Wraps a function and ensures all exceptions are thrown as {@link NodeException}s.
      *
      * @param fn The function to wrap.
      */
@@ -376,10 +376,10 @@ public interface JsonCodec<A> {
         return a -> {
             try {
                 return fn.apply(a);
-            } catch (JsonException exc) {
+            } catch (NodeException exc) {
                 throw exc;
             } catch (Throwable thr) {
-                throw new JsonCodecException(thr.getMessage(), thr);
+                throw new CodecException(thr.getMessage(), thr);
             }
         };
     }
@@ -471,7 +471,7 @@ public interface JsonCodec<A> {
      * mapped to and from strings using the given functions. Not to be confused with {@link #map} which does something
      * else.
      * <p>
-     * Note: any exception thrown by the mapping functions will be wrapped in a {@link JsonCodecException}. So if you
+     * Note: any exception thrown by the mapping functions will be wrapped in a {@link CodecException}. So if you
      * use {@link Integer} keys, you can safely use the method reference {@link Integer#parseInt Integer::parseInt},
      * without having to care about dealing with the {@link NumberFormatException} if a key is invalid.
      *
@@ -488,7 +488,7 @@ public interface JsonCodec<A> {
      * Returns a codec that encodes a {@link Map}, of which all values are encoded using this codec. The keys are mapped
      * to and from strings using the given functions. Not to be confused with {@link #map} which does something else.
      * <p>
-     * Note: any exception thrown by the mapping functions will be wrapped in a {@link JsonCodecException}. So if you
+     * Note: any exception thrown by the mapping functions will be wrapped in a {@link CodecException}. So if you
      * use {@link Integer} keys, you can safely use the method reference {@link Integer#parseInt Integer::parseInt},
      * without having to care about dealing with the {@link NumberFormatException} if a key is invalid.
      *

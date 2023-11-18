@@ -18,7 +18,7 @@ class CheckCodec<A> implements JsonCodec<A> {
 
     private A check(A obj) {
         if (!validator.test(obj))
-            throw new JsonCodecException(errorProvider.apply(obj));
+            throw new CodecException(errorProvider.apply(obj));
         return obj;
     }
 

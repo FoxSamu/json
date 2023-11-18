@@ -1,5 +1,10 @@
 package dev.runefox.json;
 
+import dev.runefox.json.impl.JsonInputImpl;
+import dev.runefox.json.impl.JsonOutputImpl;
+import dev.runefox.json.impl.Serializer;
+import dev.runefox.json.impl.parse.json.*;
+
 import java.io.*;
 import java.nio.charset.Charset;
 
@@ -12,19 +17,19 @@ import java.nio.charset.Charset;
  * {@link #compactJson5()} (the latter two will print compact JSON, while the other two print pretty JSON).
  */
 public class Json {
-    private static final FormattingConfig DEFAULT_FORMAT_CONFIG = FormattingConfig.pretty();
-    private static final ParsingConfig DEFAULT_PARSE_CONFIG = ParsingConfig.standard();
-    private static final FormattingConfig JSON5_FORMAT_CONFIG = FormattingConfig.pretty().json5(true);
-    private static final ParsingConfig JSON5_PARSE_CONFIG = ParsingConfig.standard().json5(true);
+    private static final JsonSerializingConfig DEFAULT_FORMAT_CONFIG = JsonSerializingConfig.pretty();
+    private static final JsonParsingConfig DEFAULT_PARSE_CONFIG = JsonParsingConfig.standard();
+    private static final JsonSerializingConfig JSON5_FORMAT_CONFIG = JsonSerializingConfig.pretty().json5(true);
+    private static final JsonParsingConfig JSON5_PARSE_CONFIG = JsonParsingConfig.standard().json5(true);
 
     private static final Json JSON = new Json(false);
     private static final Json JSON5 = new Json(true);
 
-    private static final Json COMPACT_JSON = jsonBuilder().formatConfig(FormattingConfig.compact()).build();
-    private static final Json COMPACT_JSON5 = json5Builder().formatConfig(FormattingConfig.compact()).build();
+    private static final Json COMPACT_JSON = jsonBuilder().formatConfig(JsonSerializingConfig.compact()).build();
+    private static final Json COMPACT_JSON5 = json5Builder().formatConfig(JsonSerializingConfig.compact()).build();
 
-    private final FormattingConfig formatConfig;
-    private final ParsingConfig parseConfig;
+    private final JsonSerializingConfig formatConfig;
+    private final JsonParsingConfig parseConfig;
     private final ThreadLocal<StringBuilder> toStringBuilder = ThreadLocal.withInitial(StringBuilder::new);
 
     private Json(Builder builder) {
@@ -39,9 +44,9 @@ public class Json {
 
     private JsonReader createReader(Reader reader) throws IOException {
         if (parseConfig.json5()) {
-            return new LexerReader(new Json5Lexer(reader), parseConfig.allowNonExecutePrefix());
+            return new JsonLexerReader(new Json5Lexer(reader), parseConfig.allowNonExecutePrefix());
         } else {
-            return new LexerReader(new JsonLexer(reader), parseConfig.allowNonExecutePrefix());
+            return new JsonLexerReader(new JsonLexer(reader), parseConfig.allowNonExecutePrefix());
         }
     }
 
@@ -52,13 +57,13 @@ public class Json {
      * @return The parsed {@link JsonNode}
      *
      * @throws NullPointerException If the reader is null
-     * @throws JsonSyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException  When the JSON has invalid syntax
      * @throws IOException          If an I/O error occurs
      */
     public JsonNode parse(Reader reader) throws IOException {
         if (reader == null)
             throw new NullPointerException();
-        return Parser.parse(createReader(reader), parseConfig);
+        return JsonParser.parse(createReader(reader), parseConfig);
     }
 
     /**
@@ -68,7 +73,7 @@ public class Json {
      * @return The parsed {@link JsonNode}
      *
      * @throws NullPointerException If the string is null
-     * @throws JsonSyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException  When the JSON has invalid syntax
      */
     public JsonNode parse(String string) throws IOException {
         if (string == null)
@@ -84,7 +89,7 @@ public class Json {
      * @return The parsed {@link JsonNode}
      *
      * @throws NullPointerException If the stream is null
-     * @throws JsonSyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException  When the JSON has invalid syntax
      * @throws IOException          If an I/O error occurs
      */
     public JsonNode parse(InputStream stream) throws IOException {
@@ -100,7 +105,7 @@ public class Json {
      * @return The parsed {@link JsonNode}
      *
      * @throws NullPointerException  If the file is null
-     * @throws JsonSyntaxException   When the JSON has invalid syntax
+     * @throws SyntaxException   When the JSON has invalid syntax
      * @throws FileNotFoundException When the file cannot be found, is a directory, or could not be opened for some
      *                               other reason
      * @throws IOException           If an I/O error occurs
@@ -165,7 +170,7 @@ public class Json {
      * @return A {@link JsonInput} to read
      *
      * @throws NullPointerException If the stream is null
-     * @throws JsonSyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException  When the JSON has invalid syntax
      * @throws IOException          If an I/O error occurs
      */
     public JsonInput input(InputStream stream) throws IOException {
@@ -383,8 +388,8 @@ public class Json {
     }
 
     /**
-     * Returns a standard JSON preset with {@linkplain ParsingConfig#standard() standard parsing} and
-     * {@linkplain FormattingConfig#pretty() pretty formatting}.
+     * Returns a standard JSON preset with {@linkplain JsonParsingConfig#standard() standard parsing} and
+     * {@linkplain JsonSerializingConfig#pretty() pretty formatting}.
      *
      * @return A standard JSON preset
      */
@@ -393,8 +398,8 @@ public class Json {
     }
 
     /**
-     * Returns a JSON 5 preset with {@linkplain ParsingConfig#standard() standard parsing} and
-     * {@linkplain FormattingConfig#pretty() pretty formatting}.
+     * Returns a JSON 5 preset with {@linkplain JsonParsingConfig#standard() standard parsing} and
+     * {@linkplain JsonSerializingConfig#pretty() pretty formatting}.
      *
      * @return A JSON 5 preset
      */
@@ -403,8 +408,8 @@ public class Json {
     }
 
     /**
-     * Returns a standard JSON preset with {@linkplain ParsingConfig#standard() standard parsing} and
-     * {@linkplain FormattingConfig#compact() compact formatting}.
+     * Returns a standard JSON preset with {@linkplain JsonParsingConfig#standard() standard parsing} and
+     * {@linkplain JsonSerializingConfig#compact() compact formatting}.
      *
      * @return A standard JSON preset
      */
@@ -413,8 +418,8 @@ public class Json {
     }
 
     /**
-     * Returns a JSON 5 preset with {@linkplain ParsingConfig#standard() standard parsing} and
-     * {@linkplain FormattingConfig#compact() compact formatting}.
+     * Returns a JSON 5 preset with {@linkplain JsonParsingConfig#standard() standard parsing} and
+     * {@linkplain JsonSerializingConfig#compact() compact formatting}.
      *
      * @return A JSON 5 preset
      */
@@ -423,14 +428,14 @@ public class Json {
     }
 
     public static class Builder {
-        private FormattingConfig formatConfig = DEFAULT_FORMAT_CONFIG;
-        private ParsingConfig parseConfig = DEFAULT_PARSE_CONFIG;
+        private JsonSerializingConfig formatConfig = DEFAULT_FORMAT_CONFIG;
+        private JsonParsingConfig parseConfig = DEFAULT_PARSE_CONFIG;
 
         private Builder() {
         }
 
         /**
-         * Sets a custom {@link FormattingConfig}. The configuration is copied upon {@link #build()}. Modification of
+         * Sets a custom {@link JsonSerializingConfig}. The configuration is copied upon {@link #build()}. Modification of
          * the configuration while building will affect the future {@link Json} instance
          *
          * @param config The configuration
@@ -438,7 +443,7 @@ public class Json {
          *
          * @throws NullPointerException When the configuration is null
          */
-        public Builder formatConfig(FormattingConfig config) {
+        public Builder formatConfig(JsonSerializingConfig config) {
             if (config == null)
                 throw new NullPointerException();
 
@@ -447,7 +452,7 @@ public class Json {
         }
 
         /**
-         * Sets a custom {@link ParsingConfig}. The configuration is copied upon {@link #build()}. Modification of the
+         * Sets a custom {@link JsonParsingConfig}. The configuration is copied upon {@link #build()}. Modification of the
          * configuration while building will affect the future {@link Json} instance
          *
          * @param config The configuration
@@ -455,7 +460,7 @@ public class Json {
          *
          * @throws NullPointerException When the configuration is null
          */
-        public Builder parseConfig(ParsingConfig config) {
+        public Builder parseConfig(JsonParsingConfig config) {
             if (config == null)
                 throw new NullPointerException();
 

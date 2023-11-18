@@ -1,12 +1,9 @@
 package dev.runefox.json;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class IncorrectTypeException extends JsonException {
+public class IncorrectTypeException extends NodeException {
     public IncorrectTypeException() {
     }
 
@@ -22,40 +19,28 @@ public class IncorrectTypeException extends JsonException {
         super(cause);
     }
 
-    public IncorrectTypeException(JsonType found, JsonType... required) {
+    public IncorrectTypeException(NodeType found, NodeType... required) {
         super(makeMessage(found, required));
     }
 
-    public IncorrectTypeException(int index, JsonType found, JsonType... required) {
+    public IncorrectTypeException(int index, NodeType found, NodeType... required) {
         super(makeMessage(index, found, required));
     }
 
-    IncorrectTypeException(Void invertMark, JsonType found, JsonType... prohibited) {
-        super(makeMessageInv(found, prohibited));
-    }
 
-    private static String makeMessage(JsonType found, JsonType... required) {
+    private static String makeMessage(NodeType found, NodeType... required) {
         return String.format(
             "Unmatched types, required %s, found %s",
-            Stream.of(required).map(JsonType::name).collect(Collectors.joining(", ")),
+            Stream.of(required).map(NodeType::name).collect(Collectors.joining(", ")),
             found
         );
     }
 
-    private static String makeMessageInv(JsonType found, JsonType... prohibited) {
-        Set<JsonType> types = new HashSet<>(Arrays.asList(prohibited));
-        return String.format(
-            "Unmatched types, required %s, found %s",
-            Stream.of(JsonType.VALUES).filter(types::contains).map(JsonType::name).collect(Collectors.joining(", ")),
-            found
-        );
-    }
-
-    private static String makeMessage(int index, JsonType found, JsonType... required) {
+    private static String makeMessage(int index, NodeType found, NodeType... required) {
         return String.format(
             "Unmatched types for index %d of array, required %s, found %s",
             index,
-            Stream.of(required).map(JsonType::name).collect(Collectors.joining(", ")),
+            Stream.of(required).map(NodeType::name).collect(Collectors.joining(", ")),
             found
         );
     }

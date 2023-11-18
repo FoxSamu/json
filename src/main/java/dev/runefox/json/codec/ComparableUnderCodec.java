@@ -13,7 +13,7 @@ class ComparableUnderCodec<A extends Comparable<? super A>> implements JsonCodec
 
     private A check(A a) {
         if (a.compareTo(max) > 0)
-            throw new JsonCodecException("Value " + a + " above limit " + max + "");
+            throw new CodecException("Value " + a + " above limit " + max + "");
         return a;
     }
 

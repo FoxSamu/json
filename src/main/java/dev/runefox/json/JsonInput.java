@@ -25,7 +25,7 @@ public interface JsonInput extends Closeable {
      *
      * @return The read node, or null at the end of stream.
      *
-     * @throws JsonSyntaxException When the read document has syntax errors, or is incomplete.
+     * @throws SyntaxException When the read document has syntax errors, or is incomplete.
      * @throws IOException         When the underlying stream throws an {@link IOException}.
      */
     JsonNode read() throws IOException;
@@ -39,7 +39,7 @@ public interface JsonInput extends Closeable {
      * @param codec The coded to decode with
      * @return The read node, or null at the end of stream.
      *
-     * @throws JsonSyntaxException When the read document has syntax errors, or is incomplete.
+     * @throws SyntaxException When the read document has syntax errors, or is incomplete.
      * @throws IOException         When the underlying stream throws an {@link IOException}.
      */
     default <A> A read(JsonCodec<A> codec) throws IOException {

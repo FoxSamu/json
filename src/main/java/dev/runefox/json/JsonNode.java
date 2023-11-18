@@ -2,6 +2,11 @@ package dev.runefox.json;
 
 import dev.runefox.json.codec.JsonCodec;
 import dev.runefox.json.codec.JsonRepresentable;
+import dev.runefox.json.impl.BaseJsonArrayCollector;
+import dev.runefox.json.impl.JsonArrayCollector;
+import dev.runefox.json.impl.JsonObjectCollector;
+import dev.runefox.json.impl.UnparsedNumber;
+import dev.runefox.json.impl.node.*;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -635,63 +640,63 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns the {@linkplain JsonType type} of this node.
+     * Returns the {@linkplain NodeType type} of this node.
      *
      * @return The type of this node
      */
-    JsonType type();
+    NodeType type();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#NULL null} node.
+     * Returns true when this node is a {@linkplain NodeType#NULL null} node.
      *
      * @return Whether this node is a null node
      */
     boolean isNull();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#STRING string} node.
+     * Returns true when this node is a {@linkplain NodeType#STRING string} node.
      *
      * @return Whether this node is a string node
      */
     boolean isString();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#NUMBER number} node.
+     * Returns true when this node is a {@linkplain NodeType#NUMBER number} node.
      *
      * @return Whether this node is a number node
      */
     boolean isNumber();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#BOOLEAN boolean} node.
+     * Returns true when this node is a {@linkplain NodeType#BOOLEAN boolean} node.
      *
      * @return Whether this node is a boolean node
      */
     boolean isBoolean();
 
     /**
-     * Returns true when this node is an {@linkplain JsonType#OBJECT object} node.
+     * Returns true when this node is an {@linkplain NodeType#OBJECT object} node.
      *
      * @return Whether this node is an object node
      */
     boolean isObject();
 
     /**
-     * Returns true when this node is an {@linkplain JsonType#ARRAY array} node.
+     * Returns true when this node is an {@linkplain NodeType#ARRAY array} node.
      *
      * @return Whether this node is an array node
      */
     boolean isArray();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#isPrimitive() primitive} node.
+     * Returns true when this node is a {@linkplain NodeType#isPrimitive() primitive} node.
      *
      * @return Whether this node is a primitive node
      */
     boolean isPrimitive();
 
     /**
-     * Returns true when this node is a {@linkplain JsonType#isConstruct() construct} node.
+     * Returns true when this node is a {@linkplain NodeType#isConstruct() construct} node.
      *
      * @return Whether this node is a construct node
      */
@@ -702,17 +707,17 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @return Whether this node is a specific type
      */
-    boolean is(JsonType type);
+    boolean is(NodeType type);
 
     /**
      * Returns true when this node is of one of the specified types.
      *
      * @return Whether this node is one of the specified types
      */
-    boolean is(JsonType... types);
+    boolean is(NodeType... types);
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#NULL null}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#NULL null}
      *
      * @return This instance for chaining
      *
@@ -721,7 +726,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNull();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#NULL null}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#NULL null}
      *
      * @return This instance for chaining
      *
@@ -730,7 +735,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNotNull();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#STRING string}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#STRING string}
      *
      * @return This instance for chaining
      *
@@ -739,7 +744,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireString();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#STRING string}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#STRING string}
      *
      * @return This instance for chaining
      *
@@ -748,7 +753,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNotString();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#NUMBER number}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#NUMBER number}
      *
      * @return This instance for chaining
      *
@@ -757,7 +762,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNumber();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#NUMBER number}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#NUMBER number}
      *
      * @return This instance for chaining
      *
@@ -766,7 +771,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNotNumber();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#BOOLEAN boolean}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#BOOLEAN boolean}
      *
      * @return This instance for chaining
      *
@@ -775,7 +780,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireBoolean();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#BOOLEAN boolean}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#BOOLEAN boolean}
      *
      * @return This instance for chaining
      *
@@ -784,7 +789,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNotBoolean();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#OBJECT object}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#OBJECT object}
      *
      * @return This instance for chaining
      *
@@ -793,7 +798,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireObject();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#OBJECT object}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#OBJECT object}
      *
      * @return This instance for chaining
      *
@@ -802,7 +807,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNotObject();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#ARRAY array}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#ARRAY array}
      *
      * @return This instance for chaining
      *
@@ -811,7 +816,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireArray();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#ARRAY array}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#ARRAY array}
      *
      * @return This instance for chaining
      *
@@ -820,7 +825,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNotArray();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#isPrimitive() primitive}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#isPrimitive() primitive}
      *
      * @return This instance for chaining
      *
@@ -829,7 +834,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requirePrimitive();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#isPrimitive() primitive}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#isPrimitive() primitive}
      *
      * @return This instance for chaining
      *
@@ -838,7 +843,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireNotPrimitive();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain JsonType#isConstruct() construct}
+     * Throws an {@link IncorrectTypeException} when this node is not {@linkplain NodeType#isConstruct() construct}
      *
      * @return This instance for chaining
      *
@@ -847,7 +852,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode requireConstruct();
 
     /**
-     * Throws an {@link IncorrectTypeException} when this node is {@linkplain JsonType#isConstruct() construct}
+     * Throws an {@link IncorrectTypeException} when this node is {@linkplain NodeType#isConstruct() construct}
      *
      * @return This instance for chaining
      *
@@ -862,7 +867,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When the this node is not the given type
      */
-    JsonNode require(JsonType type);
+    JsonNode require(NodeType type);
 
     /**
      * Throws an {@link IncorrectTypeException} when this node is the given type
@@ -871,7 +876,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When the this node is the given type
      */
-    JsonNode requireNot(JsonType type);
+    JsonNode requireNot(NodeType type);
 
     /**
      * Throws an {@link IncorrectTypeException} when this node is not one of the given types
@@ -880,7 +885,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When the this node is not one of the given types
      */
-    JsonNode require(JsonType... types);
+    JsonNode require(NodeType... types);
 
     /**
      * Throws an {@link IncorrectTypeException} when this node is one of the given types
@@ -889,10 +894,10 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When the this node is one of the given types
      */
-    JsonNode requireNot(JsonType... types);
+    JsonNode requireNot(NodeType... types);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#STRING string}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#STRING string}. The consumer must take two
      * arguments: this {@link JsonNode}, and the string value of this node.
      *
      * @param action The action to perform when the check passes
@@ -903,7 +908,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifString(BiConsumer<JsonNode, String> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the number value of this node.
      *
      * @param action The action to perform when the check passes
@@ -914,7 +919,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifNumber(BiConsumer<JsonNode, Number> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the byte value of this node.
      *
      * @param action The action to perform when the check passes
@@ -925,7 +930,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifByte(BiConsumer<JsonNode, Byte> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the short value of this node.
      *
      * @param action The action to perform when the check passes
@@ -936,7 +941,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifShort(BiConsumer<JsonNode, Short> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the int value of this node.
      *
      * @param action The action to perform when the check passes
@@ -947,7 +952,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifInt(BiConsumer<JsonNode, Integer> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the long value of this node.
      *
      * @param action The action to perform when the check passes
@@ -958,7 +963,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifLong(BiConsumer<JsonNode, Long> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the float value of this node.
      *
      * @param action The action to perform when the check passes
@@ -969,7 +974,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifFloat(BiConsumer<JsonNode, Float> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the double value of this node.
      *
      * @param action The action to perform when the check passes
@@ -980,7 +985,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifDouble(BiConsumer<JsonNode, Double> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the {@link BigInteger} value of this node.
      *
      * @param action The action to perform when the check passes
@@ -991,7 +996,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifBigInteger(BiConsumer<JsonNode, BigInteger> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#NUMBER number}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#NUMBER number}. The consumer must take two
      * arguments: this {@link JsonNode}, and the {@link BigDecimal} value of this node.
      *
      * @param action The action to perform when the check passes
@@ -1002,7 +1007,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifBigDecimal(BiConsumer<JsonNode, BigDecimal> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#BOOLEAN boolean}. The consumer must take two
+     * Performs the given action if this node is a {@linkplain NodeType#BOOLEAN boolean}. The consumer must take two
      * arguments: this {@link JsonNode}, and the boolean value of this node.
      *
      * @param action The action to perform when the check passes
@@ -1013,7 +1018,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifBoolean(BiConsumer<JsonNode, Boolean> action);
 
     /**
-     * Performs the given action if this node is {@linkplain JsonType#NULL null} (JSON null). The consumer must take
+     * Performs the given action if this node is {@linkplain NodeType#NULL null} (JSON null). The consumer must take
      * this {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1024,7 +1029,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifNull(Consumer<JsonNode> action);
 
     /**
-     * Performs the given action if this node is an {@linkplain JsonType#ARRAY array}. The consumer must take this
+     * Performs the given action if this node is an {@linkplain NodeType#ARRAY array}. The consumer must take this
      * {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1035,7 +1040,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifArray(Consumer<JsonNode> action);
 
     /**
-     * Performs the given action if this node is an {@linkplain JsonType#OBJECT object}. The consumer must take this
+     * Performs the given action if this node is an {@linkplain NodeType#OBJECT object}. The consumer must take this
      * {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1046,7 +1051,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifObject(Consumer<JsonNode> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#isPrimitive() primitive}. The consumer must take
+     * Performs the given action if this node is a {@linkplain NodeType#isPrimitive() primitive}. The consumer must take
      * this {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1057,7 +1062,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifPrimitive(Consumer<JsonNode> action);
 
     /**
-     * Performs the given action if this node is a {@linkplain JsonType#isConstruct() construct}. The consumer must take
+     * Performs the given action if this node is a {@linkplain NodeType#isConstruct() construct}. The consumer must take
      * this {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1072,16 +1077,16 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns the {@linkplain JsonType type} of the node returned by {@link #get(String)}.
+     * Returns the {@linkplain NodeType type} of the node returned by {@link #get(String)}.
      *
      * @return The type of the node, or null if the specified key is not mapped
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonType type(String key);
+    NodeType type(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#NULL null} node.
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#NULL null} node.
      *
      * @return Whether the node is a null node, or false if the specified key is not mapped
      *
@@ -1090,7 +1095,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean isNull(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#STRING string} node.
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#STRING string} node.
      *
      * @return Whether the node is a string node, or false if the specified key is not mapped
      *
@@ -1099,7 +1104,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean isString(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number} node.
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number} node.
      *
      * @return Whether the node is a number node, or false if the specified key is not mapped
      *
@@ -1108,7 +1113,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean isNumber(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#BOOLEAN boolean} node.
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#BOOLEAN boolean} node.
      *
      * @return Whether the node is a boolean node, or false if the specified key is not mapped
      *
@@ -1117,7 +1122,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean isBoolean(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is an {@linkplain JsonType#OBJECT object} node.
+     * Returns true when the node returned by {@link #get(String)} is an {@linkplain NodeType#OBJECT object} node.
      *
      * @return Whether the node is an object node, or false if the specified key is not mapped
      *
@@ -1126,7 +1131,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean isObject(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is an {@linkplain JsonType#ARRAY array} node.
+     * Returns true when the node returned by {@link #get(String)} is an {@linkplain NodeType#ARRAY array} node.
      *
      * @return Whether the node is an array node, or false if the specified key is not mapped
      *
@@ -1135,7 +1140,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean isArray(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#isPrimitive() primitive}
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#isPrimitive() primitive}
      * node.
      *
      * @return Whether the node is a primitive node, or false if the specified key is not mapped
@@ -1145,7 +1150,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean isPrimitive(String key);
 
     /**
-     * Returns true when the node returned by {@link #get(String)} is a {@linkplain JsonType#isConstruct() construct}
+     * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#isConstruct() construct}
      * node.
      *
      * @return Whether the node is a construct node, or false if the specified key is not mapped
@@ -1161,7 +1166,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean is(String key, JsonType type);
+    boolean is(String key, NodeType type);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is of one of the specified types.
@@ -1170,7 +1175,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean is(String key, JsonType... types);
+    boolean is(String key, NodeType... types);
 
     /**
      * Throws a {@link MissingKeyException} when this object node does not have the specified key.
@@ -1184,7 +1189,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#NULL null}
+     * {@linkplain NodeType#NULL null}
      *
      * @return This instance for chaining
      *
@@ -1195,7 +1200,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#NULL null}
+     * {@linkplain NodeType#NULL null}
      *
      * @return This instance for chaining
      *
@@ -1206,7 +1211,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#STRING string}
+     * {@linkplain NodeType#STRING string}
      *
      * @return This instance for chaining
      *
@@ -1217,7 +1222,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#STRING string}
+     * {@linkplain NodeType#STRING string}
      *
      * @return This instance for chaining
      *
@@ -1228,7 +1233,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#NUMBER number}
+     * {@linkplain NodeType#NUMBER number}
      *
      * @return This instance for chaining
      *
@@ -1239,7 +1244,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#NUMBER number}
+     * {@linkplain NodeType#NUMBER number}
      *
      * @return This instance for chaining
      *
@@ -1250,7 +1255,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#BOOLEAN boolean}
+     * {@linkplain NodeType#BOOLEAN boolean}
      *
      * @return This instance for chaining
      *
@@ -1261,7 +1266,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#BOOLEAN boolean}
+     * {@linkplain NodeType#BOOLEAN boolean}
      *
      * @return This instance for chaining
      *
@@ -1272,7 +1277,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#OBJECT object}
+     * {@linkplain NodeType#OBJECT object}
      *
      * @return This instance for chaining
      *
@@ -1283,7 +1288,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#OBJECT object}
+     * {@linkplain NodeType#OBJECT object}
      *
      * @return This instance for chaining
      *
@@ -1294,7 +1299,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#ARRAY array}
+     * {@linkplain NodeType#ARRAY array}
      *
      * @return This instance for chaining
      *
@@ -1305,7 +1310,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#ARRAY array}
+     * {@linkplain NodeType#ARRAY array}
      *
      * @return This instance for chaining
      *
@@ -1316,7 +1321,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#isPrimitive() primitive}
+     * {@linkplain NodeType#isPrimitive() primitive}
      *
      * @return This instance for chaining
      *
@@ -1327,7 +1332,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#isPrimitive() primitive}
+     * {@linkplain NodeType#isPrimitive() primitive}
      *
      * @return This instance for chaining
      *
@@ -1338,7 +1343,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
-     * {@linkplain JsonType#isConstruct() construct}
+     * {@linkplain NodeType#isConstruct() construct}
      *
      * @return This instance for chaining
      *
@@ -1349,7 +1354,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
-     * {@linkplain JsonType#isConstruct() construct}
+     * {@linkplain NodeType#isConstruct() construct}
      *
      * @return This instance for chaining
      *
@@ -1366,7 +1371,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not the given type or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode require(String key, JsonType type);
+    JsonNode require(String key, NodeType type);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is the given type
@@ -1376,7 +1381,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is the given type or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNot(String key, JsonType type);
+    JsonNode requireNot(String key, NodeType type);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not one of the given
@@ -1388,7 +1393,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *                                node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode require(String key, JsonType... types);
+    JsonNode require(String key, NodeType... types);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is one of the given
@@ -1399,7 +1404,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is one of the given types or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNot(String key, JsonType... types);
+    JsonNode requireNot(String key, NodeType... types);
 
     /**
      * Performs the given action if the specified key is mapped in this object.. The consumer must take the
@@ -1414,7 +1419,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifHas(String key, Consumer<JsonNode> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#STRING string}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#STRING string}.
      * The consumer must take two arguments: the {@link JsonNode}, and the string value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1426,7 +1431,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifString(String key, BiConsumer<JsonNode, String> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the number value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1438,7 +1443,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifNumber(String key, BiConsumer<JsonNode, Number> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the byte value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1450,7 +1455,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifByte(String key, BiConsumer<JsonNode, Byte> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the short value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1462,7 +1467,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifShort(String key, BiConsumer<JsonNode, Short> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the int value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1474,7 +1479,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifInt(String key, BiConsumer<JsonNode, Integer> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the long value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1486,7 +1491,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifLong(String key, BiConsumer<JsonNode, Long> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the float value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1498,7 +1503,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifFloat(String key, BiConsumer<JsonNode, Float> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the double value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1510,7 +1515,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifDouble(String key, BiConsumer<JsonNode, Double> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the {@link BigInteger} value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1522,7 +1527,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifBigInteger(String key, BiConsumer<JsonNode, BigInteger> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain JsonType#NUMBER number}.
+     * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
      * The consumer must take two arguments: the {@link JsonNode}, and the {@link BigDecimal} value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1535,7 +1540,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a
-     * {@linkplain JsonType#BOOLEAN boolean}. The consumer must take two arguments: the {@link JsonNode}, and the
+     * {@linkplain NodeType#BOOLEAN boolean}. The consumer must take two arguments: the {@link JsonNode}, and the
      * boolean value of the node.
      *
      * @param action The action to perform when the check passes
@@ -1547,7 +1552,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifBoolean(String key, BiConsumer<JsonNode, Boolean> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is {@linkplain JsonType#NULL null} (JSON
+     * Performs the given action if the node returned by {@link #get(String)} is {@linkplain NodeType#NULL null} (JSON
      * null). The consumer must take the {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1559,7 +1564,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifNull(String key, Consumer<JsonNode> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain JsonType#ARRAY array}.
+     * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain NodeType#ARRAY array}.
      * The consumer must take the {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1571,7 +1576,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode ifArray(String key, Consumer<JsonNode> action);
 
     /**
-     * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain JsonType#OBJECT object}.
+     * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain NodeType#OBJECT object}.
      * The consumer must take the {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
@@ -1584,7 +1589,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a
-     * {@linkplain JsonType#isPrimitive() primitive}. The consumer must take the {@link JsonNode} as argument.
+     * {@linkplain NodeType#isPrimitive() primitive}. The consumer must take the {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
      * @return This instance for chaining
@@ -1596,7 +1601,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a
-     * {@linkplain JsonType#isConstruct() construct}. The consumer must take the {@link JsonNode} as argument.
+     * {@linkplain NodeType#isConstruct() construct}. The consumer must take the {@link JsonNode} as argument.
      *
      * @param action The action to perform when the check passes
      * @return This instance for chaining
@@ -2281,7 +2286,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     JsonNode slice(int from, int to);
 
     /**
-     * Returns a {@link Collector} that collects {@link JsonNode}s into an {@linkplain JsonType#ARRAY array} node.
+     * Returns a {@link Collector} that collects {@link JsonNode}s into an {@linkplain NodeType#ARRAY array} node.
      *
      * @return A {@link Collector} that collects to an array node
      */
@@ -2290,7 +2295,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     }
 
     /**
-     * Returns a {@link Collector} that serializes and collects elements into an {@linkplain JsonType#ARRAY array}
+     * Returns a {@link Collector} that serializes and collects elements into an {@linkplain NodeType#ARRAY array}
      * node.
      *
      * @param serializer A function that maps elements to {@link JsonNode}s. Any null value returned by this function
@@ -2308,7 +2313,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
 
     /**
      * Returns a {@link Collector} that names, serializes and collects elements into an
-     * {@linkplain JsonType#OBJECT object} node.
+     * {@linkplain NodeType#OBJECT object} node.
      *
      * @param namer      A function that maps elements to keys. Any null value returned by this function will be
      *                   replaced with the literal string {@code "null"}. When this function names multiple distinct

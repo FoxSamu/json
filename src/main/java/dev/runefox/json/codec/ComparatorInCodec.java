@@ -21,7 +21,7 @@ class ComparatorInCodec<A> implements JsonCodec<A> {
 
     private A check(A a) {
         if (comp.compare(a, min) < 0 || comp.compare(a, max) > 0)
-            throw new JsonCodecException("Value " + a + " out of range [" + min + ", " + max + "]");
+            throw new CodecException("Value " + a + " out of range [" + min + ", " + max + "]");
         return a;
     }
 

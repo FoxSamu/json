@@ -39,7 +39,7 @@ class EnumCodec<E extends Enum<E>> implements JsonCodec<E> {
     public JsonNode encode(E obj) {
         JsonNode node = toName[obj.ordinal()];
         if (node == null)
-            throw new JsonCodecException("Unencodable enum constant " + obj.getClass().getName() + "." + obj.name());
+            throw new CodecException("Unencodable enum constant " + obj.getClass().getName() + "." + obj.name());
         return node;
     }
 
@@ -47,7 +47,7 @@ class EnumCodec<E extends Enum<E>> implements JsonCodec<E> {
     public E decode(JsonNode json) {
         String name = json.asExactString();
         if (!fromName.containsKey(name))
-            throw new JsonCodecException("Unknown enum constant: '" + name + "'");
+            throw new CodecException("Unknown enum constant: '" + name + "'");
         return fromName.get(name);
     }
 }

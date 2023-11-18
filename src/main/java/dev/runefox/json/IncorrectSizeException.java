@@ -2,7 +2,7 @@ package dev.runefox.json;
 
 // Inherits IncorrectArrayLengthException so catch blocks catching that also catch this exception
 @SuppressWarnings("deprecation")
-public class IncorrectSizeException extends IncorrectArrayLengthException {
+public class IncorrectSizeException extends RuntimeException {
     public IncorrectSizeException() {
     }
 

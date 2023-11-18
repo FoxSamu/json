@@ -30,5 +30,5 @@ fun main() {
     val node = json.parse("{\"x\": ${ULong.MAX_VALUE}}")
     println(node["x"].asULong())
     println(b[1..3])
-    println(b in JsonType.ARRAY)
+    println(b in NodeType.ARRAY)
 }

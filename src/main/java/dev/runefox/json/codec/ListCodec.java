@@ -36,7 +36,7 @@ class ListCodec<A> implements JsonCodec<List<A>> {
 
     private void checkLength(int l) {
         if (l < minL || l > maxL) {
-            throw new JsonCodecException("Length of list out of expected range [" + minL + ".." + maxL + "]");
+            throw new CodecException("Length of list out of expected range [" + minL + ".." + maxL + "]");
         }
     }
 

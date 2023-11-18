@@ -13,7 +13,7 @@ class ComparableAboveCodec<A extends Comparable<? super A>> implements JsonCodec
 
     private A check(A a) {
         if (a.compareTo(min) < 0)
-            throw new JsonCodecException("Value " + a + " under minimum " + min + "");
+            throw new CodecException("Value " + a + " under minimum " + min + "");
         return a;
     }
 

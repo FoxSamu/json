@@ -1,7 +1,7 @@
 package dev.runefox.json.codec;
 
-import dev.runefox.json.JsonException;
 import dev.runefox.json.JsonNode;
+import dev.runefox.json.NodeException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +25,8 @@ public class MapCodec<A, K> implements JsonCodec<Map<K, A>> {
             String key = keyToString.apply(k);
             try {
                 json.set(key, valueCodec.encode(a));
-            } catch (JsonException exc) {
-                throw new JsonCodecException(key + " > " + exc.getMessage(), exc);
+            } catch (NodeException exc) {
+                throw new CodecException(key + " > " + exc.getMessage(), exc);
             }
         });
         return json;
@@ -38,8 +38,8 @@ public class MapCodec<A, K> implements JsonCodec<Map<K, A>> {
         json.forEachEntry((key, a) -> {
             try {
                 map.put(stringToKey.apply(key), valueCodec.decode(a));
-            } catch (JsonException exc) {
-                throw new JsonCodecException(key + " > " + exc.getMessage(), exc);
+            } catch (NodeException exc) {
+                throw new CodecException(key + " > " + exc.getMessage(), exc);
             }
         });
         return map;
