@@ -1,31 +1,64 @@
 package dev.runefox.json.impl.node;
 
-import dev.runefox.json.IncorrectTypeException;
-import dev.runefox.json.JsonNode;
-import dev.runefox.json.NodeType;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.temporal.Temporal;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
-public final class StringNode extends AbstractPrimitiveNode {
+public final class StringNode extends PrimitiveNode {
     private final String string;
 
     public StringNode(String string) {
-        super(NodeType.STRING);
         this.string = string;
     }
 
     @Override
-    public JsonNode ifString(BiConsumer<JsonNode, String> action) {
-        action.accept(this, string);
-        return this;
+    public boolean isNull() {
+        return false;
     }
 
     @Override
-    public String asExactString() {
-        return string;
+    public boolean isString() {
+        return true;
+    }
+
+    @Override
+    public boolean isNumber() {
+        return false;
+    }
+
+    @Override
+    public boolean isBoolean() {
+        return false;
+    }
+
+    @Override
+    public boolean isOffsetDateTime() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalDateTime() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalDate() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalTime() {
+        return false;
+    }
+
+    @Override
+    protected String describeType() {
+        return "STRING";
     }
 
     @Override
@@ -34,58 +67,83 @@ public final class StringNode extends AbstractPrimitiveNode {
     }
 
     @Override
+    public String show() {
+        return string;
+    }
+
+    @Override
     public byte asByte() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public short asShort() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public int asInt() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public long asLong() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public float asFloat() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public double asDouble() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public BigInteger asBigInteger() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public BigDecimal asBigDecimal() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public Number asNumber() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IncorrectTypeException(NodeType.STRING, NodeType.BOOLEAN);
+        throw expectedType("BOOLEAN");
     }
 
     @Override
-    public int length() {
-        return string.length();
+    public Temporal asTemporal() {
+        throw expectedType("TEMPORAL");
+    }
+
+    @Override
+    public OffsetDateTime asOffsetDateTime() {
+        throw expectedType("OFFSET_DATE_TIME");
+    }
+
+    @Override
+    public LocalDateTime asLocalDateTime() {
+        throw expectedType("LOCAL_DATE_TIME");
+    }
+
+    @Override
+    public LocalDate asLocalDate() {
+        throw expectedType("LOCAL_DATE");
+    }
+
+    @Override
+    public LocalTime asLocalTime() {
+        throw expectedType("LOCAL_TIME");
     }
 
     @Override
@@ -124,6 +182,10 @@ public final class StringNode extends AbstractPrimitiveNode {
                     builder.append("\\r");
                 else if (c == '\t')
                     builder.append("\\t");
+                else if (c == '\f')
+                    builder.append("\\f");
+                else if (c == '\b')
+                    builder.append("\\b");
                 else {
                     builder.append(String.format("\\u%04X", (int) c));
                 }
@@ -134,7 +196,7 @@ public final class StringNode extends AbstractPrimitiveNode {
         builder.append(quote);
     }
 
-    static String quote(String string) {
+    public static String quote(String string) {
         StringBuilder builder = new StringBuilder();
         quote(string, builder, '"');
         return builder.toString();

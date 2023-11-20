@@ -87,11 +87,11 @@ public class JsonParser {
     }
 
     public SyntaxException expected(JsonTokenType type) {
-        return reader.error("Expected " + type.getErrorName());
+        return reader.error("Expected " + type.errorName());
     }
 
     public SyntaxException expected(JsonTokenType... types) {
-        return reader.error(Stream.of(types).map(JsonTokenType::getErrorName).collect(Collectors.joining(", ", "Expected ", "")));
+        return reader.error(Stream.of(types).map(JsonTokenType::errorName).collect(Collectors.joining(", ", "Expected ", "")));
     }
 
     public void parse0(JsonReader reader, JsonParsingConfig config) throws IOException {
@@ -208,7 +208,7 @@ public class JsonParser {
                     return;
                 }
 
-                if (next.isValue()) {
+                if (next.value()) {
                     parser.switchState(ARRAY_AFTER_VALUE);
                     parser.pushState(VALUE);
                     return;
@@ -382,7 +382,7 @@ public class JsonParser {
                     return;
                 }
 
-                if (next.isValue()) {
+                if (next.value()) {
                     parser.switchPushState(VALUE, ARRAY_AFTER_VALUE);
                     return;
                 }

@@ -124,13 +124,13 @@ public interface JsonCodec<A> {
      * representation when decoding (e.g. the numeric JSON value {@code 6} will be converted to the string {@code "6"}).
      * It will always encode as a string. Null values are not accepted.
      */
-    JsonCodec<String> STRING = of(JsonNode::string, JsonNode::asString);
+    JsonCodec<String> STRING = of(JsonNode::string, JsonNode::show);
 
     /**
      * The codec that encodes any string value. Unlike {@link #STRING}, it will only decode JSON strings, so any
      * numeric, boolean or null value is considered invalid when decoding. Null values are not accepted.
      */
-    JsonCodec<String> EXACT_STRING = of(JsonNode::string, JsonNode::asExactString);
+    JsonCodec<String> EXACT_STRING = of(JsonNode::string, JsonNode::asString);
 
     /**
      * The codec that encodes any character value, as a JSON string. It fails decoding when the input JSON is not a
@@ -142,7 +142,7 @@ public interface JsonCodec<A> {
         json -> {
             json.require(NodeType.NUMBER, NodeType.STRING);
             if (json.isString()) {
-                String str = json.asExactString();
+                String str = json.asString();
                 if (str.length() != 1)
                     throw new CodecException("Character expected, string length must be 1");
                 return str.charAt(0);
@@ -164,7 +164,7 @@ public interface JsonCodec<A> {
         json -> {
             json.require(NodeType.NUMBER, NodeType.STRING);
             if (json.isString()) {
-                String str = json.asExactString();
+                String str = json.asString();
                 if (str.codePointCount(0, str.length()) != 1)
                     throw new CodecException("Unicode code point expected, string length must be 1 code point");
                 return str.codePointAt(0);
@@ -182,87 +182,20 @@ public interface JsonCodec<A> {
      */
     JsonCodec<UUID> UUID = of(
         uuid -> JsonNode.string(uuid.toString()),
-        wrapExceptions(json -> java.util.UUID.fromString(json.asString()))
+        wrapExceptions(json -> java.util.UUID.fromString(json.show()))
     );
 
+    JsonCodec<LocalDate> LOCAL_DATE = of(JsonNode::localDate, JsonNode::asLocalDate)
+                                          .alternatively(temporal(DateTimeFormatter.ISO_LOCAL_DATE, LocalDate::from));
 
-    /**
-     * The codec that encodes a {@link Instant}, as a string. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<Instant> INSTANT = instant(DateTimeFormatter.ISO_INSTANT);
+    JsonCodec<LocalDateTime> LOCAL_DATE_TIME = of(JsonNode::localDateTime, JsonNode::asLocalDateTime)
+                                                   .alternatively(temporal(DateTimeFormatter.ISO_LOCAL_DATE_TIME, LocalDateTime::from));
 
-    /**
-     * The codec that encodes a {@link LocalDate}, as a string. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<LocalDate> LOCAL_DATE = localDate(DateTimeFormatter.ISO_LOCAL_DATE);
+    JsonCodec<LocalTime> LOCAL_TIME = of(JsonNode::localTime, JsonNode::asLocalTime)
+                                          .alternatively(temporal(DateTimeFormatter.ISO_LOCAL_TIME, LocalTime::from));
 
-    /**
-     * The codec that encodes a {@link LocalDateTime}, as a string. It fails decoding when the input JSON is not a
-     * string representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<LocalDateTime> LOCAL_DATE_TIME = localDateTime(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-
-    /**
-     * The codec that encodes a {@link LocalTime}, as a string. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<LocalTime> LOCAL_TIME = localTime(DateTimeFormatter.ISO_LOCAL_TIME);
-
-    /**
-     * The codec that encodes a {@link OffsetDateTime}, as a string. It fails decoding when the input JSON is not a
-     * string representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<OffsetDateTime> OFFSET_DATE_TIME = offsetDateTime(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-
-    /**
-     * The codec that encodes a {@link OffsetTime}, as a string. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<OffsetTime> OFFSET_TIME = offsetTime(DateTimeFormatter.ISO_OFFSET_TIME);
-
-    /**
-     * The codec that encodes a {@link Year}, as a string or int. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format, or a valid year number. Null values are not accepted.
-     */
-    JsonCodec<Year> YEAR = alternatives(
-        year(TemporalCodec.YEAR_FMT),
-        of(
-            yr -> JsonNode.number(yr.getValue()),
-            wrapExceptions(node -> Year.of(node.asInt()))
-        )
-    );
-
-    /**
-     * The codec that encodes a {@link Month}, as a string or int. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format, or a valid month number. Null values are not accepted.
-     */
-    JsonCodec<Month> MONTH = alternatives(
-        month(TemporalCodec.MONTH_FMT),
-        of(
-            yr -> JsonNode.number(yr.getValue()),
-            wrapExceptions(node -> Month.of(node.asInt()))
-        )
-    );
-
-    /**
-     * The codec that encodes a {@link YearMonth}, as a string. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<YearMonth> YEAR_MONTH = yearMonth(TemporalCodec.YEAR_MONTH_FMT);
-
-    /**
-     * The codec that encodes a {@link MonthDay}, as a string. It fails decoding when the input JSON is not a string
-     * representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<MonthDay> MONTH_DAY = monthDay(TemporalCodec.MONTH_DAY_FMT);
-
-    /**
-     * The codec that encodes a {@link ZonedDateTime}, as a string. It fails decoding when the input JSON is not a
-     * string representing a valid ISO format. Null values are not accepted.
-     */
-    JsonCodec<ZonedDateTime> ZONED_DATE_TIME = zonedDateTime(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+    JsonCodec<OffsetDateTime> OFFSET_DATE_TIME = of(JsonNode::offsetDateTime, JsonNode::asOffsetDateTime)
+                                                     .alternatively(temporal(DateTimeFormatter.ISO_OFFSET_DATE_TIME, OffsetDateTime::from));
 
     /**
      * Creates a codec for {@link JsonEncodable}s.
@@ -1224,18 +1157,6 @@ public interface JsonCodec<A> {
         return under(instant(formatter), max);
     }
 
-    static JsonCodec<Instant> instantIn(Instant min, Instant max) {
-        return in(INSTANT, min, max);
-    }
-
-    static JsonCodec<Instant> instantAbove(Instant min) {
-        return above(INSTANT, min);
-    }
-
-    static JsonCodec<Instant> instantUnder(Instant max) {
-        return under(INSTANT, max);
-    }
-
 
     static JsonCodec<LocalDate> localDate(DateTimeFormatter formatter) {
         return temporal(formatter, LocalDate::from);
@@ -1369,18 +1290,6 @@ public interface JsonCodec<A> {
         return under(offsetTime(formatter), max);
     }
 
-    static JsonCodec<OffsetTime> offsetTimeIn(OffsetTime min, OffsetTime max) {
-        return in(OFFSET_TIME, min, max);
-    }
-
-    static JsonCodec<OffsetTime> offsetTimeAbove(OffsetTime min) {
-        return above(OFFSET_TIME, min);
-    }
-
-    static JsonCodec<OffsetTime> offsetTimeUnder(OffsetTime max) {
-        return under(OFFSET_TIME, max);
-    }
-
 
     static JsonCodec<Year> year(DateTimeFormatter formatter) {
         return temporal(formatter, Year::from);
@@ -1396,18 +1305,6 @@ public interface JsonCodec<A> {
 
     static JsonCodec<Year> yearUnder(DateTimeFormatter formatter, Year max) {
         return under(year(formatter), max);
-    }
-
-    static JsonCodec<Year> yearIn(Year min, Year max) {
-        return in(YEAR, min, max);
-    }
-
-    static JsonCodec<Year> yearAbove(Year min) {
-        return above(YEAR, min);
-    }
-
-    static JsonCodec<Year> yearUnder(Year max) {
-        return under(YEAR, max);
     }
 
 
@@ -1427,18 +1324,6 @@ public interface JsonCodec<A> {
         return under(month(formatter), max);
     }
 
-    static JsonCodec<Month> monthIn(Month min, Month max) {
-        return in(MONTH, min, max);
-    }
-
-    static JsonCodec<Month> monthAbove(Month min) {
-        return above(MONTH, min);
-    }
-
-    static JsonCodec<Month> monthUnder(Month max) {
-        return under(MONTH, max);
-    }
-
     static JsonCodec<YearMonth> yearMonth(DateTimeFormatter formatter) {
         return temporal(formatter, YearMonth::from);
     }
@@ -1453,18 +1338,6 @@ public interface JsonCodec<A> {
 
     static JsonCodec<YearMonth> yearMonthUnder(DateTimeFormatter formatter, YearMonth max) {
         return under(yearMonth(formatter), max);
-    }
-
-    static JsonCodec<YearMonth> yearMonthIn(YearMonth min, YearMonth max) {
-        return in(YEAR_MONTH, min, max);
-    }
-
-    static JsonCodec<YearMonth> yearMonthAbove(YearMonth min) {
-        return above(YEAR_MONTH, min);
-    }
-
-    static JsonCodec<YearMonth> yearMonthUnder(YearMonth max) {
-        return under(YEAR_MONTH, max);
     }
 
     static JsonCodec<MonthDay> monthDay(DateTimeFormatter formatter) {
@@ -1483,18 +1356,6 @@ public interface JsonCodec<A> {
         return under(monthDay(formatter), max);
     }
 
-    static JsonCodec<MonthDay> monthDayIn(MonthDay min, MonthDay max) {
-        return in(MONTH_DAY, min, max);
-    }
-
-    static JsonCodec<MonthDay> monthDayAbove(MonthDay min) {
-        return above(MONTH_DAY, min);
-    }
-
-    static JsonCodec<MonthDay> monthDayUnder(MonthDay max) {
-        return under(MONTH_DAY, max);
-    }
-
 
     static JsonCodec<ZonedDateTime> zonedDateTime(DateTimeFormatter formatter) {
         return temporal(formatter, ZonedDateTime::from);
@@ -1510,17 +1371,5 @@ public interface JsonCodec<A> {
 
     static JsonCodec<ZonedDateTime> zonedDateTimeUnder(DateTimeFormatter formatter, ZonedDateTime max) {
         return under(zonedDateTime(formatter), max);
-    }
-
-    static JsonCodec<ZonedDateTime> zonedDateTimeIn(ZonedDateTime min, ZonedDateTime max) {
-        return in(ZONED_DATE_TIME, min, max);
-    }
-
-    static JsonCodec<ZonedDateTime> zonedDateTimeAbove(ZonedDateTime min) {
-        return above(ZONED_DATE_TIME, min);
-    }
-
-    static JsonCodec<ZonedDateTime> zonedDateTimeUnder(ZonedDateTime max) {
-        return under(ZONED_DATE_TIME, max);
     }
 }

@@ -255,10 +255,10 @@ public class Serializer {
         if (value.isNull()) writeNull();
         else if (value.isBoolean()) writeBoolean(value.asBoolean());
         else if (value.isNumber()) writeNumber(value.asBigDecimal());
-        else if (value.isString()) writeString(value.asExactString());
+        else if (value.isString()) writeString(value.asString());
         else if (value.isArray()) writeArray(value);
         else if (value.isObject()) writeObject(value);
-        else assert false; // Cannot happen if correctly implemented
+        else writeString(value.show());
     }
 
     public void writeJson(JsonNode node) throws IOException {

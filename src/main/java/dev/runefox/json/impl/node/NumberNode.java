@@ -1,90 +1,76 @@
 package dev.runefox.json.impl.node;
 
-import dev.runefox.json.IncorrectTypeException;
-import dev.runefox.json.JsonNode;
-import dev.runefox.json.NodeType;
 import dev.runefox.json.impl.KotlinNumberWrapper;
-import dev.runefox.json.impl.UnparsedHexNumber;
-import dev.runefox.json.impl.UnparsedNumber;
+import dev.runefox.json.impl.LazyParseNumber;
+import dev.runefox.json.impl.LazyParseRadix;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.temporal.Temporal;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
-public final class NumberNode extends AbstractPrimitiveNode {
+public final class NumberNode extends PrimitiveNode {
     private final Number number;
     private BigInteger bigInteger;
     private BigDecimal bigDecimal;
     private String string;
 
     public NumberNode(Number number) {
-        super(NodeType.NUMBER);
         this.number = number;
     }
 
     @Override
-    public JsonNode ifNumber(BiConsumer<JsonNode, Number> action) {
-        action.accept(this, number);
-        return this;
+    public boolean isNull() {
+        return false;
     }
 
     @Override
-    public JsonNode ifByte(BiConsumer<JsonNode, Byte> action) {
-        action.accept(this, asByte());
-        return this;
+    public boolean isString() {
+        return false;
     }
 
     @Override
-    public JsonNode ifShort(BiConsumer<JsonNode, Short> action) {
-        action.accept(this, asShort());
-        return this;
+    public boolean isNumber() {
+        return true;
     }
 
     @Override
-    public JsonNode ifInt(BiConsumer<JsonNode, Integer> action) {
-        action.accept(this, asInt());
-        return this;
+    public boolean isBoolean() {
+        return false;
     }
 
     @Override
-    public JsonNode ifLong(BiConsumer<JsonNode, Long> action) {
-        action.accept(this, asLong());
-        return this;
+    public boolean isOffsetDateTime() {
+        return false;
     }
 
     @Override
-    public JsonNode ifFloat(BiConsumer<JsonNode, Float> action) {
-        action.accept(this, asFloat());
-        return this;
+    public boolean isLocalDateTime() {
+        return false;
     }
 
     @Override
-    public JsonNode ifDouble(BiConsumer<JsonNode, Double> action) {
-        action.accept(this, asDouble());
-        return this;
+    public boolean isLocalDate() {
+        return false;
     }
 
     @Override
-    public JsonNode ifBigInteger(BiConsumer<JsonNode, BigInteger> action) {
-        action.accept(this, asBigInteger());
-        return this;
+    public boolean isLocalTime() {
+        return false;
     }
 
     @Override
-    public JsonNode ifBigDecimal(BiConsumer<JsonNode, BigDecimal> action) {
-        action.accept(this, asBigDecimal());
-        return this;
-    }
-
-    @Override
-    public String asExactString() {
-        throw new IncorrectTypeException(NodeType.NUMBER, NodeType.STRING);
+    public String show() {
+        return number.toString();
     }
 
     @Override
     public String asString() {
-        return number.toString();
+        throw expectedType("STRING");
     }
 
     @Override
@@ -128,11 +114,11 @@ public final class NumberNode extends AbstractPrimitiveNode {
         if (number instanceof BigDecimal bd)
             return bigInteger = bd.toBigInteger();
 
-        if (number instanceof UnparsedNumber un)
-            return bigInteger = un.bigIntegerValue();
+        if (number instanceof LazyParseNumber lpn)
+            return bigInteger = lpn.bigIntegerValue();
 
-        if (number instanceof UnparsedHexNumber uhn)
-            return bigInteger = uhn.bigIntegerValue();
+        if (number instanceof LazyParseRadix lpr)
+            return bigInteger = lpr.bigIntegerValue();
 
         if (number instanceof KotlinNumberWrapper knw)
             return bigInteger = knw.toBigInteger();
@@ -151,11 +137,11 @@ public final class NumberNode extends AbstractPrimitiveNode {
         if (number instanceof BigDecimal bd)
             return bigDecimal = bd;
 
-        if (number instanceof UnparsedNumber un)
-            return bigDecimal = un.bigDecimalValue();
+        if (number instanceof LazyParseNumber lpn)
+            return bigDecimal = lpn.bigDecimalValue();
 
-        if (number instanceof UnparsedHexNumber uhn)
-            return bigDecimal = uhn.bigDecimalValue();
+        if (number instanceof LazyParseRadix lpr)
+            return bigDecimal = lpr.bigDecimalValue();
 
         if (number instanceof KotlinNumberWrapper knw)
             return bigDecimal = knw.toBigDecimal();
@@ -170,7 +156,32 @@ public final class NumberNode extends AbstractPrimitiveNode {
 
     @Override
     public boolean asBoolean() {
-        throw new IncorrectTypeException(NodeType.NUMBER, NodeType.BOOLEAN);
+        throw expectedType("BOOLEAN");
+    }
+
+    @Override
+    public Temporal asTemporal() {
+        throw expectedType("TEMPORAL");
+    }
+
+    @Override
+    public OffsetDateTime asOffsetDateTime() {
+        throw expectedType("OFFSET_DATE_TIME");
+    }
+
+    @Override
+    public LocalDateTime asLocalDateTime() {
+        throw expectedType("LOCAL_DATE_TIME");
+    }
+
+    @Override
+    public LocalDate asLocalDate() {
+        throw expectedType("LOCAL_DATE");
+    }
+
+    @Override
+    public LocalTime asLocalTime() {
+        throw expectedType("LOCAL_TIME");
     }
 
     // We use BigDecimal to resemble this number so numbers of different types are equal
@@ -199,12 +210,12 @@ public final class NumberNode extends AbstractPrimitiveNode {
             return string = knw.represent();
         }
 
-        if (number instanceof UnparsedNumber un) {
-            return string = un.toJsonValidString();
+        if (number instanceof LazyParseNumber lpn) {
+            return string = lpn.toJsonValidString();
         }
 
-        if (number instanceof UnparsedHexNumber uhn) {
-            return string = uhn.toJsonValidString();
+        if (number instanceof LazyParseRadix lpr) {
+            return string = lpr.toJsonValidString();
         }
 
         BigDecimal decimal = asBigDecimal();
@@ -214,5 +225,10 @@ public final class NumberNode extends AbstractPrimitiveNode {
         } catch (ArithmeticException exc) {
             return string = decimal.toString();
         }
+    }
+
+    @Override
+    protected String describeType() {
+        return "NUMBER";
     }
 }

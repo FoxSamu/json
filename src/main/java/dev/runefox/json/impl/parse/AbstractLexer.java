@@ -2,7 +2,6 @@ package dev.runefox.json.impl.parse;
 
 import dev.runefox.json.SyntaxException;
 import dev.runefox.json.impl.Debug;
-import dev.runefox.json.impl.parse.json.JsonTokenType;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -27,11 +26,7 @@ public abstract class AbstractLexer {
     private int line = 1;
     private int col = 1;
 
-    protected int c;
-    protected LexerState state;
-
     private boolean canSeeCrlf;
-    private boolean retain;
 
     private final char[] readBuffer = new char[READ_BUFFER_SIZE + 1]; // + 1 for when we find 32-bit code points
     private int readBufferSize = 0;
@@ -84,14 +79,6 @@ public abstract class AbstractLexer {
         buffer = newbuf;
     }
 
-    public LexerState state() {
-        return state;
-    }
-
-    public void state(LexerState state) {
-        this.state = state;
-    }
-
     public void remember(int c) {
         remember = c;
     }
@@ -122,13 +109,17 @@ public abstract class AbstractLexer {
         bufferPos = 0;
     }
 
+    /**
+     * Indicates to the lexer that a token starts here. The lexer will record the location of the current character as
+     * the start of the token.
+     */
     public void startToken() {
         startPos = lastPos;
         startLine = lastLine;
         startCol = lastCol;
     }
 
-    public Token newToken(JsonTokenType type, Object val) {
+    public Token newToken(TokenType type, Object val) {
         Token reuse = reuseToken;
         if (reuse != null) {
             reuseToken = null;
@@ -137,8 +128,6 @@ public abstract class AbstractLexer {
         }
         return new Token(type, val, startPos, startLine, startCol, pos, line, col);
     }
-
-    protected abstract LexerState defaultState();
 
     private int readBuffered() throws IOException {
         if (readBufferSize < 0)
@@ -181,7 +170,11 @@ public abstract class AbstractLexer {
         return c;
     }
 
-    private int read() throws IOException {
+    protected int read() throws IOException {
+        lastPos = pos;
+        lastLine = line;
+        lastCol = col;
+
         int c = readIncrPos();
         if (canSeeCrlf && c == '\n') {
             c = readIncrPos();
@@ -200,32 +193,16 @@ public abstract class AbstractLexer {
         return c;
     }
 
-    public void retain() {
-        retain = true;
-    }
-
     public Token token(Token reuse) throws IOException {
-        state = defaultState();
         reuseToken = reuse;
 
-        while (true) {
-            lastPos = pos;
-            lastLine = line;
-            lastCol = col;
-
-            if (!retain) {
-                c = read();
-            }
-            retain = false;
-
-            Token token = state().lex(c, this);
-            if (token != null) {
-                if (Debug.debug)
-                    Debug.tokenConsumer.accept(token);
-                return token;
-            }
-        }
+        Token t = readToken();
+        if (Debug.debug)
+            Debug.tokenConsumer.accept(t);
+        return t;
     }
+
+    protected abstract Token readToken() throws IOException;
 
     public SyntaxException error(String problem) {
         return new SyntaxException(startPos, startLine, startCol, pos, line, col, problem);
@@ -237,11 +214,5 @@ public abstract class AbstractLexer {
 
     public void close() throws IOException {
         reader.close();
-    }
-
-
-    @FunctionalInterface
-    public interface LexerState {
-        Token lex(int c, AbstractLexer lex) throws SyntaxException;
     }
 }

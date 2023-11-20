@@ -1,109 +1,161 @@
 package dev.runefox.json.impl.node;
 
-import dev.runefox.json.IncorrectTypeException;
-import dev.runefox.json.JsonNode;
-import dev.runefox.json.NodeType;
-import dev.runefox.json.impl.Internal;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.Consumer;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.temporal.Temporal;
 
-public final class NullNode extends AbstractPrimitiveNode {
-    public NullNode() {
-        super(NodeType.NULL);
+public final class NullNode extends PrimitiveNode {
+    public static final NullNode INSTANCE = new NullNode();
+
+    private NullNode() {
     }
 
     @Override
-    public JsonNode ifNull(Consumer<JsonNode> action) {
-        action.accept(this);
-        return this;
+    public boolean isNull() {
+        return true;
     }
 
     @Override
-    public boolean isPrimitive() {
+    public boolean isString() {
         return false;
     }
 
     @Override
-    public JsonNode requirePrimitive() {
-        throw new IncorrectTypeException(NodeType.NULL, Internal.PRIMITIVES);
+    public boolean isNumber() {
+        return false;
     }
 
     @Override
-    public String asExactString() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.STRING);
+    public boolean isBoolean() {
+        return false;
+    }
+
+    @Override
+    public boolean isOffsetDateTime() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalDateTime() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalDate() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalTime() {
+        return false;
+    }
+
+    @Override
+    public String show() {
+        return "null";
     }
 
     @Override
     public String asString() {
-        return "null";
+        throw expectedType("STRING");
     }
 
     @Override
     public byte asByte() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public short asShort() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public int asInt() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public long asLong() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public float asFloat() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public double asDouble() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public BigInteger asBigInteger() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public BigDecimal asBigDecimal() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
-    public BigDecimal asNumber() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.NUMBER);
+    public Number asNumber() {
+        throw expectedType("NUMBER");
     }
 
     @Override
     public boolean asBoolean() {
-        throw new IncorrectTypeException(NodeType.NULL, NodeType.BOOLEAN);
+        throw expectedType("BOOLEAN");
     }
 
     @Override
-    public int hashCode() {
-        return 42;
+    public Temporal asTemporal() {
+        throw expectedType("TEMPORAL");
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this)
-            return true;
-        return obj.getClass() == getClass();
+    public OffsetDateTime asOffsetDateTime() {
+        throw expectedType("OFFSET_DATE_TIME");
+    }
+
+    @Override
+    public LocalDateTime asLocalDateTime() {
+        throw expectedType("LOCAL_DATE_TIME");
+    }
+
+    @Override
+    public LocalDate asLocalDate() {
+        throw expectedType("LOCAL_DATE");
+    }
+
+    @Override
+    public LocalTime asLocalTime() {
+        throw expectedType("LOCAL_TIME");
+    }
+
+    @Override
+    protected String describeType() {
+        return "NULL";
     }
 
     @Override
     public String toString() {
-        return "null";
+        return show();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass() == getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return 621;
     }
 }

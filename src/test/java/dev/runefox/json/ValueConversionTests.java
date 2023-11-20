@@ -1,6 +1,6 @@
 package dev.runefox.json;
 
-import dev.runefox.json.impl.UnparsedNumber;
+import dev.runefox.json.impl.LazyParseNumber;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -15,20 +15,20 @@ import static org.junit.jupiter.api.Assertions.*;
  * These tests ensure, to a certain extent, that methods like asString, asByte, etc. from JsonNode work as expected.
  */
 public class ValueConversionTests {
-    private static final UnparsedNumber U31 = new UnparsedNumber("31");
+    private static final LazyParseNumber U31 = new LazyParseNumber("31");
     private static final BigInteger I31 = new BigInteger("31");
     private static final BigDecimal D31 = new BigDecimal("31");
 
     @Test
     void testNullString() {
         JsonNode node = JsonNode.NULL;
-        assertEquals("null", node.asString());
+        assertEquals("null", node.show());
     }
 
     @Test
     void testNumString() {
         JsonNode node = JsonNode.number(U31);
-        assertEquals("31", node.asString());
+        assertEquals("31", node.show());
     }
 
     @Test
@@ -82,15 +82,15 @@ public class ValueConversionTests {
     @Test
     void testString() {
         JsonNode node = JsonNode.string("string");
-        assertEquals("string", node.asExactString());
         assertEquals("string", node.asString());
+        assertEquals("string", node.show());
     }
 
     @Test
     void testBoolean() {
         JsonNode node = JsonNode.bool(true);
         assertEquals(true, node.asBoolean());
-        assertEquals("true", node.asString());
+        assertEquals("true", node.show());
     }
 
     @Test

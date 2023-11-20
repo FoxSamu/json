@@ -1,5 +1,6 @@
 package dev.runefox.json.impl;
 
+import dev.runefox.json.IncorrectTypeException;
 import dev.runefox.json.NodeType;
 
 import java.util.Arrays;
@@ -69,5 +70,9 @@ public class Internal {
             Stream.of(VALUES).filter(types::contains).map(NodeType::name).collect(Collectors.joining(", ")),
             found
         );
+    }
+
+    public static IncorrectTypeException withIndex(IncorrectTypeException exc, int i) {
+        return new IncorrectTypeException(exc + "; at element #" + i + " in array");
     }
 }

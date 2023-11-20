@@ -4,8 +4,8 @@ package dev.runefox.json
 
 import dev.runefox.json.codec.JsonCodec
 import dev.runefox.json.impl.KotlinNumberWrapper
-import dev.runefox.json.impl.UnparsedHexNumber
-import dev.runefox.json.impl.UnparsedNumber
+import dev.runefox.json.impl.LazyParseNumber
+import dev.runefox.json.impl.LazyParseRadix
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -14,10 +14,25 @@ import java.math.BigInteger
  */
 val JSON_NULL: JsonNode = JsonNode.NULL
 
+fun JsonNode?.asJson() = when (this) {
+    null -> JSON_NULL
+    else -> this
+}
+
+fun <T> T?.asJson(codec: JsonCodec<T>): JsonNode = if (this == null) JSON_NULL else codec.encode(this)
+fun Map<String, JsonNode>.asJson(): JsonNode = JsonNode.`object`(this)
+fun Iterable<JsonNode>.asJson(): JsonNode = JsonNode.array(this)
+
 /**
  * The JSON value `0`
  */
 val JSON_ZERO: JsonNode = JsonNode.ZERO
+
+fun Number.asJson() = jsonNumber(this)
+fun UByte.asJson() = jsonNumber(this)
+fun UShort.asJson() = jsonNumber(this)
+fun UInt.asJson() = jsonNumber(this)
+fun ULong.asJson() = jsonNumber(this)
 
 /**
  * The JSON value `false`
@@ -29,10 +44,14 @@ val JSON_FALSE: JsonNode = JsonNode.FALSE
  */
 val JSON_TRUE: JsonNode = JsonNode.TRUE
 
+fun Boolean.asJson() = if (this) JSON_TRUE else JSON_FALSE
+
 /**
  * The JSON value `""`
  */
 val JSON_EMPTY_STRING: JsonNode = JsonNode.EMPTY_STRING
+
+fun String.asJson() = jsonString(this)
 
 /**
  * Tests whether the JSON node is of the given type.
@@ -450,9 +469,9 @@ fun JsonNode.asUByte(): UByte {
     val t = asNumber()
     if (t is UByteWrapper)
         return t.wrap
-    if (t is UnparsedNumber)
+    if (t is LazyParseNumber)
         return t.unsignedLongValue().toUByte()
-    if (t is UnparsedHexNumber)
+    if (t is LazyParseRadix)
         return t.toLong().toUByte()
     return asByte().toUByte()
 }
@@ -466,9 +485,9 @@ fun JsonNode.asUShort(): UShort {
     val t = asNumber()
     if (t is UShortWrapper)
         return t.wrap
-    if (t is UnparsedNumber)
+    if (t is LazyParseNumber)
         return t.unsignedLongValue().toUShort()
-    if (t is UnparsedHexNumber)
+    if (t is LazyParseRadix)
         return t.toLong().toUShort()
     return asShort().toUShort()
 }
@@ -482,9 +501,9 @@ fun JsonNode.asUInt(): UInt {
     val t = asNumber()
     if (t is UIntWrapper)
         return t.wrap
-    if (t is UnparsedNumber)
+    if (t is LazyParseNumber)
         return t.unsignedLongValue().toUInt()
-    if (t is UnparsedHexNumber)
+    if (t is LazyParseRadix)
         return t.toLong().toUInt()
     return asInt().toUInt()
 }
@@ -498,9 +517,9 @@ fun JsonNode.asULong(): ULong {
     val t = asNumber()
     if (t is ULongWrapper)
         return t.wrap
-    if (t is UnparsedNumber)
+    if (t is LazyParseNumber)
         return t.unsignedLongValue().toULong()
-    if (t is UnparsedHexNumber)
+    if (t is LazyParseRadix)
         return t.toLong().toULong()
     return asLong().toULong()
 }

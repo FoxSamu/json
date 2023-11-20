@@ -34,15 +34,57 @@ public class Token {
         this.toCol = toCol;
     }
 
+    public void set(Token token) {
+        set(
+            token.type,
+            token.value,
+            token.fromPos,
+            token.fromLine,
+            token.fromCol,
+            token.toPos,
+            token.toLine,
+            token.toCol
+        );
+    }
+
+    public int fromPos() {
+        return fromPos;
+    }
+
+    public int fromLine() {
+        return fromLine;
+    }
+
+    public int fromCol() {
+        return fromCol;
+    }
+
+    public int toPos() {
+        return toPos;
+    }
+
+    public int toLine() {
+        return toLine;
+    }
+
+    public int toCol() {
+        return toCol;
+    }
+
     public TokenType type() {
         return type;
     }
 
-    public Object value() {
-        return value;
+    @SuppressWarnings("unchecked")
+    public <T> T value() {
+        return (T) value;
     }
 
     public SyntaxException error(String problem) {
         return new SyntaxException(fromPos, fromLine, fromCol, toPos, toLine, toCol, problem);
+    }
+
+    public SyntaxException errorUpTo(Token end, String problem) {
+        return new SyntaxException(fromPos, fromLine, fromCol, end.toPos, end.toLine, end.toCol, problem);
     }
 }

@@ -1,109 +1,169 @@
 package dev.runefox.json.impl.node;
 
-import dev.runefox.json.IncorrectTypeException;
-import dev.runefox.json.JsonNode;
-import dev.runefox.json.NodeType;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.temporal.Temporal;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
-public final class BooleanNode extends AbstractPrimitiveNode {
-    private final boolean bool;
-    private final String string;
+public class BooleanNode extends PrimitiveNode {
+    public static final BooleanNode TRUE = new BooleanNode(true);
+    public static final BooleanNode FALSE = new BooleanNode(false);
 
-    public BooleanNode(boolean bool) {
-        super(NodeType.BOOLEAN);
-        this.bool = bool;
-        this.string = bool ? "true" : "false";
+    private final boolean value;
+
+    private BooleanNode(boolean value) {
+        this.value = value;
     }
 
     @Override
-    public JsonNode ifBoolean(BiConsumer<JsonNode, Boolean> action) {
-        action.accept(this, bool);
-        return this;
+    public boolean isNull() {
+        return false;
     }
 
     @Override
-    public String asExactString() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.STRING);
+    public boolean isString() {
+        return false;
+    }
+
+    @Override
+    public boolean isNumber() {
+        return false;
+    }
+
+    @Override
+    public boolean isBoolean() {
+        return true;
+    }
+
+    @Override
+    public boolean isOffsetDateTime() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalDateTime() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalDate() {
+        return false;
+    }
+
+    @Override
+    public boolean isLocalTime() {
+        return false;
+    }
+
+    @Override
+    public String show() {
+        return value ? "true" : "false";
     }
 
     @Override
     public String asString() {
-        return string;
+        throw expectedType("STRING");
     }
 
     @Override
     public byte asByte() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public short asShort() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public int asInt() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public long asLong() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public float asFloat() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public double asDouble() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public BigInteger asBigInteger() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
     public BigDecimal asBigDecimal() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+        throw expectedType("NUMBER");
     }
 
     @Override
-    public BigDecimal asNumber() {
-        throw new IncorrectTypeException(NodeType.BOOLEAN, NodeType.NUMBER);
+    public Number asNumber() {
+        throw expectedType("NUMBER");
     }
 
     @Override
     public boolean asBoolean() {
-        return bool;
+        throw expectedType("BOOLEAN");
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        BooleanNode other = (BooleanNode) o;
-        return bool == other.bool;
+    public Temporal asTemporal() {
+        throw expectedType("TEMPORAL");
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(bool);
+    public OffsetDateTime asOffsetDateTime() {
+        throw expectedType("OFFSET_DATE_TIME");
+    }
+
+    @Override
+    public LocalDateTime asLocalDateTime() {
+        throw expectedType("LOCAL_DATE_TIME");
+    }
+
+    @Override
+    public LocalDate asLocalDate() {
+        throw expectedType("LOCAL_DATE");
+    }
+
+    @Override
+    public LocalTime asLocalTime() {
+        throw expectedType("LOCAL_TIME");
+    }
+
+    @Override
+    protected String describeType() {
+        return "BOOLEAN";
     }
 
     @Override
     public String toString() {
-        return string;
+        return show();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BooleanNode jsonNodes = (BooleanNode) o;
+        return value == jsonNodes.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }

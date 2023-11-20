@@ -5,6 +5,7 @@ import dev.runefox.json.impl.parse.CharUtil;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+@Deprecated(forRemoval = true) // Use LazyParseRadix
 public class UnparsedHexNumber extends Number {
     private final String number;
     private boolean hasIntValue;
@@ -64,7 +65,7 @@ public class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }
@@ -93,7 +94,7 @@ public class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }
@@ -122,7 +123,7 @@ public class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }
@@ -151,7 +152,7 @@ public class UnparsedHexNumber extends Number {
             }
             for (int i = start, l = nr.length(); i < l; i++) {
                 char c = nr.charAt(i);
-                int hex = CharUtil.getHexDigitValue(c);
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw new NumberFormatException("For input string: " + number);
                 }

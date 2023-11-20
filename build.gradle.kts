@@ -25,6 +25,11 @@ java {
     withSourcesJar()
 }
 
+tasks.named<JavaCompile>("compileJava") {
+    // suppress all module warnings
+    options.compilerArgs.add("-Xlint:-module")
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {

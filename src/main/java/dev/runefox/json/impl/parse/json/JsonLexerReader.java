@@ -1,7 +1,7 @@
 package dev.runefox.json.impl.parse.json;
 
 import dev.runefox.json.SyntaxException;
-import dev.runefox.json.impl.parse.AbstractLexer;
+import dev.runefox.json.impl.parse.StateLexer;
 import dev.runefox.json.impl.parse.Token;
 
 import java.io.IOException;
@@ -10,9 +10,9 @@ public class JsonLexerReader implements JsonReader {
     private final Token nextToken = new Token();
     private boolean hasNext;
 
-    private final AbstractLexer lexer;
+    private final StateLexer lexer;
 
-    public JsonLexerReader(AbstractLexer lexer, boolean skipNonExecute) throws IOException {
+    public JsonLexerReader(StateLexer lexer, boolean skipNonExecute) throws IOException {
         this.lexer = lexer;
         if (skipNonExecute) {
             lexer.skipNonExecutePrefixes();
@@ -33,7 +33,7 @@ public class JsonLexerReader implements JsonReader {
         if (nextType == expectedType) {
             return next;
         } else {
-            throw next.error("Expected " + expectedType.getErrorName());
+            throw next.error("Expected " + expectedType.errorName());
         }
     }
 
@@ -41,28 +41,28 @@ public class JsonLexerReader implements JsonReader {
     public boolean readBoolean() throws IOException {
         Token next = next(JsonTokenType.BOOLEAN);
         hasNext = false;
-        return (boolean) next.value();
+        return next.value();
     }
 
     @Override
     public String readString() throws IOException {
         Token next = next(JsonTokenType.STRING);
         hasNext = false;
-        return (String) next.value();
+        return next.value();
     }
 
     @Override
     public String readIdentifier() throws IOException {
         Token next = next(JsonTokenType.IDENTIFIER);
         hasNext = false;
-        return (String) next.value();
+        return next.value();
     }
 
     @Override
     public Number readNumber() throws IOException {
         Token next = next(JsonTokenType.NUMBER);
         hasNext = false;
-        return (Number) next.value();
+        return next.value();
     }
 
     @Override

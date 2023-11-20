@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Locale;
 
-public class UnparsedNumber extends Number {
+public class LazyParseNumber extends Number {
     private final String number;
     private String full, integral;
     private boolean hasValue;
@@ -18,7 +18,7 @@ public class UnparsedNumber extends Number {
     private boolean isZero;
     private boolean isIntegral;
 
-    public UnparsedNumber(String number) {
+    public LazyParseNumber(String number) {
         this.number = number;
     }
 
@@ -225,10 +225,10 @@ public class UnparsedNumber extends Number {
     }
 
     public static boolean isZero(Number number) {
-        if (number instanceof UnparsedNumber)
-            return ((UnparsedNumber) number).isZero();
-        if (number instanceof UnparsedHexNumber)
-            return ((UnparsedHexNumber) number).isZero();
+        if (number instanceof LazyParseNumber)
+            return ((LazyParseNumber) number).isZero();
+        if (number instanceof LazyParseRadix)
+            return ((LazyParseRadix) number).isZero();
         if (number instanceof BigInteger)
             return number.equals(BigInteger.ZERO);
         if (number instanceof BigDecimal)

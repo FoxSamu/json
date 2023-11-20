@@ -26,15 +26,16 @@ public enum JsonTokenType implements TokenType {
         this.isKey = isKey;
     }
 
-    public String getErrorName() {
+    @Override
+    public String errorName() {
         return errorName;
     }
 
-    public boolean isValue() {
+    public boolean value() {
         return isValue;
     }
 
-    public boolean isKey() {
+    public boolean key() {
         return isKey;
     }
 }

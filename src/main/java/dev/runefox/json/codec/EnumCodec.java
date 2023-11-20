@@ -45,7 +45,7 @@ class EnumCodec<E extends Enum<E>> implements JsonCodec<E> {
 
     @Override
     public E decode(JsonNode json) {
-        String name = json.asExactString();
+        String name = json.asString();
         if (!fromName.containsKey(name))
             throw new CodecException("Unknown enum constant: '" + name + "'");
         return fromName.get(name);

@@ -1,21 +1,23 @@
 package dev.runefox.json;
 
-import dev.runefox.json.codec.JsonCodec;
 import dev.runefox.json.codec.JsonRepresentable;
 import dev.runefox.json.impl.BaseJsonArrayCollector;
 import dev.runefox.json.impl.JsonArrayCollector;
 import dev.runefox.json.impl.JsonObjectCollector;
-import dev.runefox.json.impl.UnparsedNumber;
+import dev.runefox.json.impl.LazyParseNumber;
 import dev.runefox.json.impl.node.*;
 
-import java.io.File;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.temporal.Temporal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -70,21 +72,21 @@ import java.util.stream.Stream;
  * Converting a node to a string will generate a quick and compact JSON representation of the node. This is useful for
  * debugging purposes, but it's not recommended when writing to a file or sending over a network.
  */
-public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
+public sealed interface JsonNode extends Iterable<JsonNode>, JsonRepresentable permits AbstractNode {
     /**
      * The only {@link JsonNode} representing the JSON value {@code null}.
      */
-    JsonNode NULL = new NullNode();
+    JsonNode NULL = NullNode.INSTANCE;
 
     /**
      * The only {@link JsonNode} representing the JSON boolean value {@code true}.
      */
-    JsonNode TRUE = new BooleanNode(true);
+    JsonNode TRUE = BooleanNode.TRUE;
 
     /**
      * The only {@link JsonNode} representing the JSON boolean value {@code false}.
      */
-    JsonNode FALSE = new BooleanNode(false);
+    JsonNode FALSE = BooleanNode.FALSE;
 
     /**
      * The only {@link JsonNode} representing the JSON string value {@code ""}.
@@ -103,16 +105,10 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @param node A nullable JSON tree.
      * @return The given JSON tree, or {@link #NULL}.
-     *
-     * @throws IllegalArgumentException When the given {@link JsonNode} implementation is not the correct, internal
-     *                                  implementation.
      */
     static JsonNode orNull(JsonNode node) {
         if (node == null)
             return NULL;
-
-        if (!(node instanceof AbstractJsonNode))
-            throw new IllegalArgumentException("JsonNode implementation is not a builtin implementation. This breaks");
 
         return node;
     }
@@ -152,7 +148,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode number(Number value) {
         if (value == null) return NULL;
-        return UnparsedNumber.isZero(value) ? ZERO : new NumberNode(value);
+        return LazyParseNumber.isZero(value) ? ZERO : new NumberNode(value);
     }
 
     /**
@@ -173,7 +169,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode array(JsonNode elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         return new ArrayNode(new JsonNode[] {elems});
     }
@@ -187,7 +183,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode array(JsonNode... elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         return new ArrayNode(elems);
     }
@@ -201,7 +197,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode array(Iterable<? extends JsonNode> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         return new ArrayNode(elems);
     }
@@ -215,7 +211,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode stringArray(String... elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (String elem : elems)
@@ -232,7 +228,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(Number... elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (Number elem : elems)
@@ -248,7 +244,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(byte[] elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (byte elem : elems)
@@ -264,7 +260,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(short[] elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (short elem : elems)
@@ -280,7 +276,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(int[] elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (int elem : elems)
@@ -296,7 +292,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(long[] elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (long elem : elems)
@@ -312,7 +308,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(float[] elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (float elem : elems)
@@ -328,7 +324,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(double[] elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (double elem : elems)
@@ -345,7 +341,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode boolArray(Boolean... elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (Boolean elem : elems)
@@ -361,7 +357,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode boolArray(boolean[] elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (boolean elem : elems)
@@ -378,7 +374,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode stringArray(Iterable<? extends String> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (String elem : elems)
@@ -395,7 +391,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberArray(Iterable<? extends Number> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (Number elem : elems)
@@ -412,7 +408,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode boolArray(Iterable<Boolean> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ArrayNode node = new ArrayNode();
         for (Boolean elem : elems)
@@ -443,6 +439,17 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     }
 
     /**
+     * Returns a new mutable object node, with one key-value pair.
+     *
+     * @return The JSON object node
+     */
+    static JsonNode object(String key, JsonNode val) {
+        JsonNode obj = object();
+        obj.set(key, val);
+        return obj;
+    }
+
+    /**
      * Returns a new mutable object node, initially filled with the elements from the given map. Elements are inserted
      * in the given map's iteration order (which is preserved). Any null element is automatically replaced with
      * {@link #NULL}.
@@ -452,7 +459,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode object(Map<? extends String, ? extends JsonNode> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         return new ObjectNode(elems);
     }
@@ -467,7 +474,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode stringObject(Map<? extends String, ? extends String> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ObjectNode node = new ObjectNode();
         elems.forEach(node::set);
@@ -484,7 +491,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode numberObject(Map<? extends String, ? extends Number> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ObjectNode node = new ObjectNode();
         elems.forEach(node::set);
@@ -501,138 +508,168 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     static JsonNode boolObject(Map<? extends String, ? extends Boolean> elems) {
         if (elems == null)
-            throw new NullPointerException();
+            return NULL;
 
         ObjectNode node = new ObjectNode();
         elems.forEach(node::set);
         return node;
     }
 
-    /**
-     * Attempts to convert a Java-based structure (i.e. Maps, Lists, etc.) to a JSON tree.
-     * <p>
-     * <strong>Warning:</strong>
-     * Even though this method allows to obtain a JSON tree quickly from pretty much any basic builtin type, this method
-     * is not recommended for production use. This method does some implicit conversions to primitive types in order to
-     * create a suitable JSON structure, which can happen in semi-unpredictable ways. One might prefer more control over
-     * how instances are converted to JSON. Use with a light risk. For a more flexible way to convert to JSON trees, use
-     * {@link JsonCodec}s.
-     * <p>
-     * This method will convert types in the following order:
-     * <ul>
-     * <li><code>null</code> is converted to {@link #NULL}</li>
-     * <li>Any {@link JsonNode} is returned by itself</li>
-     * <li>Any {@link JsonRepresentable} is converted via {@link JsonRepresentable#toJson()}, implement this interface to allow quick serialization</li>
-     * <li>Any {@link Boolean} is converted to a boolean node</li>
-     * <li>Any {@link Number} is converted to a number node</li>
-     * <li>Any {@link String} is converted to a string node</li>
-     * <li>Any {@link File}, {@link Path}, {@link URL}, {@link URI} or {@link JsonPath} is converted into a string via {@link Object#toString()}</li>
-     * <li>Any {@link Enum} is converted into its name via {@link Enum#name()}</li>
-     * <li>Any {@link Stream} is converted to an array node with the streamed elements</li>
-     * <li>Any {@link Iterable} is converted to an array node with the iterated elements</li>
-     * <li>Any {@link Iterator} is converted to an array node with the remaining elements</li>
-     * <li>Any {@link Enumeration} is converted to an array node with the remaining elements</li>
-     * <li>Any {@link Map} is converted to an object node with the contained elements, keys converted to string as by {@link Object#toString()}</li>
-     * <li>Any {@link Dictionary} is converted to an object node with the contained elements, keys converted to string as by {@link Object#toString()}</li>
-     * <li>Any array type (primitive or not) is converted to an array node with the contained elements</li>
-     * <li>Any other object is converted to a string like {@link Object#toString()}</li>
-     * </ul>
-     * Conversions of objects in iterables/arrays/maps/etc. are recursively converted using this method as well.
-     *
-     * @param obj The object to convert.
-     * @return The converted JSON tree
-     *
-     * @deprecated This method makes lots of assumptions and is only for debug purposes. For production purposes, use a
-     *     {@link JsonCodec}.
-     */
-    @Deprecated
-    static JsonNode fromJavaObject(Object obj) {
-        if (obj == null) {
-            // Null
+
+    static JsonNode offsetDateTime(OffsetDateTime temporal) {
+        if (temporal == null)
             return NULL;
-        } else if (obj instanceof JsonNode) {
-            // Any node is returned by itself
-            return (JsonNode) obj;
-        } else if (obj instanceof JsonRepresentable) {
-            // Serialize anything specifically serializable in the way it wants to
-            return orNull(((JsonRepresentable) obj).toJson());
-        } else if (obj instanceof Boolean) {
-            // Boolean
-            return bool((Boolean) obj);
-        } else if (obj instanceof Number) {
-            // Number
-            return number((Number) obj);
-        } else if (obj instanceof String) {
-            // String
-            return string((String) obj);
-        } else if (obj instanceof File) {
-            return string(obj.toString());
-        } else if (obj instanceof Path) {
-            return string(obj.toString());
-        } else if (obj instanceof URL) {
-            return string(obj.toString());
-        } else if (obj instanceof URI) {
-            return string(obj.toString());
-        } else if (obj instanceof JsonPath) {
-            return string(obj.toString());
-        } else if (obj instanceof Enum) {
-            return string(((Enum<?>) obj).name());
-        } else if (obj instanceof Stream) {
-            // Stream -> Array
-            Stream<?> itr = (Stream<?>) obj;
-            ArrayNode node = new ArrayNode();
-            itr.map(JsonNode::fromJavaObject).forEach(node::add);
-            return node;
-        } else if (obj instanceof Iterable) {
-            // Iterable -> Array
-            Iterable<?> itr = (Iterable<?>) obj;
-            ArrayNode node = new ArrayNode();
-            for (Object el : itr)
-                node.add(fromJavaObject(el));
-            return node;
-        } else if (obj instanceof Iterator) {
-            // Iterator -> Array
-            Iterator<?> itr = (Iterator<?>) obj;
-            ArrayNode node = new ArrayNode();
-            while (itr.hasNext())
-                node.add(fromJavaObject(itr.next()));
-            return node;
-        } else if (obj instanceof Enumeration) {
-            // Enumeration -> Array
-            Enumeration<?> itr = (Enumeration<?>) obj;
-            ArrayNode node = new ArrayNode();
-            while (itr.hasMoreElements())
-                node.add(fromJavaObject(itr.nextElement()));
-            return node;
-        } else if (obj instanceof Map) {
-            // Map -> Object
-            Map<?, ?> map = (Map<?, ?>) obj;
-            ObjectNode node = new ObjectNode();
-            map.forEach((k, v) -> node.set(k + "", fromJavaObject(v)));
-            return node;
-        } else if (obj instanceof Dictionary) {
-            // Dictionary -> Object
-            Dictionary<?, ?> map = (Dictionary<?, ?>) obj;
-            ObjectNode node = new ObjectNode();
-            Enumeration<?> keys = map.keys();
-            while (keys.hasMoreElements()) {
-                Object key = keys.nextElement();
-                node.set(key + "", fromJavaObject(map.get(key)));
-            }
-            return node;
-        } else if (obj.getClass().isArray()) {
-            // Array -> Array
-            // Using reflection it's possible to cover all array types at once
-            int len = Array.getLength(obj);
-            ArrayNode node = new ArrayNode();
-            for (int i = 0; i < len; i++) {
-                node.add(fromJavaObject(Array.get(obj, i)));
-            }
-            return node;
-        } else {
-            // Other: convert to string
-            return string(obj + "");
-        }
+        return new OffsetDateTimeNode(temporal);
+    }
+
+    static JsonNode offsetDateTimeNow() {
+        return offsetDateTime(OffsetDateTime.now());
+    }
+
+    static JsonNode localDateTime(LocalDateTime temporal) {
+        if (temporal == null)
+            return NULL;
+        return new LocalDateTimeNode(temporal);
+    }
+
+    static JsonNode localDateTimeNow() {
+        return localDateTime(LocalDateTime.now());
+    }
+
+    static JsonNode localDate(LocalDate temporal) {
+        if (temporal == null)
+            return NULL;
+        return new LocalDateNode(temporal);
+    }
+
+    static JsonNode localDateNow() {
+        return localDate(LocalDate.now());
+    }
+
+    static JsonNode localTime(LocalTime temporal) {
+        if (temporal == null)
+            return NULL;
+        return new LocalTimeNode(temporal);
+    }
+
+    static JsonNode localTimeNow() {
+        return localTime(LocalTime.now());
+    }
+
+    static JsonNode offsetDateTimeObject(Map<? extends String, ? extends OffsetDateTime> elems) {
+        if (elems == null)
+            return NULL;
+
+        ObjectNode node = new ObjectNode();
+        elems.forEach((k, v) -> node.set(k, offsetDateTime(v)));
+        return node;
+    }
+
+    static JsonNode localDateTimeObject(Map<? extends String, ? extends LocalDateTime> elems) {
+        if (elems == null)
+            return NULL;
+
+        ObjectNode node = new ObjectNode();
+        elems.forEach((k, v) -> node.set(k, localDateTime(v)));
+        return node;
+    }
+
+    static JsonNode localDateObject(Map<? extends String, ? extends LocalDate> elems) {
+        if (elems == null)
+            return NULL;
+
+        ObjectNode node = new ObjectNode();
+        elems.forEach((k, v) -> node.set(k, localDate(v)));
+        return node;
+    }
+
+    static JsonNode localTimeObject(Map<? extends String, ? extends LocalTime> elems) {
+        if (elems == null)
+            return NULL;
+
+        ObjectNode node = new ObjectNode();
+        elems.forEach((k, v) -> node.set(k, localTime(v)));
+        return node;
+    }
+
+    static JsonNode offsetDateTimeArray(OffsetDateTime... elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (OffsetDateTime elem : elems)
+            node.add(offsetDateTime(elem));
+        return node;
+    }
+
+    static JsonNode offsetDateTimeArray(Iterable<? extends OffsetDateTime> elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (OffsetDateTime elem : elems)
+            node.add(offsetDateTime(elem));
+        return node;
+    }
+
+    static JsonNode localDateTimeArray(LocalDateTime... elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (LocalDateTime elem : elems)
+            node.add(localDateTime(elem));
+        return node;
+    }
+
+    static JsonNode localDateTimeArray(Iterable<? extends LocalDateTime> elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (LocalDateTime elem : elems)
+            node.add(localDateTime(elem));
+        return node;
+    }
+
+    static JsonNode localDateArray(LocalDate... elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (LocalDate elem : elems)
+            node.add(localDate(elem));
+        return node;
+    }
+
+    static JsonNode localDateArray(Iterable<? extends LocalDate> elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (LocalDate elem : elems)
+            node.add(localDate(elem));
+        return node;
+    }
+
+    static JsonNode localTimeArray(LocalTime... elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (LocalTime elem : elems)
+            node.add(localTime(elem));
+        return node;
+    }
+
+    static JsonNode localTimeArray(Iterable<? extends LocalTime> elems) {
+        if (elems == null)
+            return NULL;
+
+        ArrayNode node = new ArrayNode();
+        for (LocalTime elem : elems)
+            node.add(localTime(elem));
+        return node;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -644,7 +681,10 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @return The type of this node
      */
-    NodeType type();
+    @Deprecated
+    default NodeType type() {
+        return null;
+    }
 
     /**
      * Returns true when this node is a {@linkplain NodeType#NULL null} node.
@@ -701,6 +741,43 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @return Whether this node is a construct node
      */
     boolean isConstruct();
+
+    /**
+     * Returns true when this node is a temporal node (not part of JSON, but present in other formats like TOML).
+     *
+     * @return Whether this node is a temporal node
+     */
+    boolean isTemporal();
+
+    /**
+     * Returns true when this node is an offset date+time node (not part of JSON, but present in other formats like
+     * TOML).
+     *
+     * @return Whether this node is an offset date+time node
+     */
+    boolean isOffsetDateTime();
+
+    /**
+     * Returns true when this node is an local date+time node (not part of JSON, but present in other formats like
+     * TOML).
+     *
+     * @return Whether this node is an local date+time node
+     */
+    boolean isLocalDateTime();
+
+    /**
+     * Returns true when this node is an local date node (not part of JSON, but present in other formats like TOML).
+     *
+     * @return Whether this node is an local date node
+     */
+    boolean isLocalDate();
+
+    /**
+     * Returns true when this node is an local time node (not part of JSON, but present in other formats like TOML).
+     *
+     * @return Whether this node is an local time node
+     */
+    boolean isLocalTime();
 
     /**
      * Returns true when this node is of the specified type.
@@ -859,6 +936,96 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the this node is construct
      */
     JsonNode requireNotConstruct();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is not temporal
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is not temporal
+     */
+    JsonNode requireTemporal();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is temporal
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is temporal
+     */
+    JsonNode requireNotTemporal();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is not an offset date+time
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is not an offset date+time
+     */
+    JsonNode requireOffsetDateTime();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is an offset date+time
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is an offset date+time
+     */
+    JsonNode requireNotOffsetDateTime();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is not an local date+time
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is not an local date+time
+     */
+    JsonNode requireLocalDateTime();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is an local date+time
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is an local date+time
+     */
+    JsonNode requireNotLocalDateTime();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is not an local date
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is not an local date
+     */
+    JsonNode requireLocalDate();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is an local date
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is an local date
+     */
+    JsonNode requireNotLocalDate();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is not an local time
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is not an local time
+     */
+    JsonNode requireLocalTime();
+
+    /**
+     * Throws an {@link IncorrectTypeException} when this node is an local time
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the this node is an local time
+     */
+    JsonNode requireNotLocalTime();
 
     /**
      * Throws an {@link IncorrectTypeException} when this node is not the given type
@@ -1072,6 +1239,61 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     JsonNode ifConstruct(Consumer<JsonNode> action);
 
+    /**
+     * Performs the given action if this node is temporal. The consumer must take this {@link JsonNode} and its
+     * {@link Temporal} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifTemporal(BiConsumer<JsonNode, Temporal> action);
+
+    /**
+     * Performs the given action if this node is an offset date+time. The consumer must take this {@link JsonNode} and
+     * its {@link OffsetDateTime} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifOffsetDateTime(BiConsumer<JsonNode, OffsetDateTime> action);
+
+    /**
+     * Performs the given action if this node is a local date+time. The consumer must take this {@link JsonNode} and its
+     * {@link LocalDateTime} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifLocalDateTime(BiConsumer<JsonNode, LocalDateTime> action);
+
+    /**
+     * Performs the given action if this node is a local date. The consumer must take this {@link JsonNode} and its
+     * {@link LocalDate} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifLocalDate(BiConsumer<JsonNode, LocalDate> action);
+
+    /**
+     * Performs the given action if this node is a local time. The consumer must take this {@link JsonNode} and its
+     * {@link LocalTime} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException If the action is null
+     */
+    JsonNode ifLocalTime(BiConsumer<JsonNode, LocalTime> action);
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Checks on object elements
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1083,7 +1305,10 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    NodeType type(String key);
+    @Deprecated
+    default NodeType type(String key) {
+        return null;
+    }
 
     /**
      * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#NULL null} node.
@@ -1092,7 +1317,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isNull(String key);
+    boolean hasNull(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#STRING string} node.
@@ -1101,7 +1326,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isString(String key);
+    boolean hasString(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number} node.
@@ -1110,7 +1335,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isNumber(String key);
+    boolean hasNumber(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#BOOLEAN boolean} node.
@@ -1119,7 +1344,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isBoolean(String key);
+    boolean hasBoolean(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is an {@linkplain NodeType#OBJECT object} node.
@@ -1128,7 +1353,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isObject(String key);
+    boolean hasObject(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is an {@linkplain NodeType#ARRAY array} node.
@@ -1137,7 +1362,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isArray(String key);
+    boolean hasArray(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#isPrimitive() primitive}
@@ -1147,7 +1372,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isPrimitive(String key);
+    boolean hasPrimitive(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is a {@linkplain NodeType#isConstruct() construct}
@@ -1157,7 +1382,52 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean isConstruct(String key);
+    boolean hasConstruct(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a temporal node.
+     *
+     * @return Whether the node is a temporal node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean hasTemporal(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is an offset date+time node.
+     *
+     * @return Whether the node is an offset date+time node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean hasOffsetDateTime(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a local date+time node.
+     *
+     * @return Whether the node is a local date+time node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean hasLocalDateTime(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a local date node.
+     *
+     * @return Whether the node is a local date node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean hasLocalDate(String key);
+
+    /**
+     * Returns true when the node returned by {@link #get(String)} is a local time node.
+     *
+     * @return Whether the node is a local time node, or false if the specified key is not mapped
+     *
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    boolean hasLocalTime(String key);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is of the specified type.
@@ -1166,7 +1436,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean is(String key, NodeType type);
+    boolean has(String key, NodeType type);
 
     /**
      * Returns true when the node returned by {@link #get(String)} is of one of the specified types.
@@ -1175,7 +1445,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException When this node is not an object node
      */
-    boolean is(String key, NodeType... types);
+    boolean has(String key, NodeType... types);
 
     /**
      * Throws a {@link MissingKeyException} when this object node does not have the specified key.
@@ -1196,7 +1466,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not null or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNull(String key);
+    JsonNode requireHasNull(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1207,7 +1477,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is null or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotNull(String key);
+    JsonNode requireHasNotNull(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
@@ -1218,7 +1488,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not string or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireString(String key);
+    JsonNode requireHasString(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1229,7 +1499,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is string or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotString(String key);
+    JsonNode requireHasNotString(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
@@ -1240,7 +1510,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not number or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNumber(String key);
+    JsonNode requireHasNumber(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1251,7 +1521,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is number or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotNumber(String key);
+    JsonNode requireHasNotNumber(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
@@ -1262,7 +1532,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not boolean or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireBoolean(String key);
+    JsonNode requireHasBoolean(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1273,7 +1543,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is boolean or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotBoolean(String key);
+    JsonNode requireHasNotBoolean(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
@@ -1284,7 +1554,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not object or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireObject(String key);
+    JsonNode requireHasObject(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1295,7 +1565,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is object or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotObject(String key);
+    JsonNode requireHasNotObject(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
@@ -1306,7 +1576,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not array or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireArray(String key);
+    JsonNode requireHasArray(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1317,7 +1587,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is array or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotArray(String key);
+    JsonNode requireHasNotArray(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
@@ -1328,7 +1598,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not primitive or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requirePrimitive(String key);
+    JsonNode requireHasPrimitive(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1339,7 +1609,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is primitive or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotPrimitive(String key);
+    JsonNode requireHasNotPrimitive(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not
@@ -1350,7 +1620,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not construct or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireConstruct(String key);
+    JsonNode requireHasConstruct(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is
@@ -1361,7 +1631,115 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is construct or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNotConstruct(String key);
+    JsonNode requireHasNotConstruct(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not temporal.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not temporal or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasTemporal(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is temporal.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is temporal or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasNotTemporal(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not an offset
+     * date+time node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not an offset date+time node or when this node is not an object
+     *                                node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasOffsetDateTime(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is an offset date+time
+     * node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is an offset date+time node or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasNotOffsetDateTime(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not a local date+time
+     * node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not a local date+time node or when this node is not an object
+     *                                node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasLocalDateTime(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is a local date+time
+     * node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is a local date+time node or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasNotLocalDateTime(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not a local date
+     * node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not a local date node or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasLocalDate(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is a local date node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is a local date node or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasNotLocalDate(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not a local time
+     * node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is not a local time node or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasLocalTime(String key);
+
+    /**
+     * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is a local time node.
+     *
+     * @return This instance for chaining
+     *
+     * @throws IncorrectTypeException When the node is a local time node or when this node is not an object node
+     * @throws MissingKeyException    When this object node does not have the specified key
+     */
+    JsonNode requireHasNotLocalTime(String key);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not the given type
@@ -1371,7 +1749,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is not the given type or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode require(String key, NodeType type);
+    JsonNode requireHas(String key, NodeType type);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is the given type
@@ -1381,7 +1759,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is the given type or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNot(String key, NodeType type);
+    JsonNode requireHasNot(String key, NodeType type);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is not one of the given
@@ -1393,7 +1771,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *                                node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode require(String key, NodeType... types);
+    JsonNode requireHas(String key, NodeType... types);
 
     /**
      * Throws an {@link IncorrectTypeException} when the node returned by {@link #get(String)} is one of the given
@@ -1404,7 +1782,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException When the node is one of the given types or when this node is not an object node
      * @throws MissingKeyException    When this object node does not have the specified key
      */
-    JsonNode requireNot(String key, NodeType... types);
+    JsonNode requireHasNot(String key, NodeType... types);
 
     /**
      * Performs the given action if the specified key is mapped in this object.. The consumer must take the
@@ -1428,7 +1806,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifString(String key, BiConsumer<JsonNode, String> action);
+    JsonNode ifHasString(String key, BiConsumer<JsonNode, String> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1440,7 +1818,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifNumber(String key, BiConsumer<JsonNode, Number> action);
+    JsonNode ifHasNumber(String key, BiConsumer<JsonNode, Number> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1452,7 +1830,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifByte(String key, BiConsumer<JsonNode, Byte> action);
+    JsonNode ifHasByte(String key, BiConsumer<JsonNode, Byte> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1464,7 +1842,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifShort(String key, BiConsumer<JsonNode, Short> action);
+    JsonNode ifHasShort(String key, BiConsumer<JsonNode, Short> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1476,7 +1854,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifInt(String key, BiConsumer<JsonNode, Integer> action);
+    JsonNode ifHasInt(String key, BiConsumer<JsonNode, Integer> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1488,7 +1866,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifLong(String key, BiConsumer<JsonNode, Long> action);
+    JsonNode ifHasLong(String key, BiConsumer<JsonNode, Long> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1500,7 +1878,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifFloat(String key, BiConsumer<JsonNode, Float> action);
+    JsonNode ifHasFloat(String key, BiConsumer<JsonNode, Float> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1512,7 +1890,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifDouble(String key, BiConsumer<JsonNode, Double> action);
+    JsonNode ifHasDouble(String key, BiConsumer<JsonNode, Double> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1524,7 +1902,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifBigInteger(String key, BiConsumer<JsonNode, BigInteger> action);
+    JsonNode ifHasBigInteger(String key, BiConsumer<JsonNode, BigInteger> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a {@linkplain NodeType#NUMBER number}.
@@ -1536,7 +1914,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifBigDecimal(String key, BiConsumer<JsonNode, BigDecimal> action);
+    JsonNode ifHasBigDecimal(String key, BiConsumer<JsonNode, BigDecimal> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a
@@ -1549,7 +1927,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifBoolean(String key, BiConsumer<JsonNode, Boolean> action);
+    JsonNode ifHasBoolean(String key, BiConsumer<JsonNode, Boolean> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is {@linkplain NodeType#NULL null} (JSON
@@ -1561,7 +1939,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifNull(String key, Consumer<JsonNode> action);
+    JsonNode ifHasNull(String key, Consumer<JsonNode> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain NodeType#ARRAY array}.
@@ -1573,7 +1951,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifArray(String key, Consumer<JsonNode> action);
+    JsonNode ifHasArray(String key, Consumer<JsonNode> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is an {@linkplain NodeType#OBJECT object}.
@@ -1585,7 +1963,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifObject(String key, Consumer<JsonNode> action);
+    JsonNode ifHasObject(String key, Consumer<JsonNode> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a
@@ -1597,7 +1975,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifPrimitive(String key, Consumer<JsonNode> action);
+    JsonNode ifHasPrimitive(String key, Consumer<JsonNode> action);
 
     /**
      * Performs the given action if the node returned by {@link #get(String)} is a
@@ -1609,7 +1987,67 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws NullPointerException   If the action is null
      * @throws IncorrectTypeException When this node is not an object node
      */
-    JsonNode ifConstruct(String key, Consumer<JsonNode> action);
+    JsonNode ifHasConstruct(String key, Consumer<JsonNode> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is temporal. The consumer must take the
+     * {@link JsonNode} and its {@link Temporal} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifHasTemporal(String key, BiConsumer<JsonNode, Temporal> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is an offset date+time. The consumer must
+     * take the {@link JsonNode} and its {@link OffsetDateTime} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifHasOffsetDateTime(String key, BiConsumer<JsonNode, OffsetDateTime> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a local date+time. The consumer must
+     * take the {@link JsonNode} and its {@link LocalDateTime} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifHasLocalDateTime(String key, BiConsumer<JsonNode, LocalDateTime> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a local date. The consumer must take
+     * the {@link JsonNode} and its {@link LocalDate} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifHasLocalDate(String key, BiConsumer<JsonNode, LocalDate> action);
+
+    /**
+     * Performs the given action if the node returned by {@link #get(String)} is a local time. The consumer must take
+     * the {@link JsonNode} and its {@link LocalTime} value as arguments.
+     *
+     * @param action The action to perform when the check passes
+     * @return This instance for chaining
+     *
+     * @throws NullPointerException   If the action is null
+     * @throws IncorrectTypeException When this node is not an object node
+     */
+    JsonNode ifHasLocalTime(String key, BiConsumer<JsonNode, LocalTime> action);
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1617,21 +2055,31 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns a string node whose value is that returned by {@link #show()}. This is used in serialization when the
+     * data format does not support the data type, since all data formats support strings.
+     *
+     * @return The string node value of this node
+     *
+     * @throws IncorrectTypeException When this node is a construct node
+     */
+    JsonNode showNode();
+
+    /**
+     * Returns the string value of this node. Unlike {@link #asString()}, this will turn any not-construct into a string
+     * without throwing an exception.
+     *
+     * @return The string value of this node
+     *
+     * @throws IncorrectTypeException When this node is a construct node
+     */
+    String show();
+
+    /**
      * Returns the string value of this node.
      *
      * @return The string value of this node
      *
      * @throws IncorrectTypeException When this node is not a string node
-     */
-    String asExactString();
-
-    /**
-     * Returns the string value of this node. Unlike {@link #asExactString()}, this will turn any not-construct into a
-     * string without throwing an exception.
-     *
-     * @return The string value of this node
-     *
-     * @throws IncorrectTypeException When this node is a construct node
      */
     String asString();
 
@@ -1726,7 +2174,62 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     boolean asBoolean();
 
     /**
-     * Returns the string array value of this node.
+     * Returns a {@link OffsetDateTime} value of this node.
+     *
+     * @return The {@link OffsetDateTime} value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an offset date+time node
+     */
+    OffsetDateTime asOffsetDateTime();
+
+    /**
+     * Returns a {@link LocalDateTime} value of this node.
+     *
+     * @return The {@link LocalDateTime} value of this node
+     *
+     * @throws IncorrectTypeException When this node is not a local date+time node
+     */
+    LocalDateTime asLocalDateTime();
+
+    /**
+     * Returns a {@link LocalDate} value of this node.
+     *
+     * @return The {@link LocalDate} value of this node
+     *
+     * @throws IncorrectTypeException When this node is not a local date node
+     */
+    LocalDate asLocalDate();
+
+    /**
+     * Returns a {@link LocalTime} value of this node.
+     *
+     * @return The {@link LocalTime} value of this node
+     *
+     * @throws IncorrectTypeException When this node is not a local time node
+     */
+    LocalTime asLocalTime();
+
+    /**
+     * Returns a {@link Temporal} value of this node.
+     *
+     * @return The {@link Temporal} value of this node
+     *
+     * @throws IncorrectTypeException When this node is not a temporal node
+     */
+    Temporal asTemporal();
+
+    /**
+     * Returns the string array value of this node, using {@link #show()} to convert elements.
+     *
+     * @return The string array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                string node
+     */
+    String[] showArray();
+
+    /**
+     * Returns the string array value of this node, using {@link #asString()} to convert elements.
      *
      * @return The string array value of this node
      *
@@ -1835,9 +2338,73 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     boolean[] asBooleanArray();
 
+
     /**
-     * Returns the string array value of this node, enforcing the specified length. An exception is thrown if any other
-     * length of array is present.
+     * Returns a {@link OffsetDateTime} array value of this node.
+     *
+     * @return The {@link OffsetDateTime} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not an
+     *                                offset date+time node
+     */
+    OffsetDateTime[] asOffsetDateTimeArray();
+
+    /**
+     * Returns a {@link LocalDateTime} array value of this node.
+     *
+     * @return The {@link LocalDateTime} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                local date+time node
+     */
+    LocalDateTime[] asLocalDateTimeArray();
+
+    /**
+     * Returns a {@link LocalDate} array value of this node.
+     *
+     * @return The {@link LocalDate} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                local date node
+     */
+    LocalDate[] asLocalDateArray();
+
+    /**
+     * Returns a {@link LocalTime} array value of this node.
+     *
+     * @return The {@link LocalTime} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                local time node
+     */
+    LocalTime[] asLocalTimeArray();
+
+    /**
+     * Returns a {@link Temporal} array value of this node.
+     *
+     * @return The {@link Temporal} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                temporal node
+     */
+    Temporal[] asTemporalArray();
+
+    /**
+     * Returns the string array value of this node, enforcing the specified length and using {@link #show()} to convert
+     * elements. An exception is thrown if any other length of array is present.
+     *
+     * @param fixedLength The required length of the array
+     * @return The string array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                string node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
+     */
+    String[] showArray(int fixedLength);
+
+    /**
+     * Returns the string array value of this node, enforcing the specified length and using {@link #asString()} to
+     * convert elements. An exception is thrown if any other length of array is present.
      *
      * @param fixedLength The required length of the array
      * @return The string array value of this node
@@ -1978,6 +2545,72 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     boolean[] asBooleanArray(int fixedLength);
 
+
+    /**
+     * Returns a {@link OffsetDateTime} array value of this node, enforcing the specified length. An exception is thrown
+     * if any other length of array is present.
+     *
+     * @param fixedLength The required length of the array
+     * @return The {@link OffsetDateTime} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not an
+     *                                offset date+time node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
+     */
+    OffsetDateTime[] asOffsetDateTimeArray(int fixedLength);
+
+    /**
+     * Returns a {@link LocalDateTime} array value of this node, enforcing the specified length. An exception is thrown
+     * if any other length of array is present.
+     *
+     * @param fixedLength The required length of the array
+     * @return The {@link LocalDateTime} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                local date+time node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
+     */
+    LocalDateTime[] asLocalDateTimeArray(int fixedLength);
+
+    /**
+     * Returns a {@link LocalDate} array value of this node, enforcing the specified length. An exception is thrown if
+     * any other length of array is present.
+     *
+     * @param fixedLength The required length of the array
+     * @return The {@link LocalDate} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                local date node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
+     */
+    LocalDate[] asLocalDateArray(int fixedLength);
+
+    /**
+     * Returns a {@link LocalTime} array value of this node, enforcing the specified length. An exception is thrown if
+     * any other length of array is present.
+     *
+     * @param fixedLength The required length of the array
+     * @return The {@link LocalTime} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                local time node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
+     */
+    LocalTime[] asLocalTimeArray(int fixedLength);
+
+    /**
+     * Returns a {@link Temporal} array value of this node, enforcing the specified length. An exception is thrown if
+     * any other length of array is present.
+     *
+     * @param fixedLength The required length of the array
+     * @return The {@link Temporal} array value of this node
+     *
+     * @throws IncorrectTypeException When this node is not an array node or when one of the array's elements is not a
+     *                                temporal node
+     * @throws IncorrectSizeException When the actual length of this array node is not the required length
+     */
+    Temporal[] asTemporalArray(int fixedLength);
+
     /**
      * Returns a list containing the elements of this array node. The list is a direct copy of the array and can be
      * modified without modifying the array node itself. It does not reflect this node.
@@ -2066,6 +2699,12 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     JsonNode set(int index, Boolean value);
 
+
+    JsonNode set(int index, OffsetDateTime value);
+    JsonNode set(int index, LocalDateTime value);
+    JsonNode set(int index, LocalDate value);
+    JsonNode set(int index, LocalTime value);
+
     /**
      * Adds a new element to the end of this array. A null value is converted to {@link #NULL}.
      *
@@ -2106,6 +2745,12 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * @throws IncorrectTypeException If this node is not an array
      */
     JsonNode add(Boolean value);
+
+
+    JsonNode add(OffsetDateTime value);
+    JsonNode add(LocalDateTime value);
+    JsonNode add(LocalDate value);
+    JsonNode add(LocalTime value);
 
     /**
      * Inserts a new element at a certain position in this array, before the element at the given index. Negative
@@ -2164,6 +2809,12 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     JsonNode insert(int index, Boolean value);
 
+
+    JsonNode insert(int index, OffsetDateTime value);
+    JsonNode insert(int index, LocalDateTime value);
+    JsonNode insert(int index, LocalDate value);
+    JsonNode insert(int index, LocalTime value);
+
     /**
      * Removes the element at the given index in this array. Negative indices index from the end.
      *
@@ -2192,7 +2843,10 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @throws IncorrectTypeException If this is not an array, object or string
      */
-    int length();
+    @Deprecated
+    default int length() {
+        return size();
+    }
 
     /**
      * Enforces this array or object to have a specific number of elements, throwing an {@link IncorrectSizeException}
@@ -2400,6 +3054,12 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     JsonNode set(String key, Boolean value);
 
+
+    JsonNode set(String key, OffsetDateTime value);
+    JsonNode set(String key, LocalDateTime value);
+    JsonNode set(String key, LocalDate value);
+    JsonNode set(String key, LocalTime value);
+
     /**
      * Removes the element at the specified key in this object, if it was assigned. If no element was assigned, this
      * method does nothing. A null key is treated as a literal key "null".
@@ -2482,7 +3142,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      *
      * @return A stream of values in this object or array
      *
-     * @throws IncorrectTypeException When this node is not an object
+     * @throws IncorrectTypeException When this node is not an object or array
      */
     Stream<JsonNode> stream();
 
@@ -2509,38 +3169,38 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
     // Querying
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Queries this JSON tree with the given path string, see {@link JsonPath#parse(String)} for the syntax of this
-     * path. This method will return null (not {@link #NULL}) when the last query was on an object that did not contain
-     * the queried key.
-     *
-     * @param path The path to query by
-     * @return The node that was navigated to, or null
-     *
-     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
-     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
-     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
-     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
-     * @throws NullPointerException      When the given path is null
-     */
-    @Deprecated
-    JsonNode query(String path);
-
-    /**
-     * Queries this JSON tree with the given path. This method will return null (not {@link #NULL}) when the last query
-     * was on an object that did not contain the queried key.
-     *
-     * @param path The path to query by
-     * @return The node that was navigated to, or null
-     *
-     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
-     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
-     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
-     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
-     * @throws NullPointerException      When the given path is null
-     */
-    @Deprecated
-    JsonNode query(JsonPath path);
+//    /**
+//     * Queries this JSON tree with the given path string, see {@link JsonPath#parse(String)} for the syntax of this
+//     * path. This method will return null (not {@link #NULL}) when the last query was on an object that did not contain
+//     * the queried key.
+//     *
+//     * @param path The path to query by
+//     * @return The node that was navigated to, or null
+//     *
+//     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
+//     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
+//     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
+//     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
+//     * @throws NullPointerException      When the given path is null
+//     */
+//    @Deprecated
+//    JsonNode query(String path);
+//
+//    /**
+//     * Queries this JSON tree with the given path. This method will return null (not {@link #NULL}) when the last query
+//     * was on an object that did not contain the queried key.
+//     *
+//     * @param path The path to query by
+//     * @return The node that was navigated to, or null
+//     *
+//     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
+//     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
+//     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
+//     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
+//     * @throws NullPointerException      When the given path is null
+//     */
+//    @Deprecated
+//    JsonNode query(JsonPath path);
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

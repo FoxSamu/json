@@ -1,14 +1,14 @@
 package dev.runefox.json.impl.parse.json;
 
 import dev.runefox.json.SyntaxException;
-import dev.runefox.json.impl.UnparsedNumber;
-import dev.runefox.json.impl.parse.AbstractLexer;
+import dev.runefox.json.impl.LazyParseNumber;
 import dev.runefox.json.impl.parse.CharUtil;
+import dev.runefox.json.impl.parse.StateLexer;
 import dev.runefox.json.impl.parse.Token;
 
 import java.io.Reader;
 
-public class JsonLexer extends AbstractLexer {
+public class JsonLexer extends StateLexer {
 
     public JsonLexer(Reader reader) {
         super(reader);
@@ -22,7 +22,7 @@ public class JsonLexer extends AbstractLexer {
     private enum JsonLexerState implements LexerState {
         DEFAULT {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (CharUtil.isEof(c)) {
                     lex.startToken();
                     return lex.newToken(JsonTokenType.EOF, null);
@@ -76,7 +76,7 @@ public class JsonLexer extends AbstractLexer {
         },
         STRING {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (CharUtil.isNewline(c) || CharUtil.isEof(c)) {
                     throw lex.localError("Expected string end");
                 } else if (c == '\\') {
@@ -92,7 +92,7 @@ public class JsonLexer extends AbstractLexer {
         },
         STRING_ESCAPE {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (CharUtil.isNewline(c) || CharUtil.isEof(c)) {
                     throw lex.localError("Expected string escape");
                 } else if (c == '\\') {
@@ -124,8 +124,8 @@ public class JsonLexer extends AbstractLexer {
         },
         UNICODE_ESCAPE_1 {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 4 more hex digits");
                 } else {
@@ -139,8 +139,8 @@ public class JsonLexer extends AbstractLexer {
         },
         UNICODE_ESCAPE_2 {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 3 more hex digits");
                 } else {
@@ -154,8 +154,8 @@ public class JsonLexer extends AbstractLexer {
         },
         UNICODE_ESCAPE_3 {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 2 more hex digits");
                 } else {
@@ -169,8 +169,8 @@ public class JsonLexer extends AbstractLexer {
         },
         UNICODE_ESCAPE_4 {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
-                int hex = CharUtil.getHexDigitValue(c);
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
+                int hex = CharUtil.hexit(c);
                 if (hex < 0) {
                     throw lex.localError("Expected 1 more hex digit");
                 } else {
@@ -184,7 +184,7 @@ public class JsonLexer extends AbstractLexer {
         },
         KEYWORD {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (CharUtil.isIdentifier(c)) {
                     lex.store(c);
                     return null;
@@ -207,7 +207,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_SIGN {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (CharUtil.isDigit(c)) {
                     lex.state(NUMBER_START);
                     lex.retain();
@@ -219,7 +219,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_START {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (c == '0') {
                     lex.store(c);
                     lex.state(NUMBER_DECIMAL_START);
@@ -234,7 +234,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_INTEGER {
             @Override
-            public Token lex(int c, AbstractLexer lex) {
+            public Token lex(int c, StateLexer lex) {
                 if (CharUtil.isDigit(c)) {
                     lex.store(c);
                 } else {
@@ -246,7 +246,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_DECIMAL_START {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (c == '.') {
                     lex.store(c);
                     lex.state(NUMBER_DECIMAL_FIRST);
@@ -261,7 +261,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_DECIMAL_FIRST {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (CharUtil.isDigit(c)) {
                     lex.store(c);
                     lex.state(NUMBER_DECIMAL);
@@ -273,7 +273,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_DECIMAL {
             @Override
-            public Token lex(int c, AbstractLexer lex) {
+            public Token lex(int c, StateLexer lex) {
                 if (CharUtil.isDigit(c)) {
                     lex.store(c);
                 } else {
@@ -285,7 +285,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_EXPONENT_START {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (c == 'e' || c == 'E') {
                     lex.store(c);
                     lex.state(NUMBER_EXPONENT_SIGN);
@@ -300,7 +300,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_EXPONENT_SIGN {
             @Override
-            public Token lex(int c, AbstractLexer lex) {
+            public Token lex(int c, StateLexer lex) {
                 if (c == '-' || c == '+') {
                     lex.store(c);
                 } else {
@@ -312,7 +312,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_EXPONENT_FIRST {
             @Override
-            public Token lex(int c, AbstractLexer lex) throws SyntaxException {
+            public Token lex(int c, StateLexer lex) throws SyntaxException {
                 if (CharUtil.isDigit(c)) {
                     lex.store(c);
                     lex.state(NUMBER_EXPONENT);
@@ -324,7 +324,7 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_EXPONENT {
             @Override
-            public Token lex(int c, AbstractLexer lex) {
+            public Token lex(int c, StateLexer lex) {
                 if (CharUtil.isDigit(c)) {
                     lex.store(c);
                 } else {
@@ -336,10 +336,10 @@ public class JsonLexer extends AbstractLexer {
         },
         NUMBER_END {
             @Override
-            public Token lex(int c, AbstractLexer lex) {
+            public Token lex(int c, StateLexer lex) {
                 lex.retain();
                 String nr = lex.buffered();
-                return lex.newToken(JsonTokenType.NUMBER, new UnparsedNumber(nr));
+                return lex.newToken(JsonTokenType.NUMBER, new LazyParseNumber(nr));
             }
         }
     }
