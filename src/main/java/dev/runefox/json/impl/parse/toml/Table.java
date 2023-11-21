@@ -28,13 +28,79 @@ public class Table implements TomlValue {
         toCol = token.toCol();
     }
 
+    public DocumentTableBuilder dtb(Header head, boolean array) throws SyntaxException {
+        List<String> key = head.key();
+        Table table = this;
+
+        List<String> cur = new ArrayList<>();
+
+        int pos = 0, sz = key.size();
+        while (sz - pos > 1) {
+            cur.add(key.get(pos));
+
+            List<String> sup = List.of(key.get(pos));
+
+            DocumentTableBuilder dtb;
+            if (!table.values.containsKey(sup)) {
+                dtb = new DocumentTable(head);
+                table.values.put(sup, dtb);
+            } else {
+                TomlValue val = table.values.get(sup);
+                if (val == null) {
+                    String prefix = array ? "Cannot create table array " : "Cannot create table ";
+                    throw head.error(prefix + KeyValue.reportKey(cur) + ", this was defined as an implicit table before");
+                }
+
+                if (!(val instanceof DocumentTableBuilder d)) {
+                    String prefix = array ? "Cannot create table array " : "Cannot create table ";
+                    throw head.error(prefix + KeyValue.reportKey(cur) + ", this was defined as a primitive value before");
+                }
+
+                dtb = d;
+            }
+
+            table = dtb.currentTable();
+            pos++;
+        }
+
+        List<String> sup = List.of(key.get(pos));
+        if (!table.values.containsKey(sup)) {
+            DocumentTableBuilder dtb = array ? new DocumentTableArray(head) : new DocumentTable(head);
+            table.values.put(sup, dtb);
+            return dtb;
+        } else {
+            TomlValue val = table.values.get(sup);
+            if (val == null) {
+                String prefix = array ? "Cannot create table array " : "Cannot create table ";
+                throw head.error(prefix + head.reportKey() + ", this was defined as an implicit table before");
+            }
+
+            if (!(val instanceof DocumentTableBuilder dtb)) {
+                String prefix = array ? "Cannot create table array " : "Cannot create table ";
+                throw head.error(prefix + head.reportKey() + ", this was defined as a primitive value before");
+            }
+
+            if (array) {
+                dtb.tableArrayHeader(head);
+            } else {
+                dtb.tableHeader(head);
+            }
+
+            return dtb;
+        }
+    }
+
     public void add(KeyValue pair) throws SyntaxException {
         List<String> key = pair.key();
         TomlValue value = pair.value();
 
         if (values.containsKey(key)) {
-            if (values.get(key) == null)
+            TomlValue val = values.get(key);
+            if (val == null)
                 throw pair.error("Key " + pair.reportKey() + " is defined as a subtable");
+
+            if (val instanceof DocumentTableBuilder)
+                throw pair.error("Key " + pair.reportKey() + " is defined as a document table");
             throw pair.error("Key " + pair.reportKey() + " is already defined");
         }
 

@@ -6,14 +6,15 @@ import java.io.StringReader;
 public class TomlTest {
     public static void main(String[] args) throws IOException {
         String toml = """
-            key-a = 1
-            key-b = 2
-            key-c = 3
+            [fruit]
+            apple.color = "red"
+            apple.taste.sweet = true
                         
-            [[table.x.y]]
-            x = 3
-            y = 3
-            z = 3
+            # [fruit.apple]  # INVALID
+            # [fruit.apple.taste]  # INVALID
+                        
+            [fruit.apple.texture]  # you can add sub-tables
+            smooth = true
             """;
 
         StringReader reader = new StringReader(toml);
