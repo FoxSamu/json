@@ -526,7 +526,7 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      * <li>Any {@link Boolean} is converted to a boolean node</li>
      * <li>Any {@link Number} is converted to a number node</li>
      * <li>Any {@link String} is converted to a string node</li>
-     * <li>Any {@link File}, {@link Path}, {@link URL}, {@link URI} or {@link JsonPath} is converted into a string via {@link Object#toString()}</li>
+     * <li>Any {@link File}, {@link Path}, {@link URL} or {@link URI} is converted into a string via {@link Object#toString()}</li>
      * <li>Any {@link Enum} is converted into its name via {@link Enum#name()}</li>
      * <li>Any {@link Stream} is converted to an array node with the streamed elements</li>
      * <li>Any {@link Iterable} is converted to an array node with the iterated elements</li>
@@ -572,8 +572,6 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
         } else if (obj instanceof URL) {
             return string(obj.toString());
         } else if (obj instanceof URI) {
-            return string(obj.toString());
-        } else if (obj instanceof JsonPath) {
             return string(obj.toString());
         } else if (obj instanceof Enum) {
             return string(((Enum<?>) obj).name());
@@ -2505,42 +2503,42 @@ public interface JsonNode extends Iterable<JsonNode>, JsonRepresentable {
      */
     JsonNode merge(JsonNode object);
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Querying
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Queries this JSON tree with the given path string, see {@link JsonPath#parse(String)} for the syntax of this
-     * path. This method will return null (not {@link #NULL}) when the last query was on an object that did not contain
-     * the queried key.
-     *
-     * @param path The path to query by
-     * @return The node that was navigated to, or null
-     *
-     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
-     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
-     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
-     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
-     * @throws NullPointerException      When the given path is null
-     */
-    @Deprecated
-    JsonNode query(String path);
-
-    /**
-     * Queries this JSON tree with the given path. This method will return null (not {@link #NULL}) when the last query
-     * was on an object that did not contain the queried key.
-     *
-     * @param path The path to query by
-     * @return The node that was navigated to, or null
-     *
-     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
-     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
-     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
-     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
-     * @throws NullPointerException      When the given path is null
-     */
-    @Deprecated
-    JsonNode query(JsonPath path);
+//    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    // Querying
+//    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    /**
+//     * Queries this JSON tree with the given path string, see {@link JsonPath#parse(String)} for the syntax of this
+//     * path. This method will return null (not {@link #NULL}) when the last query was on an object that did not contain
+//     * the queried key.
+//     *
+//     * @param path The path to query by
+//     * @return The node that was navigated to, or null
+//     *
+//     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
+//     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
+//     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
+//     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
+//     * @throws NullPointerException      When the given path is null
+//     */
+//    @Deprecated
+//    JsonNode query(String path);
+//
+//    /**
+//     * Queries this JSON tree with the given path. This method will return null (not {@link #NULL}) when the last query
+//     * was on an object that did not contain the queried key.
+//     *
+//     * @param path The path to query by
+//     * @return The node that was navigated to, or null
+//     *
+//     * @throws IncorrectTypeException    When trying to query a key from a non-object or an index from a non-array.
+//     * @throws IndexOutOfBoundsException When querying an array at an out-of-range index
+//     * @throws NoSuchElementException    When trying to query on a nonexisting value (i.e. {@code a.b} would try to
+//     *                                   query {@code b} from {@code a} while {@code a} was not found in root)
+//     * @throws NullPointerException      When the given path is null
+//     */
+//    @Deprecated
+//    JsonNode query(JsonPath path);
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

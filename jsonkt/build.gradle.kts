@@ -40,12 +40,14 @@ publishing {
         }
     }
     repositories {
-        maven {
-            name = "ShwMaven"
-            url = uri("https://maven.shadew.net/")
-            credentials {
-                username = properties["shwMavenUser"].toString()
-                password = properties["shwMavenPass"].toString()
+        if ("rfxMavenUser" in properties && "rfxMavenPass" in properties) {
+            maven {
+                name = "SamuRepo"
+                url = uri("https://maven.runefox.dev/releases")
+                credentials {
+                    username = properties["rfxMavenUser"].toString()
+                    password = properties["rfxMavenPass"].toString()
+                }
             }
         }
     }

@@ -518,17 +518,17 @@ public abstract class AbstractJsonNode implements JsonNode {
         throw new IncorrectTypeException(type, NodeType.OBJECT);
     }
 
-    @Override
-    @Deprecated
-    public JsonNode query(String path) {
-        return query(JsonPath.parse(path));
-    }
-
-    @Override
-    @Deprecated
-    public JsonNode query(JsonPath path) {
-        return path.query(this);
-    }
+//    @Override
+//    @Deprecated
+//    public JsonNode query(String path) {
+//        return query(JsonPath.parse(path));
+//    }
+//
+//    @Override
+//    @Deprecated
+//    public JsonNode query(JsonPath path) {
+//        return path.query(this);
+//    }
 
     @Override
     public JsonNode wrap() {
