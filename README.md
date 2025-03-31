@@ -21,14 +21,14 @@ This library is in development and the API can change at any time, although at t
 
 The current version is `0.7.2`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
-The artifact can be installed from my [Maven repository](https://maven.shadew.net/).
+The artifact can be installed from my [Maven repository](https://maven.runefox.dev/).
 
 ### Gradle
 
 ```groovy
 repositories {
     // Add my repository
-    maven { url "https://maven.shadew.net/" }
+    maven { url "https://maven.runefox.dev/" }
 }
 
 dependencies {
@@ -44,7 +44,7 @@ dependencies {
     <!-- Add my repository -->
     <repository>
         <id>Runefox Maven</id>
-        <url>https://maven.shadew.net/</url>
+        <url>https://maven.runefox.dev/</url>
     </repository>
 </repositories>
 
@@ -397,7 +397,7 @@ Since 0.7.2, changelogs have moved to GitHub Releases. See [Release v0.7.2](http
 
 **[See LICENSE for full license](LICENSE)**
 
-Copyright 2022 Sam&umacr;
+Copyright 2022-2025 O. W. Nankman
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
 License. You may obtain a copy of the License at
