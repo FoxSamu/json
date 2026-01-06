@@ -121,7 +121,7 @@ fun jsonArray(): JsonNode = JsonNode.array()
  * }
  * ```
  */
-operator fun JsonNode.invoke(config: (JsonNode) -> Unit): JsonNode {
+inline operator fun JsonNode.invoke(config: (JsonNode) -> Unit): JsonNode {
     config(this)
     return this
 }
@@ -149,7 +149,7 @@ fun JsonNode.requireSize(range: IntRange): JsonNode {
  * }
  * ```
  */
-fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
+inline fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
     return jsonObject().invoke(config)
 }
 
@@ -162,7 +162,7 @@ fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
  * }
  * ```
  */
-fun jsonArray(config: (JsonNode) -> Unit): JsonNode {
+inline fun jsonArray(config: (JsonNode) -> Unit): JsonNode {
     return jsonArray().invoke(config)
 }
 
@@ -361,7 +361,7 @@ operator fun JsonNode.plusAssign(value: JsonNode?) {
  * @param config The configuration function.
  * @return The new array node.
  */
-fun JsonNode.wrap(config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.wrap(config: (JsonNode) -> Unit): JsonNode {
     return (wrap())(config)
 }
 
@@ -377,7 +377,7 @@ fun JsonNode.wrap(config: (JsonNode) -> Unit): JsonNode {
  * @param config The configuration function.
  * @return The new object node.
  */
-fun JsonNode.wrap(key: String, config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.wrap(key: String, config: (JsonNode) -> Unit): JsonNode {
     return (wrap(key))(config)
 }
 
@@ -392,7 +392,7 @@ fun JsonNode.wrap(key: String, config: (JsonNode) -> Unit): JsonNode {
  * @param config The configuration function.
  * @return The copied node.
  */
-fun JsonNode.copy(config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.copy(config: (JsonNode) -> Unit): JsonNode {
     return (copy())(config)
 }
 
@@ -407,7 +407,7 @@ fun JsonNode.copy(config: (JsonNode) -> Unit): JsonNode {
  * @param config The configuration function.
  * @return The copied node.
  */
-fun JsonNode.deepCopy(config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.deepCopy(config: (JsonNode) -> Unit): JsonNode {
     return (deepCopy())(config)
 }
 
@@ -777,7 +777,7 @@ val ULONG_RANGE_OPEN: JsonCodec<ULongRange> = ULONG.openEndRangeOf { x, y -> x..
  * Creates a codec that encodes [ClosedRange]s of the elements en-/decoded by this codec, in the format
  * `{"from": ..., "to": ...}`.
  */
-fun <T : Comparable<T>, R : ClosedRange<T>> JsonCodec<T>.closedRangeOf(factory: (T, T) -> R): JsonCodec<R> {
+inline fun <T : Comparable<T>, R : ClosedRange<T>> JsonCodec<T>.closedRangeOf(crossinline factory: (T, T) -> R): JsonCodec<R> {
     return JsonCodec.of({ r: ClosedRange<T> ->
         jsonObject {
             it["from"] = r.start encoded this
@@ -793,7 +793,7 @@ fun <T : Comparable<T>, R : ClosedRange<T>> JsonCodec<T>.closedRangeOf(factory: 
  * Creates a codec that encodes [OpenEndRange]s of the elements en-/decoded by this codec, in the format
  * `{"from": ..., "to": ...}`.
  */
-fun <T : Comparable<T>, R : OpenEndRange<T>> JsonCodec<T>.openEndRangeOf(factory: (T, T) -> R): JsonCodec<R> {
+inline fun <T : Comparable<T>, R : OpenEndRange<T>> JsonCodec<T>.openEndRangeOf(crossinline factory: (T, T) -> R): JsonCodec<R> {
     return JsonCodec.of({ r: OpenEndRange<T> ->
         jsonObject {
             it["from"] = r.start encoded this
