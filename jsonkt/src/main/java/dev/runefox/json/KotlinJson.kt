@@ -1,38 +1,63 @@
+/*
+ * Copyright 2022-2026 O. W. Nankman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+ * AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
 @file:Suppress("unused")
 
 package dev.runefox.json
 
 import dev.runefox.json.codec.JsonCodec
-import dev.runefox.json.impl.KotlinNumberWrapper
+import dev.runefox.json.impl.KotlinUnsignedIntWrapper
 import dev.runefox.json.impl.UnparsedHexNumber
 import dev.runefox.json.impl.UnparsedNumber
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.Month
+import java.time.MonthDay
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.Year
+import java.time.YearMonth
+import java.time.ZonedDateTime
+import java.util.UUID
 
 /**
  * The JSON value `null`
  */
-val JSON_NULL: JsonNode = JsonNode.NULL
+val JsonNull: JsonNode = JsonNode.NULL
 
 /**
  * The JSON value `0`
  */
-val JSON_ZERO: JsonNode = JsonNode.ZERO
+val JsonZero: JsonNode = JsonNode.ZERO
 
 /**
  * The JSON value `false`
  */
-val JSON_FALSE: JsonNode = JsonNode.FALSE
+val JsonFalse: JsonNode = JsonNode.FALSE
 
 /**
  * The JSON value `true`
  */
-val JSON_TRUE: JsonNode = JsonNode.TRUE
+val JsonTrue: JsonNode = JsonNode.TRUE
 
 /**
  * The JSON value `""`
  */
-val JSON_EMPTY_STRING: JsonNode = JsonNode.EMPTY_STRING
+val JsonEmptyString: JsonNode = JsonNode.EMPTY_STRING
 
 /**
  * Tests whether the JSON node is of the given type.
@@ -80,7 +105,7 @@ operator fun JsonNode.contains(index: Int): Boolean {
  */
 operator fun JsonNode.get(range: IntProgression): JsonNode {
     requireArray()
-    val arr = jsonArray()
+    val arr = JsonArray()
     for (i in range) {
         if (i in this)
             arr += this[i]
@@ -91,27 +116,27 @@ operator fun JsonNode.get(range: IntProgression): JsonNode {
 /**
  * Creates a JSON string value of the given Kotlin string value. Returns JSON `null` when the argument is `null`.
  */
-fun jsonString(value: String?): JsonNode = JsonNode.string(value)
+fun JsonString(value: String?): JsonNode = JsonNode.string(value)
 
 /**
  * Creates a JSON number value of the given Kotlin number value. Returns JSON `null` when the argument is `null`.
  */
-fun jsonNumber(value: Number?): JsonNode = JsonNode.number(value)
+fun JsonNumber(value: Number?): JsonNode = JsonNode.number(value)
 
 /**
  * Creates a JSON boolean value of the given Kotlin boolean value. Returns JSON `null` when the argument is `null`.
  */
-fun jsonBool(value: Boolean?): JsonNode = JsonNode.bool(value)
+fun JsonBool(value: Boolean?): JsonNode = JsonNode.bool(value)
 
 /**
  * Creates an empty JSON object: `{}`.
  */
-fun jsonObject(): JsonNode = JsonNode.`object`()
+fun JsonObject(): JsonNode = JsonNode.`object`()
 
 /**
  * Creates an empty JSON array: `[]`.
  */
-fun jsonArray(): JsonNode = JsonNode.array()
+fun JsonArray(): JsonNode = JsonNode.array()
 
 /**
  * Runs given function on this node and returns itself. Useful for constructs like:
@@ -121,7 +146,7 @@ fun jsonArray(): JsonNode = JsonNode.array()
  * }
  * ```
  */
-operator fun JsonNode.invoke(config: (JsonNode) -> Unit): JsonNode {
+inline operator fun JsonNode.invoke(config: (JsonNode) -> Unit): JsonNode {
     config(this)
     return this
 }
@@ -149,8 +174,8 @@ fun JsonNode.requireSize(range: IntRange): JsonNode {
  * }
  * ```
  */
-fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
-    return jsonObject().invoke(config)
+inline fun JsonObject(config: (JsonNode) -> Unit): JsonNode {
+    return JsonObject().invoke(config)
 }
 
 /**
@@ -162,8 +187,8 @@ fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
  * }
  * ```
  */
-fun jsonArray(config: (JsonNode) -> Unit): JsonNode {
-    return jsonArray().invoke(config)
+inline fun JsonArray(config: (JsonNode) -> Unit): JsonNode {
+    return JsonArray().invoke(config)
 }
 
 /**
@@ -171,90 +196,90 @@ fun jsonArray(config: (JsonNode) -> Unit): JsonNode {
  * @param nodes The elements in the array. Any null values are replaced by JSON null values.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: JsonNode?): JsonNode = JsonNode.array(*nodes)
+fun JsonArray(vararg nodes: JsonNode?): JsonNode = JsonNode.array(*nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: Int): JsonNode = JsonNode.numberArray(nodes)
+fun JsonArray(vararg nodes: Int): JsonNode = JsonNode.numberArray(nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: Byte): JsonNode = JsonNode.numberArray(nodes)
+fun JsonArray(vararg nodes: Byte): JsonNode = JsonNode.numberArray(nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: Short): JsonNode = JsonNode.numberArray(nodes)
+fun JsonArray(vararg nodes: Short): JsonNode = JsonNode.numberArray(nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: Long): JsonNode = JsonNode.numberArray(nodes)
+fun JsonArray(vararg nodes: Long): JsonNode = JsonNode.numberArray(nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array.
  */
-fun jsonArray(vararg nodes: Float): JsonNode = JsonNode.numberArray(nodes)
-
-/**
- * Creates a JSON array containing the given elements.
- * @param nodes The elements in the array.
- * @return The newly created array.
- */
-fun jsonArray(vararg nodes: Double): JsonNode = JsonNode.numberArray(nodes)
+fun JsonArray(vararg nodes: Float): JsonNode = JsonNode.numberArray(nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: Number): JsonNode = JsonNode.numberArray(*nodes)
+fun JsonArray(vararg nodes: Double): JsonNode = JsonNode.numberArray(nodes)
+
+/**
+ * Creates a JSON array containing the given elements.
+ * @param nodes The elements in the array.
+ * @return The newly created array.
+ */
+fun JsonArray(vararg nodes: Number): JsonNode = JsonNode.numberArray(*nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array. Any null values are replaced by JSON null values.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: String?): JsonNode = JsonNode.stringArray(*nodes)
+fun JsonArray(vararg nodes: String?): JsonNode = JsonNode.stringArray(*nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: Boolean): JsonNode = JsonNode.boolArray(nodes)
+fun JsonArray(vararg nodes: Boolean): JsonNode = JsonNode.boolArray(nodes)
 
 /**
  * Creates a JSON array containing the given elements.
  * @param nodes The elements in the array. Any null values are replaced by JSON null values.
  * @return The newly created array.
  */
-fun jsonArray(vararg nodes: Boolean?): JsonNode = JsonNode.boolArray(*nodes)
+fun JsonArray(vararg nodes: Boolean?): JsonNode = JsonNode.boolArray(*nodes)
 
 /**
  * Creates a JSON array containing the elements in the given iterable.
  * @param nodes The elements in the array. Any null values are replaced by JSON null values.
  * @return The newly created array.
  */
-fun jsonArray(nodes: Iterable<JsonNode?>?): JsonNode = when (nodes) {
+fun JsonArray(nodes: Iterable<JsonNode?>?): JsonNode = when (nodes) {
     null -> JsonNode.NULL
     else -> JsonNode.array(nodes)
 }
 
-private class KtArrayCodec<A>(val codec: JsonCodec<A>, val factory: (Int) -> Array<A>) : JsonCodec<Array<A>> {
+private class KtArrayCodec<A>(val codec: JsonCodec<A>, val factory: (Int, (Int) -> A) -> Array<A>) : JsonCodec<Array<A>> {
     override fun encode(obj: Array<A>): JsonNode {
-        val arr = jsonArray()
+        val arr = JsonArray()
         for (x in obj) arr.add(codec.encode(x))
         return arr
     }
@@ -262,16 +287,15 @@ private class KtArrayCodec<A>(val codec: JsonCodec<A>, val factory: (Int) -> Arr
     override fun decode(json: JsonNode): Array<A> {
         json.requireArray()
 
-        val arr = factory(json.size())
-        for (i in 0..<json.size())
-            arr[i] = codec.decode(json[i])
-        return arr
+        return factory(json.size()) {
+            codec.decode(json[it])
+        }
     }
 }
 
 private class KtSequenceCodec<A>(val codec: JsonCodec<A>) : JsonCodec<Sequence<A>> {
     override fun encode(obj: Sequence<A>): JsonNode {
-        val arr = jsonArray()
+        val arr = JsonArray()
         for (x in obj) arr.add(codec.encode(x))
         return arr
     }
@@ -290,8 +314,16 @@ private class KtSequenceCodec<A>(val codec: JsonCodec<A>) : JsonCodec<Sequence<A
  * Creates a [JsonCodec] that encodes and decodes [Array]s of this codec.
  * @return The created codec.
  */
-fun <A> JsonCodec<A>.arrayOf(factory: (Int) -> Array<A>): JsonCodec<Array<A>> {
+fun <A> JsonCodec<A>.arrayOf(factory: (Int, (Int) -> A) -> Array<A>): JsonCodec<Array<A>> {
     return KtArrayCodec(this, factory)
+}
+
+/**
+ * Creates a [JsonCodec] that encodes and decodes [Array]s of this codec.
+ * @return The created codec.
+ */
+inline fun <reified A> JsonCodec<A>.arrayOf(): JsonCodec<Array<A>> {
+    return arrayOf { size, decode -> Array(size) { i -> decode(i) } }
 }
 
 /**
@@ -306,13 +338,13 @@ fun <A> JsonCodec<A>.sequenceOf(): JsonCodec<Sequence<A>> {
  * Encodes this object to a [JsonNode] using the given codec.
  * @return The encoded object.
  */
-infix fun <A> A.encoded(codec: JsonCodec<A>): JsonNode = codec.encode(this)
+infix fun <A> A.encode(codec: JsonCodec<A>): JsonNode = codec.encode(this)
 
 /**
  * Decodes this [JsonNode] to an object using the given codec.
  * @return The decoded object.
  */
-infix fun <A> JsonNode.decoded(codec: JsonCodec<A>): A = codec.decode(this)
+infix fun <A> JsonNode.decode(codec: JsonCodec<A>): A = codec.decode(this)
 
 /**
  * Adds an element to a list.
@@ -361,7 +393,7 @@ operator fun JsonNode.plusAssign(value: JsonNode?) {
  * @param config The configuration function.
  * @return The new array node.
  */
-fun JsonNode.wrap(config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.wrap(config: (JsonNode) -> Unit): JsonNode {
     return (wrap())(config)
 }
 
@@ -377,7 +409,7 @@ fun JsonNode.wrap(config: (JsonNode) -> Unit): JsonNode {
  * @param config The configuration function.
  * @return The new object node.
  */
-fun JsonNode.wrap(key: String, config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.wrap(key: String, config: (JsonNode) -> Unit): JsonNode {
     return (wrap(key))(config)
 }
 
@@ -392,7 +424,7 @@ fun JsonNode.wrap(key: String, config: (JsonNode) -> Unit): JsonNode {
  * @param config The configuration function.
  * @return The copied node.
  */
-fun JsonNode.copy(config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.copy(config: (JsonNode) -> Unit): JsonNode {
     return (copy())(config)
 }
 
@@ -407,7 +439,7 @@ fun JsonNode.copy(config: (JsonNode) -> Unit): JsonNode {
  * @param config The configuration function.
  * @return The copied node.
  */
-fun JsonNode.deepCopy(config: (JsonNode) -> Unit): JsonNode {
+inline fun JsonNode.deepCopy(config: (JsonNode) -> Unit): JsonNode {
     return (deepCopy())(config)
 }
 
@@ -442,6 +474,12 @@ val JsonNode.size: Int get() = size()
 val JsonNode.length: Int get() = length()
 
 /**
+ * The size of this string, object or array node.
+ * @throws IncorrectTypeException When the given node is not a string, object or array node.
+ */
+val JsonNode.indices: IntRange get() = 0..<size
+
+/**
  * Returns an [UByte] value of this node.
  * @return The [UByte] value of this node
  * @throws IncorrectTypeException When this node is not a number node
@@ -454,7 +492,20 @@ fun JsonNode.asUByte(): UByte {
         return t.unsignedLongValue().toUByte()
     if (t is UnparsedHexNumber)
         return t.toLong().toUByte()
-    return asByte().toUByte()
+
+    if (t is Double) {
+        if (t < 0.0) return 0u
+        if (t > 255.0) return 255u
+        return t.toUInt().toUByte()
+    }
+
+    if (t is Float) {
+        if (t < 0.0f) return 0u
+        if (t > 255.0f) return 255u
+        return t.toUInt().toUByte()
+    }
+
+    return asBigDecimal().toLong().toUByte()
 }
 
 /**
@@ -470,7 +521,20 @@ fun JsonNode.asUShort(): UShort {
         return t.unsignedLongValue().toUShort()
     if (t is UnparsedHexNumber)
         return t.toLong().toUShort()
-    return asShort().toUShort()
+
+    if (t is Double) {
+        if (t < 0.0) return 0u
+        if (t > 65535.0) return 65535u
+        return t.toUInt().toUShort()
+    }
+
+    if (t is Float) {
+        if (t < 0.0f) return 0u
+        if (t > 65535.0f) return 65535u
+        return t.toUInt().toUShort()
+    }
+
+    return asBigDecimal().toLong().toUShort()
 }
 
 /**
@@ -486,7 +550,12 @@ fun JsonNode.asUInt(): UInt {
         return t.unsignedLongValue().toUInt()
     if (t is UnparsedHexNumber)
         return t.toLong().toUInt()
-    return asInt().toUInt()
+
+    if (t is Double)
+        return t.toUInt()
+    if (t is Float)
+        return t.toUInt()
+    return asBigDecimal().toLong().toUInt()
 }
 
 /**
@@ -502,14 +571,19 @@ fun JsonNode.asULong(): ULong {
         return t.unsignedLongValue().toULong()
     if (t is UnparsedHexNumber)
         return t.toLong().toULong()
-    return asLong().toULong()
+
+    if (t is Double)
+        return t.toULong()
+    if (t is Float)
+        return t.toULong()
+    return asBigDecimal().toLong().toULong()
 }
 
 
 /**
  * Creates a JSON number value of the given Kotlin number value. Returns JSON `null` when the argument is `null`.
  */
-fun jsonNumber(value: UByte?): JsonNode = when (value) {
+fun JsonNumber(value: UByte?): JsonNode = when (value) {
     null -> JsonNode.NULL
     else -> JsonNode.number(UByteWrapper(value))
 }
@@ -517,7 +591,7 @@ fun jsonNumber(value: UByte?): JsonNode = when (value) {
 /**
  * Creates a JSON number value of the given Kotlin number value. Returns JSON `null` when the argument is `null`.
  */
-fun jsonNumber(value: UShort?): JsonNode = when (value) {
+fun JsonNumber(value: UShort?): JsonNode = when (value) {
     null -> JsonNode.NULL
     else -> JsonNode.number(UShortWrapper(value))
 }
@@ -525,7 +599,7 @@ fun jsonNumber(value: UShort?): JsonNode = when (value) {
 /**
  * Creates a JSON number value of the given Kotlin number value. Returns JSON `null` when the argument is `null`.
  */
-fun jsonNumber(value: UInt?): JsonNode = when (value) {
+fun JsonNumber(value: UInt?): JsonNode = when (value) {
     null -> JsonNode.NULL
     else -> JsonNode.number(UIntWrapper(value))
 }
@@ -533,7 +607,7 @@ fun jsonNumber(value: UInt?): JsonNode = when (value) {
 /**
  * Creates a JSON number value of the given Kotlin number value. Returns JSON `null` when the argument is `null`.
  */
-fun jsonNumber(value: ULong?): JsonNode = when (value) {
+fun JsonNumber(value: ULong?): JsonNode = when (value) {
     null -> JsonNode.NULL
     else -> JsonNode.number(ULongWrapper(value))
 }
@@ -545,7 +619,7 @@ fun jsonNumber(value: ULong?): JsonNode = when (value) {
  * @return This instance for chaining
  * @throws IncorrectTypeException   If this node is not an array
  */
-fun JsonNode.add(value: UByte?): JsonNode = add(jsonNumber(value))
+fun JsonNode.add(value: UByte?): JsonNode = add(JsonNumber(value))
 
 /**
  * Adds a new element to the end of this array. A null value is converted to a JSON null.
@@ -553,7 +627,7 @@ fun JsonNode.add(value: UByte?): JsonNode = add(jsonNumber(value))
  * @return This instance for chaining
  * @throws IncorrectTypeException   If this node is not an array
  */
-fun JsonNode.add(value: UShort?): JsonNode = add(jsonNumber(value))
+fun JsonNode.add(value: UShort?): JsonNode = add(JsonNumber(value))
 
 /**
  * Adds a new element to the end of this array. A null value is converted to a JSON null.
@@ -561,7 +635,7 @@ fun JsonNode.add(value: UShort?): JsonNode = add(jsonNumber(value))
  * @return This instance for chaining
  * @throws IncorrectTypeException   If this node is not an array
  */
-fun JsonNode.add(value: UInt?): JsonNode = add(jsonNumber(value))
+fun JsonNode.add(value: UInt?): JsonNode = add(JsonNumber(value))
 
 /**
  * Adds a new element to the end of this array. A null value is converted to a JSON null.
@@ -569,7 +643,7 @@ fun JsonNode.add(value: UInt?): JsonNode = add(jsonNumber(value))
  * @return This instance for chaining
  * @throws IncorrectTypeException   If this node is not an array
  */
-fun JsonNode.add(value: ULong?): JsonNode = add(jsonNumber(value))
+fun JsonNode.add(value: ULong?): JsonNode = add(JsonNumber(value))
 
 /**
  * Sets the element of this array at the given index to a number. Negative indices index from the end. A null value
@@ -582,7 +656,7 @@ fun JsonNode.add(value: ULong?): JsonNode = add(jsonNumber(value))
  * @throws IndexOutOfBoundsException If the index falls out of the bounds of this array
  * @throws IncorrectTypeException    If this node is not an array
  */
-operator fun JsonNode.set(index: Int, value: UByte?): JsonNode = set(index, jsonNumber(value))
+operator fun JsonNode.set(index: Int, value: UByte?): JsonNode = set(index, JsonNumber(value))
 
 /**
  * Sets the element of this array at the given index to a number. Negative indices index from the end. A null value
@@ -595,7 +669,7 @@ operator fun JsonNode.set(index: Int, value: UByte?): JsonNode = set(index, json
  * @throws IndexOutOfBoundsException If the index falls out of the bounds of this array
  * @throws IncorrectTypeException    If this node is not an array
  */
-operator fun JsonNode.set(index: Int, value: UShort?): JsonNode = set(index, jsonNumber(value))
+operator fun JsonNode.set(index: Int, value: UShort?): JsonNode = set(index, JsonNumber(value))
 
 /**
  * Sets the element of this array at the given index to a number. Negative indices index from the end. A null value
@@ -608,7 +682,7 @@ operator fun JsonNode.set(index: Int, value: UShort?): JsonNode = set(index, jso
  * @throws IndexOutOfBoundsException If the index falls out of the bounds of this array
  * @throws IncorrectTypeException    If this node is not an array
  */
-operator fun JsonNode.set(index: Int, value: UInt?): JsonNode = set(index, jsonNumber(value))
+operator fun JsonNode.set(index: Int, value: UInt?): JsonNode = set(index, JsonNumber(value))
 
 /**
  * Sets the element of this array at the given index to a number. Negative indices index from the end. A null value
@@ -621,7 +695,7 @@ operator fun JsonNode.set(index: Int, value: UInt?): JsonNode = set(index, jsonN
  * @throws IndexOutOfBoundsException If the index falls out of the bounds of this array
  * @throws IncorrectTypeException    If this node is not an array
  */
-operator fun JsonNode.set(index: Int, value: ULong?): JsonNode = set(index, jsonNumber(value))
+operator fun JsonNode.set(index: Int, value: ULong?): JsonNode = set(index, JsonNumber(value))
 
 /**
  * Replaces or adds a new number element at the specified key in this object. A null value is converted to
@@ -633,7 +707,7 @@ operator fun JsonNode.set(index: Int, value: ULong?): JsonNode = set(index, json
  *
  * @throws IncorrectTypeException   When this node is not an object
  */
-operator fun JsonNode.set(key: String, value: UByte?): JsonNode = set(key, jsonNumber(value))
+operator fun JsonNode.set(key: String, value: UByte?): JsonNode = set(key, JsonNumber(value))
 
 /**
  * Replaces or adds a new number element at the specified key in this object. A null value is converted to
@@ -645,7 +719,7 @@ operator fun JsonNode.set(key: String, value: UByte?): JsonNode = set(key, jsonN
  *
  * @throws IncorrectTypeException   When this node is not an object
  */
-operator fun JsonNode.set(key: String, value: UShort?): JsonNode = set(key, jsonNumber(value))
+operator fun JsonNode.set(key: String, value: UShort?): JsonNode = set(key, JsonNumber(value))
 
 /**
  * Replaces or adds a new number element at the specified key in this object. A null value is converted to
@@ -657,7 +731,7 @@ operator fun JsonNode.set(key: String, value: UShort?): JsonNode = set(key, json
  *
  * @throws IncorrectTypeException   When this node is not an object
  */
-operator fun JsonNode.set(key: String, value: UInt?): JsonNode = set(key, jsonNumber(value))
+operator fun JsonNode.set(key: String, value: UInt?): JsonNode = set(key, JsonNumber(value))
 
 /**
  * Replaces or adds a new number element at the specified key in this object. A null value is converted to
@@ -669,7 +743,7 @@ operator fun JsonNode.set(key: String, value: UInt?): JsonNode = set(key, jsonNu
  *
  * @throws IncorrectTypeException   When this node is not an object
  */
-operator fun JsonNode.set(key: String, value: ULong?): JsonNode = set(key, jsonNumber(value))
+operator fun JsonNode.set(key: String, value: ULong?): JsonNode = set(key, JsonNumber(value))
 
 
 /**
@@ -711,67 +785,108 @@ operator fun JsonNode.plusAssign(value: ULong?) {
     add(value)
 }
 
+object JsonCodecs {
+    val JSON_NODE: JsonCodec<JsonNode> = JsonCodec.JSON_NODE
+    val BYTE: JsonCodec<Byte> = JsonCodec.BYTE
+    val SHORT: JsonCodec<Short> = JsonCodec.SHORT
+    val INT: JsonCodec<Int> = JsonCodec.INT
+    val LONG: JsonCodec<Long> = JsonCodec.LONG
+    val FLOAT: JsonCodec<Float> = JsonCodec.FLOAT
+    val DOUBLE: JsonCodec<Double> = JsonCodec.DOUBLE
+    val BIG_INTEGER: JsonCodec<BigInteger> = JsonCodec.BIG_INTEGER
+    val BIG_DECIMAL: JsonCodec<BigDecimal> = JsonCodec.BIG_DECIMAL
+    val BOOLEAN: JsonCodec<Boolean> = JsonCodec.BOOLEAN
+    val STRING: JsonCodec<String> = JsonCodec.STRING
+    val EXACT_STRING: JsonCodec<String> = JsonCodec.EXACT_STRING
+    val CHAR: JsonCodec<Char> = JsonCodec.CHAR
+    val CODE_POINT: JsonCodec<Int> = JsonCodec.CODE_POINT
+    val UUID: JsonCodec<UUID> = JsonCodec.UUID
+    val INSTANT: JsonCodec<Instant> = JsonCodec.INSTANT
+    val LOCAL_DATE: JsonCodec<LocalDate> = JsonCodec.LOCAL_DATE
+    val LOCAL_DATE_TIME: JsonCodec<LocalDateTime> = JsonCodec.LOCAL_DATE_TIME
+    val LOCAL_TIME: JsonCodec<LocalTime> = JsonCodec.LOCAL_TIME
+    val OFFSET_DATE_TIME: JsonCodec<OffsetDateTime> = JsonCodec.OFFSET_DATE_TIME
+    val OFFSET_TIME: JsonCodec<OffsetTime> = JsonCodec.OFFSET_TIME
+    val YEAR: JsonCodec<Year> = JsonCodec.YEAR
+    val MONTH: JsonCodec<Month> = JsonCodec.MONTH
+    val YEAR_MONTH: JsonCodec<YearMonth> = JsonCodec.YEAR_MONTH
+    val MONTH_DAY: JsonCodec<MonthDay> = JsonCodec.MONTH_DAY
+    val ZONED_DATE_TIME: JsonCodec<ZonedDateTime> = JsonCodec.ZONED_DATE_TIME
 
-/**
- * A [JsonCodec] that encodes and decodes [UByte]s.
- */
-val UBYTE: JsonCodec<UByte> = JsonCodec.of({ jsonNumber(it) }, JsonNode::asUByte)
+    /**
+     * A [JsonCodec] that encodes and decodes [UByte]s.
+     */
+    val UBYTE: JsonCodec<UByte> = JsonCodec.of({ JsonNumber(it) }, JsonNode::asUByte)
 
-/**
- * A [JsonCodec] that encodes and decodes [UShort]s.
- */
-val USHORT: JsonCodec<UShort> = JsonCodec.of({ jsonNumber(it) }, JsonNode::asUShort)
+    /**
+     * A [JsonCodec] that encodes and decodes [UShort]s.
+     */
+    val USHORT: JsonCodec<UShort> = JsonCodec.of({ JsonNumber(it) }, JsonNode::asUShort)
 
-/**
- * A [JsonCodec] that encodes and decodes [UInt]s.
- */
-val UINT: JsonCodec<UInt> = JsonCodec.of({ jsonNumber(it) }, JsonNode::asUInt)
+    /**
+     * A [JsonCodec] that encodes and decodes [UInt]s.
+     */
+    val UINT: JsonCodec<UInt> = JsonCodec.of({ JsonNumber(it) }, JsonNode::asUInt)
 
-/**
- * A [JsonCodec] that encodes and decodes [ULong]s.
- */
-val ULONG: JsonCodec<ULong> = JsonCodec.of({ jsonNumber(it) }, JsonNode::asULong)
+    /**
+     * A [JsonCodec] that encodes and decodes [ULong]s.
+     */
+    val ULONG: JsonCodec<ULong> = JsonCodec.of({ JsonNumber(it) }, JsonNode::asULong)
 
 
-/**
- * A [JsonCodec] that encodes and decodes [IntRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
- */
-val INT_RANGE: JsonCodec<IntRange> = JsonCodec.INT.closedRangeOf { x, y -> x..y }
+    /**
+     * A [JsonCodec] that encodes and decodes [IntRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
+     */
+    val INT_RANGE: JsonCodec<IntRange> = INT.closedRangeOf { x, y -> x..y }
 
-/**
- * A [JsonCodec] that encodes and decodes [LongRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
- */
-val LONG_RANGE: JsonCodec<LongRange> = JsonCodec.LONG.closedRangeOf { x, y -> x..y }
+    /**
+     * A [JsonCodec] that encodes and decodes [LongRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
+     */
+    val LONG_RANGE: JsonCodec<LongRange> = LONG.closedRangeOf { x, y -> x..y }
 
-/**
- * A [JsonCodec] that encodes and decodes [UIntRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
- */
-val UINT_RANGE: JsonCodec<UIntRange> = UINT.closedRangeOf { x, y -> x..y }
+    /**
+     * A [JsonCodec] that encodes and decodes [UIntRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
+     */
+    val UINT_RANGE: JsonCodec<UIntRange> = UINT.closedRangeOf { x, y -> x..y }
 
-/**
- * A [JsonCodec] that encodes and decodes [ULongRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
- */
-val ULONG_RANGE: JsonCodec<ULongRange> = ULONG.closedRangeOf { x, y -> x..y }
+    /**
+     * A [JsonCodec] that encodes and decodes [ULongRange]s as objects `{"from": ..., "to": ...}` where `to` is inclusive.
+     */
+    val ULONG_RANGE: JsonCodec<ULongRange> = ULONG.closedRangeOf { x, y -> x..y }
 
-/**
- * A [JsonCodec] that encodes and decodes [IntRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
- */
-val INT_RANGE_OPEN: JsonCodec<IntRange> = JsonCodec.INT.openEndRangeOf { x, y -> x..<y }
+    /**
+     * A [JsonCodec] that encodes and decodes [IntRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
+     */
+    val INT_RANGE_OPEN: JsonCodec<IntRange> = INT.openEndRangeOf { x, y -> x..<y }
 
-/**
- * A [JsonCodec] that encodes and decodes [LongRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
- */
-val LONG_RANGE_OPEN: JsonCodec<LongRange> = JsonCodec.LONG.openEndRangeOf { x, y -> x..<y }
+    /**
+     * A [JsonCodec] that encodes and decodes [LongRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
+     */
+    val LONG_RANGE_OPEN: JsonCodec<LongRange> = LONG.openEndRangeOf { x, y -> x..<y }
 
-/**
- * A [JsonCodec] that encodes and decodes [UIntRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
- */
-val UINT_RANGE_OPEN: JsonCodec<UIntRange> = UINT.openEndRangeOf { x, y -> x..<y }
+    /**
+     * A [JsonCodec] that encodes and decodes [UIntRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
+     */
+    val UINT_RANGE_OPEN: JsonCodec<UIntRange> = UINT.openEndRangeOf { x, y -> x..<y }
 
-/**
- * A [JsonCodec] that encodes and decodes [ULongRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
- */
-val ULONG_RANGE_OPEN: JsonCodec<ULongRange> = ULONG.openEndRangeOf { x, y -> x..<y }
+    /**
+     * A [JsonCodec] that encodes and decodes [ULongRange]s as objects `{"from": ..., "to": ...}` where `to` is exclusive.
+     */
+    val ULONG_RANGE_OPEN: JsonCodec<ULongRange> = ULONG.openEndRangeOf { x, y -> x..<y }
+}
+
+val String.Companion.codec: JsonCodec<String> get() = JsonCodec.STRING
+val Byte.Companion.codec: JsonCodec<Byte> get() = JsonCodec.BYTE
+val Short.Companion.codec: JsonCodec<Short> get() = JsonCodec.SHORT
+val Int.Companion.codec: JsonCodec<Int> get() = JsonCodec.INT
+val Long.Companion.codec: JsonCodec<Long> get() = JsonCodec.LONG
+
+fun <T> JsonCodec<T>.nullableOf(): JsonCodec<T?> {
+    return JsonCodec.of<T?>(
+        { if (it == null) JsonNull else encode(it) },
+        { if (it.isNull) null else decode(it) }
+    )
+}
 
 /**
  * Creates a codec that encodes [ClosedRange]s of the elements en-/decoded by this codec, in the format
@@ -779,13 +894,13 @@ val ULONG_RANGE_OPEN: JsonCodec<ULongRange> = ULONG.openEndRangeOf { x, y -> x..
  */
 fun <T : Comparable<T>, R : ClosedRange<T>> JsonCodec<T>.closedRangeOf(factory: (T, T) -> R): JsonCodec<R> {
     return JsonCodec.of({ r: ClosedRange<T> ->
-        jsonObject {
-            it["from"] = r.start encoded this
-            it["to"] = r.endInclusive encoded this
+        JsonObject {
+            it["from"] = r.start encode this
+            it["to"] = r.endInclusive encode this
         }
     }, {
         it.requireObject().requireHas("from").requireHas("to")
-        factory(it["from"] decoded this, it["to"] decoded this)
+        factory(it["from"] decode this, it["to"] decode this)
     })
 }
 
@@ -795,13 +910,13 @@ fun <T : Comparable<T>, R : ClosedRange<T>> JsonCodec<T>.closedRangeOf(factory: 
  */
 fun <T : Comparable<T>, R : OpenEndRange<T>> JsonCodec<T>.openEndRangeOf(factory: (T, T) -> R): JsonCodec<R> {
     return JsonCodec.of({ r: OpenEndRange<T> ->
-        jsonObject {
-            it["from"] = r.start encoded this
-            it["to"] = r.endExclusive encoded this
+        JsonObject {
+            it["from"] = r.start encode this
+            it["to"] = r.endExclusive encode this
         }
     }, {
         it.requireObject().requireHas("from").requireHas("to")
-        factory(it["from"] decoded this, it["to"] decoded this)
+        factory(it["from"] decode this, it["to"] decode this)
     })
 }
 
@@ -809,7 +924,7 @@ fun <T : Comparable<T>, R : OpenEndRange<T>> JsonCodec<T>.openEndRangeOf(factory
 // Wrappers for unsigned number types. These wrappers represent the original values as Numbers, which are then
 // correctly handled by the library
 
-private data class UByteWrapper(val wrap: UByte) : KotlinNumberWrapper() {
+private data class UByteWrapper(val wrap: UByte) : KotlinUnsignedIntWrapper() {
     override fun toByte(): Byte = wrap.toByte()
     override fun toInt(): Int = wrap.toInt()
     override fun toLong(): Long = wrap.toLong()
@@ -823,7 +938,7 @@ private data class UByteWrapper(val wrap: UByte) : KotlinNumberWrapper() {
     override fun toBigDecimal(): BigDecimal = BigDecimal(toString())
 }
 
-private data class UShortWrapper(val wrap: UShort) : KotlinNumberWrapper() {
+private data class UShortWrapper(val wrap: UShort) : KotlinUnsignedIntWrapper() {
     override fun toByte(): Byte = wrap.toByte()
     override fun toDouble(): Double = wrap.toDouble()
     override fun toFloat(): Float = wrap.toFloat()
@@ -837,7 +952,7 @@ private data class UShortWrapper(val wrap: UShort) : KotlinNumberWrapper() {
     override fun toBigDecimal(): BigDecimal = BigDecimal(toString())
 }
 
-private data class UIntWrapper(val wrap: UInt) : KotlinNumberWrapper() {
+private data class UIntWrapper(val wrap: UInt) : KotlinUnsignedIntWrapper() {
     override fun toByte(): Byte = wrap.toByte()
     override fun toDouble(): Double = wrap.toDouble()
     override fun toFloat(): Float = wrap.toFloat()
@@ -851,7 +966,7 @@ private data class UIntWrapper(val wrap: UInt) : KotlinNumberWrapper() {
     override fun toBigDecimal(): BigDecimal = BigDecimal(toString())
 }
 
-private data class ULongWrapper(val wrap: ULong) : KotlinNumberWrapper() {
+private data class ULongWrapper(val wrap: ULong) : KotlinUnsignedIntWrapper() {
     override fun toByte(): Byte = wrap.toByte()
     override fun toDouble(): Double = wrap.toDouble()
     override fun toFloat(): Float = wrap.toFloat()

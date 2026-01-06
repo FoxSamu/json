@@ -1,7 +1,19 @@
+/*
+ * Copyright 2022-2026 O. W. Nankman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+ * AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
 package dev.runefox.json.impl.parse;
 
 import dev.runefox.json.SyntaxException;
-import dev.runefox.json.impl.Debug;
 import dev.runefox.json.impl.parse.json.JsonTokenType;
 
 import java.io.IOException;
@@ -58,7 +70,7 @@ public abstract class AbstractLexer {
     }
 
     public void skipNonExecutePrefixes() throws IOException {
-        int len = CharUtil.NOEXEC_CRLF.length();
+        int len = CharUtil.NOEXEC_LF.length();
         char[] buf = new char[len];
         int l = 0;
         while (l < len) {
@@ -67,12 +79,12 @@ public abstract class AbstractLexer {
             l += r;
         }
         String prefix = new String(buf, 0, l);
-        if (prefix.equals(CharUtil.NOEXEC_CRLF)) {
+        if (prefix.equals(CharUtil.NOEXEC_LF) || prefix.equals(CharUtil.NOEXEC_CR)) {
             return;
         }
-        if (prefix.startsWith(CharUtil.NOEXEC_LF) || prefix.startsWith(CharUtil.NOEXEC_CR))
-            // Store in read buffer if there's no prefix so we can read it again
-            System.arraycopy(buf, 0, readBuffer, 0, l);
+
+        // Store in read buffer if there's no prefix so we can read it again
+        System.arraycopy(buf, 0, readBuffer, 0, l);
         readBufferSize = l;
     }
 
@@ -220,8 +232,6 @@ public abstract class AbstractLexer {
 
             Token token = state().lex(c, this);
             if (token != null) {
-                if (Debug.debug)
-                    Debug.tokenConsumer.accept(token);
                 return token;
             }
         }

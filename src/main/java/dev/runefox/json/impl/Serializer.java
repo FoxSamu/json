@@ -1,18 +1,33 @@
+/*
+ * Copyright 2022-2026 O. W. Nankman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+ * AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
 package dev.runefox.json.impl;
 
 import dev.runefox.json.JsonNode;
 import dev.runefox.json.JsonSerializingConfig;
 import dev.runefox.json.NodeType;
+import dev.runefox.json.SerializationException;
+import dev.runefox.json.impl.node.NumberNode;
 import dev.runefox.json.impl.node.StringNode;
 import dev.runefox.json.impl.parse.CharUtil;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Serializer {
     private static final ThreadLocal<Serializer> SERIALIZER_INSTANCE = ThreadLocal.withInitial(Serializer::new);
@@ -107,23 +122,58 @@ public class Serializer {
         output.append(stringToJson(str));
     }
 
-    private void writeNumber(BigDecimal decimal) throws IOException {
+    private void writeNumber(NumberNode number) throws IOException {
+        switch (number.finiteness()) {
+            case FINITE -> writeFiniteNumber(number.asNumber(), number);
+            case NAN -> writeNonFiniteNumber("NaN");
+            case POSITIVE_INFINITE -> writeNonFiniteNumber("Infinity");
+            case NEGATIVE_INFINITE -> writeNonFiniteNumber("-Infinity");
+        }
+    }
+
+    private void writeNonFiniteNumber(String value) throws IOException {
+        if (config.json5() && config.allowNonFiniteNumbers()) {
+            output.append(value);
+        } else {
+            throw new IOException("Cannot serialize " + value + " as non-finite numbers are not supported");
+        }
+    }
+
+    private static final Pattern TRAILING_ZERO_PATTERN = Pattern.compile("^(.*)\\.0+$");
+    private static final Pattern TRAILING_ZERO_EXP_PATTERN = Pattern.compile("^(.*)\\.0+(e.*)$");
+
+    private void writeFiniteNumber(Number number, NumberNode node) throws IOException {
         addSpacing(0);
-        String str = decimal.toString();
-        if (config.ensurePointInNumbers()) {
+
+        String str;
+        if (number instanceof UnparsedNumber un) {
+            str = un.toJsonValidString().toLowerCase();
+        } else if (number instanceof UnparsedHexNumber uhn) {
+            str = uhn.toJsonValidString().toLowerCase();
+        } else if (number instanceof KotlinUnsignedIntWrapper kuiw) {
+            str = kuiw.represent().toLowerCase();
+        } else {
+            str = node.asBigDecimal().toString().toLowerCase();
+        }
+
+        if (config.enforcePointInNumbers()) {
             if (!str.contains(".") && !str.contains("e"))
                 output.append(str).append(".0");
+            else if (!str.contains(".") && str.contains("e"))
+                output.append(str.replace("e", ".0e"));
             else
                 output.append(str);
         } else {
-            if (str.contains("e")) {
-                output.append(str);
+            // Try print without decimal point if string contains one
+            Matcher m = TRAILING_ZERO_PATTERN.matcher(str);
+            if (m.matches()) {
+                output.append(m.group(1));
             } else {
-                try {
-                    BigInteger integer = decimal.toBigIntegerExact();
-                    output.append(integer.toString());
-                } catch (ArithmeticException exc) {
-                    output.append(decimal.toString());
+                m = TRAILING_ZERO_EXP_PATTERN.matcher(str);
+                if (m.matches()) {
+                    output.append(m.group(1)).append(m.group(2));
+                } else {
+                    output.append(str);
                 }
             }
         }
@@ -163,7 +213,7 @@ public class Serializer {
             output.append('[');
             nextSpacing = config.spacesWithinArray();
 
-            boolean wrap = config.wrapArrays(array);
+            boolean wrap = config.shouldWrap(array);
 
             if (wrap) {
                 indent++;
@@ -206,7 +256,7 @@ public class Serializer {
             nextSpacing = config.spacesWithinObject();
 
             int alignmentLen = getObjectKeyAlignmentLength(object);
-            boolean wrap = config.wrapArrays(object);
+            boolean wrap = config.shouldWrap(object);
 
             if (wrap) {
                 indent++;
@@ -252,13 +302,14 @@ public class Serializer {
     }
 
     private void writeValue(JsonNode value) throws IOException {
-        if (value.isNull()) writeNull();
-        else if (value.isBoolean()) writeBoolean(value.asBoolean());
-        else if (value.isNumber()) writeNumber(value.asBigDecimal());
-        else if (value.isString()) writeString(value.asExactString());
-        else if (value.isArray()) writeArray(value);
-        else if (value.isObject()) writeObject(value);
-        else assert false; // Cannot happen if correctly implemented
+        switch (value.type()) {
+            case NULL -> writeNull();
+            case BOOLEAN -> writeBoolean(value.asBoolean());
+            case NUMBER -> writeNumber((NumberNode) value);
+            case STRING -> writeString(value.asString());
+            case ARRAY -> writeArray(value);
+            case OBJECT -> writeObject(value);
+        }
     }
 
     public void writeJson(JsonNode node) throws IOException {
@@ -266,8 +317,9 @@ public class Serializer {
             output.append(CharUtil.NOEXEC_LF);
         }
 
-        if (!config.anyValue())
-            node.require(NodeType.ARRAY, NodeType.OBJECT);
+        if (!config.anyValue() && !node.is(NodeType.ARRAY, NodeType.OBJECT)) {
+            throw new SerializationException("JSON document must be array or object to serialize");
+        }
 
         writeValue(node);
         if (config.newlineAtEnd()) {

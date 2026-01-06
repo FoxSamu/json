@@ -1,7 +1,7 @@
 package dev.runefox.json.codec;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 public final class ObjectCodecBuilder {
     private ObjectCodecBuilder() {

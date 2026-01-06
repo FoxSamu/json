@@ -1,3 +1,16 @@
+/*
+ * Copyright 2022-2026 O. W. Nankman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+ * AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
 package dev.runefox.json;
 
 import dev.runefox.json.impl.UnparsedNumber;
@@ -77,6 +90,42 @@ public class ValueConversionTests {
     void testBigDec() {
         JsonNode node = JsonNode.number(U31);
         assertEquals(D31, node.asBigDecimal());
+    }
+
+    @Test
+    void testNaND() {
+        JsonNode node = JsonNode.number(Double.NaN);
+        assertEquals("NaN", node.asString());
+    }
+
+    @Test
+    void testNaNF() {
+        JsonNode node = JsonNode.number(Float.NaN);
+        assertEquals("NaN", node.asString());
+    }
+
+    @Test
+    void testPositiveInfD() {
+        JsonNode node = JsonNode.number(Double.POSITIVE_INFINITY);
+        assertEquals("Infinity", node.asString());
+    }
+
+    @Test
+    void testPositiveInfF() {
+        JsonNode node = JsonNode.number(Float.POSITIVE_INFINITY);
+        assertEquals("Infinity", node.asString());
+    }
+
+    @Test
+    void testNegativeInfD() {
+        JsonNode node = JsonNode.number(Double.NEGATIVE_INFINITY);
+        assertEquals("-Infinity", node.asString());
+    }
+
+    @Test
+    void testNegativeInfF() {
+        JsonNode node = JsonNode.number(Float.NEGATIVE_INFINITY);
+        assertEquals("-Infinity", node.asString());
     }
 
     @Test

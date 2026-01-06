@@ -1,3 +1,16 @@
+/*
+ * Copyright 2022-2026 O. W. Nankman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+ * AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
 package dev.runefox.json.codec;
 
 import dev.runefox.json.JsonNode;
@@ -104,6 +117,41 @@ public interface JsonCodec<A> {
      */
     JsonCodec<Double> DOUBLE = of(JsonNode::number, JsonNode::asDouble);
 
+
+    /**
+     * The codec that encodes any {@code byte[]} value. This does not assert if the number in the JSON tree is out of the bounds
+     * of the {@code byte} type, it will just clamp it. Null values are not accepted.
+     */
+    JsonCodec<byte[]> BYTE_ARRAY = of(JsonNode::numberArray, JsonNode::asByteArray);
+
+    /**
+     * The codec that encodes any {@code short[]} value. This does not assert if the number in the JSON tree is out of the bounds
+     * of the {@code short} type, it will just clamp it. Null values are not accepted.
+     */
+    JsonCodec<short[]> SHORT_ARRAY = of(JsonNode::numberArray, JsonNode::asShortArray);
+
+    /**
+     * The codec that encodes any {@code int[]} value. This does not assert if the number in the JSON tree is out of the bounds of
+     * the {@code int} type, it will just clamp it. Null values are not accepted.
+     */
+    JsonCodec<int[]> INT_ARRAY = of(JsonNode::numberArray, JsonNode::asIntArray);
+
+    /**
+     * The codec that encodes any {@code long[]} value. This does not assert if the number in the JSON tree is out of the bounds
+     * of the {@code long} type, it will just clamp it. Null values are not accepted.
+     */
+    JsonCodec<long[]> LONG_ARRAY = of(JsonNode::numberArray, JsonNode::asLongArray);
+
+    /**
+     * The codec that encodes any {@code float[]} value. Null values are not accepted.
+     */
+    JsonCodec<float[]> FLOAT_ARRAY = of(JsonNode::numberArray, JsonNode::asFloatArray);
+
+    /**
+     * The codec that encodes any {@code double[]} value. Null values are not accepted.
+     */
+    JsonCodec<double[]> DOUBLE_ARRAY = of(JsonNode::numberArray, JsonNode::asDoubleArray);
+
     /**
      * The codec that encodes any {@link BigInteger} value. Null values are not accepted.
      */
@@ -118,6 +166,11 @@ public interface JsonCodec<A> {
      * The codec that encodes a boolean value. Null values are not accepted.
      */
     JsonCodec<Boolean> BOOLEAN = of(JsonNode::bool, JsonNode::asBoolean);
+
+    /**
+     * The codec that encodes a {@code boolean[]} value. Null values are not accepted.
+     */
+    JsonCodec<boolean[]> BOOLEAN_ARRAY = of(JsonNode::boolArray, JsonNode::asBooleanArray);
 
     /**
      * The codec that encodes any string value. This codec will convert any other JSON primitive into its string
@@ -294,7 +347,7 @@ public interface JsonCodec<A> {
      */
     @SafeVarargs
     static <A> JsonCodec<A> alternatives(JsonCodec<A>... options) {
-        return new AlternatingCodec<>(List.of(options));
+        return new AlternativesCodec<>(List.of(options));
     }
 
     default JsonCodec<A> alternatively(JsonCodec<A> option) {

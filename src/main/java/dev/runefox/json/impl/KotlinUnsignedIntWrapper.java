@@ -11,7 +11,16 @@
  * language governing permissions and limitations under the License.
  */
 
-package dev.runefox.json.impl.parse;
+package dev.runefox.json.impl;
 
-public interface TokenType {
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+/**
+ * Wraps Kotlin unsigned numbers and is checked for to correctly represent them in JSON.
+ */
+public abstract class KotlinUnsignedIntWrapper extends Number {
+    public abstract String represent();
+    public abstract BigInteger toBigInteger();
+    public abstract BigDecimal toBigDecimal();
 }

@@ -7,10 +7,11 @@ the [JSON standard specification][json-spec] and the extended [JSON 5 specificat
 
 This library is shaped around easy analyzation and manipulation of JSON data.
 
-- Easy to use JSON tree representation with little as possible `instanceof` checks and casts
-- Quick and easy parsing of files and JSON strings
-- Quick serialization with a high variety of formatting options
-- Reading and writing of streams containing multiple JSON documents (such as over socket streams)
+- Easy to use JSON tree representation with little as possible `instanceof` checks and casts.
+- Quick and easy parsing of files and JSON strings.
+- Quick serialization with a high variety of formatting options.
+- Reading and writing of streams containing multiple JSON documents (such as over socket streams).
+- Intuitive conversion of Java objects from and to JSON trees via codecs, with no use of reflection or annotations (currently experimental).
 - Support for the [JSON 5 specification][json5-spec].
 
 ## Work in progress
@@ -19,21 +20,21 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.7.2`. This version is compatible with Java 11 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+The current version is `0.8`. This version is compatible with Java 17 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
 
-The artifact can be installed from my [Maven repository](https://maven.runefox.dev/).
+The artifact can be installed from my [Maven repository](https://mvn.runefox.dev/).
 
 ### Gradle
 
-```groovy
+```kotlin
 repositories {
     // Add my repository
-    maven { url "https://maven.runefox.dev/" }
+    maven { url = uri("https://mvn.runefox.dev/releases") }
 }
 
 dependencies {
     // Add the artifact
-    implementation "dev.runefox:json:0.7.2"
+    implementation("dev.runefox:json:0.8")
 }
 ```
 
@@ -44,7 +45,7 @@ dependencies {
     <!-- Add my repository -->
     <repository>
         <id>Runefox Maven</id>
-        <url>https://maven.runefox.dev/</url>
+        <url>https://mvn.runefox.dev/releases</url>
     </repository>
 </repositories>
 
@@ -53,7 +54,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.7.2</version>
+        <version>0.8</version>
     </dependency>
 </dependencies>
 ```
@@ -62,9 +63,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.7.2](https://maven.shadew.net/dev/runefox/json/0.7.2/json-0.7.2.jar)**
-- **[Download sources v0.7.2](https://maven.shadew.net/dev/runefox/json/0.7.2/json-0.7.2-sources.jar)**
-- **[All artifacts for v0.7.2](https://maven.shadew.net/dev/runefox/json/0.7.2/)**
+- **[Download v0.8](https://mvn.runefox.dev/releases/dev/runefox/json/0.8/json-0.8.jar)**
+- **[Download sources v0.8](https://mvn.runefox.dev/releases/dev/runefox/json/0.8/json-0.8-sources.jar)**
+- **[All artifacts for v0.8](https://mvn.runefox.dev/#/releases/dev/runefox/json/0.8)**
 
 ## Usage
 
@@ -254,7 +255,7 @@ you don't need to worry about it.
 
 ### Codecs
 
-Codecs are a handy tool to easily encode and decode Java objects into JSON trees and vice versa. All the logic for this can be found in a separate package: `dev.runefox.json.codec`.
+Codecs are a handy tool to easily encode and decode Java objects into JSON trees and vice versa. All the logic for this can be found in a separate package: `dev.runefox.json.codec`. The codec API is still very experimental and may change drastically in further updates.
 
 The main type that is important in defining codecs is the `JsonCodec` interface. This interface contains many base codec definitions, for primitives and other basic Java types. You can use codecs of other types to define new codecs.
 
@@ -289,7 +290,7 @@ public static final JsonCodec<Person> CODEC
                         .with("first_name", JsonCodec.STRING, Person::firstName)
                         .with("last_name", JsonCodec.STRING, Person::lastName)
                         .with("age", JsonCodec.INT, Person::age)
-                        .build(Person::new)
+                        .build(Person::new);
 ```
 
 This system is useful for classes with up to 16 serialized fields. Note that a this codec always produces and requires a JSON object. It cannot handle arrays or primitives. See the static methods of `JsonCodec` for other ways to construct codecs.
@@ -335,13 +336,14 @@ requires dev.runefox.json;
 ```
 
 ### Kotlin
-
-Since 0.7.2 the Kotlin part is a separate artifact and must be added. It's named `jsonkt` and follows
-the same version as the main artifact.
-
-Since 0.6.1, the library now integrates better with Kotlin:
+Kotlin support is added through a separate artifact. It's named `jsonkt` and follows the same version as the main artifact.
 ```kotlin
-val json = jsonObject {
+implementation("dev.runefox:jsonkt:<version>")
+```
+
+The Kotlin support library adds several Kotlin-style wrappers for the JSON API provided by the main artifact.
+```kotlin
+val json = JsonObject {
     it["x"] = 3
     it["y"] = 5
 }
@@ -352,13 +354,14 @@ println(json)  // {"x": 3, "y": 5, "z": 9}
 ```
 
 Some extra `JsonNode` factory methods were added to reduce the need of escaping reserved kotlin words in backticks. For
-example, `JsonNode.object()` would be called in kotlin as <code>JsonNode.\`object\`()</code>. This is ugly, and since 0.6.1, the `jsonObject()` function is available as a replacement to this. Additional functions like this are added for other types, to keep consistency.
+example, `JsonNode.object()` would be called in kotlin as <code>JsonNode.\`object\`()</code>. This is ugly, and the `JsonObject()` function is available as a replacement to this. Additional functions like this are added for other types, to keep consistency.
 
-When using `JsonCodec`s, any object now has the `encoded` infix function, and `JsonNode` also has the reversed `decoded` infix function, allowing for the following syntax:
+When using `JsonCodec`s, any object now has the `encode` infix function, and `JsonNode` also has the reversed `decode` infix function, allowing for the following syntax:
 ```kotlin
-val json = LocalDateTime.now() encoded JsonCodec.LOCAL_DATE_TIME
+// Note how JsonCodecs provides codec instances with Kotlin type guarantees.
+val json = LocalDateTime.now() encode JsonCodecs.LOCAL_DATE_TIME
 
-println(json decoded JsonCodec.LOCAL_DATE_TIME)
+println(json decode JsonCodecs.LOCAL_DATE_TIME)
 ```
 
 Since `JsonNode` has natural `get` and `set` methods, Kotlin allows you to call these using subscript notation:
@@ -373,10 +376,10 @@ obj["foo"] = "bar" // also automatically converted to JsonNode
 As an extra feature, elements can be added to an array node using `+=`:
 
 ```kotlin
-val arr = jsonArray()
+val arr = JsonArray()
 arr += 1
 arr += 2
-arr += jsonObject()
+arr += JsonObject()
 
 println(arr) // [1, 2, {}]
 ```
@@ -384,10 +387,7 @@ println(arr) // [1, 2, {}]
 
 ## Documentation
 
-Documentation is being worked on. The most commonly needed parts of the library are well documented with JavaDoc comments. More documentation coming
-in later versions.
-
-I am working on hosting the compiled JavaDoc online.
+Documentation is provided as JavaDoc (and KDoc) comments in the source code. The most commonly needed parts of the library are well documented with JavaDoc comments. More documentation coming as I work on the project.
 
 ## Changelog
 
@@ -399,7 +399,7 @@ Since 0.7.2, changelogs have moved to GitHub Releases. See [Release v0.7.2](http
 
 Copyright 2022-2025 O. W. Nankman
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this software except in compliance with the
 License. You may obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0

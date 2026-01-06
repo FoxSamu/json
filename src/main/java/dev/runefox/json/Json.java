@@ -1,3 +1,16 @@
+/*
+ * Copyright 2022-2026 O. W. Nankman
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+ * AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+
 package dev.runefox.json;
 
 import dev.runefox.json.impl.JsonInputImpl;
@@ -11,7 +24,7 @@ import java.nio.charset.Charset;
 /**
  * Instances of the {@link Json} class define how JSON data is parsed and formatted. It defines whether it accepts JSON
  * 5 data, and various other options.
- *
+ * <p>
  * {@link Json} instances can be obtained via a builder: {@link #jsonBuilder()}, {@link #json5Builder()}, but
  * ready-to-use presets can also be obtained via {@link #json()}, {@link #json5()}, {@link #compactJson()} and
  * {@link #compactJson5()} (the latter two will print compact JSON, while the other two print pretty JSON).
@@ -25,8 +38,8 @@ public class Json {
     private static final Json JSON = new Json(false);
     private static final Json JSON5 = new Json(true);
 
-    private static final Json COMPACT_JSON = jsonBuilder().formatConfig(JsonSerializingConfig.compact()).build();
-    private static final Json COMPACT_JSON5 = json5Builder().formatConfig(JsonSerializingConfig.compact()).build();
+    private static final Json COMPACT_JSON = jsonBuilder().serializationConfig(JsonSerializingConfig.compact()).build();
+    private static final Json COMPACT_JSON5 = json5Builder().serializationConfig(JsonSerializingConfig.compact()).build();
 
     private final JsonSerializingConfig formatConfig;
     private final JsonParsingConfig parseConfig;
@@ -55,9 +68,8 @@ public class Json {
      *
      * @param reader The reader to parse
      * @return The parsed {@link JsonNode}
-     *
      * @throws NullPointerException If the reader is null
-     * @throws SyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException      When the JSON has invalid syntax
      * @throws IOException          If an I/O error occurs
      */
     public JsonNode parse(Reader reader) throws IOException {
@@ -71,9 +83,8 @@ public class Json {
      *
      * @param string The string to parse
      * @return The parsed {@link JsonNode}
-     *
      * @throws NullPointerException If the string is null
-     * @throws SyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException      When the JSON has invalid syntax
      */
     public JsonNode parse(String string) throws IOException {
         if (string == null)
@@ -87,9 +98,8 @@ public class Json {
      *
      * @param stream The input stream to parse
      * @return The parsed {@link JsonNode}
-     *
      * @throws NullPointerException If the stream is null
-     * @throws SyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException      When the JSON has invalid syntax
      * @throws IOException          If an I/O error occurs
      */
     public JsonNode parse(InputStream stream) throws IOException {
@@ -103,9 +113,8 @@ public class Json {
      *
      * @param file The file to parse
      * @return The parsed {@link JsonNode}
-     *
      * @throws NullPointerException  If the file is null
-     * @throws SyntaxException   When the JSON has invalid syntax
+     * @throws SyntaxException       When the JSON has invalid syntax
      * @throws FileNotFoundException When the file cannot be found, is a directory, or could not be opened for some
      *                               other reason
      * @throws IOException           If an I/O error occurs
@@ -130,9 +139,8 @@ public class Json {
      *
      * @param reader The reader to parse
      * @return A {@link JsonInput} to read
-     *
      * @throws NullPointerException If the reader is null
-     * @throws IOException If an I/O error occurs
+     * @throws IOException          If an I/O error occurs
      */
     public JsonInput input(Reader reader) throws IOException {
         if (reader == null)
@@ -145,7 +153,6 @@ public class Json {
      *
      * @param string The string to parse
      * @return A {@link JsonInput} to read
-     *
      * @throws NullPointerException If the string is null
      * @throws IOException          If an I/O error occurs
      */
@@ -168,9 +175,8 @@ public class Json {
      *
      * @param stream The input stream to parse
      * @return A {@link JsonInput} to read
-     *
      * @throws NullPointerException If the stream is null
-     * @throws SyntaxException  When the JSON has invalid syntax
+     * @throws SyntaxException      When the JSON has invalid syntax
      * @throws IOException          If an I/O error occurs
      */
     public JsonInput input(InputStream stream) throws IOException {
@@ -185,7 +191,6 @@ public class Json {
      *
      * @param file The file to parse
      * @return A {@link JsonInput} to read
-     *
      * @throws NullPointerException  If the file is null
      * @throws FileNotFoundException When the file cannot be found, is a directory, or could not be opened for some
      *                               other reason
@@ -205,6 +210,7 @@ public class Json {
      * @throws NullPointerException   If any parameter is null
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
+     * @throws SerializationException If the serializer does not accept the given node as valid JSON data
      * @throws IOException            If an I/O error occurs
      */
     public void serialize(JsonNode node, Writer writer) throws IOException {
@@ -224,6 +230,7 @@ public class Json {
      * @throws NullPointerException   If any parameter is null
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
+     * @throws SerializationException If the serializer does not accept the given node as valid JSON data
      * @throws IOException            If an I/O error occurs
      */
     public void serialize(JsonNode node, OutputStream stream) throws IOException {
@@ -240,6 +247,7 @@ public class Json {
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
      * @throws FileNotFoundException  If the file does not exist and cannot be created
+     * @throws SerializationException If the serializer does not accept the given node as valid JSON data
      * @throws IOException            If the file is a directory, or when an I/O error occurs
      */
     public void serialize(JsonNode node, File file) throws IOException {
@@ -257,8 +265,9 @@ public class Json {
      * @throws NullPointerException   If any parameter is null
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
+     * @throws SerializationException If the serializer does not accept the given node as valid JSON data
      */
-    public void serialize(JsonNode node, StringBuilder builder) {
+    public void serialize(JsonNode node, StringBuilder builder) throws SerializationException {
         if (node == null || builder == null)
             throw new NullPointerException();
         if (!formatConfig.anyValue())
@@ -266,6 +275,8 @@ public class Json {
 
         try {
             Serializer.serialize(node, builder, formatConfig);
+        } catch (SerializationException e) {
+            throw e;
         } catch (IOException e) {
             throw new AssertionError("StringBuilder throws IOException?!");
         }
@@ -275,12 +286,12 @@ public class Json {
      * Serializes JSON to a {@link String}.
      *
      * @return The serialized JSON string
-     *
      * @throws NullPointerException   If the given JSON is null
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
+     * @throws SerializationException If the serializer does not accept the given node as valid JSON data
      */
-    public String serialize(JsonNode node) {
+    public String serialize(JsonNode node) throws SerializationException {
         if (node == null)
             throw new NullPointerException();
         if (!formatConfig.anyValue())
@@ -293,8 +304,6 @@ public class Json {
     }
 
 
-
-
     /**
      * Opens a stream to write multiple JSON documents to a {@link Writer}. The writer will be closed when the returned
      * stream is closed. Not closing the returned stream has no other effects than not closing the writer, simply
@@ -302,7 +311,6 @@ public class Json {
      *
      * @param writer The writer to serialize to
      * @return A {@link JsonOutput} to stream documents to
-     *
      * @throws NullPointerException   If any parameter is null
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
@@ -321,7 +329,6 @@ public class Json {
      *
      * @param stream The output stream to serialize to
      * @return A {@link JsonOutput} to stream documents to
-     *
      * @throws NullPointerException   If any parameter is null
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
@@ -338,7 +345,6 @@ public class Json {
      *
      * @param file The file to serialize to
      * @return A {@link JsonOutput} to stream documents to
-     *
      * @throws NullPointerException   If any parameter is null
      * @throws IncorrectTypeException If the given node is not an array or object and the formatting config does not
      *                                allow any value
@@ -364,9 +370,10 @@ public class Json {
         if (builder == null)
             throw new NullPointerException();
 
-        return new JsonOutputImpl(builder, () -> { }, () -> { }, formatConfig);
+        return new JsonOutputImpl(builder, () -> {
+        }, () -> {
+        }, formatConfig);
     }
-
 
 
     /**
@@ -384,7 +391,7 @@ public class Json {
      * @return A builder with JSON 5 as defaults.
      */
     public static Builder json5Builder() {
-        return new Builder().formatConfig(JSON5_FORMAT_CONFIG).parseConfig(JSON5_PARSE_CONFIG);
+        return new Builder().serializationConfig(JSON5_FORMAT_CONFIG).parseConfig(JSON5_PARSE_CONFIG);
     }
 
     /**
@@ -427,6 +434,9 @@ public class Json {
         return COMPACT_JSON5;
     }
 
+    /**
+     * A builder for {@link Json} objects.
+     */
     public static class Builder {
         private JsonSerializingConfig formatConfig = DEFAULT_FORMAT_CONFIG;
         private JsonParsingConfig parseConfig = DEFAULT_PARSE_CONFIG;
@@ -440,10 +450,9 @@ public class Json {
          *
          * @param config The configuration
          * @return This instance for chaining
-         *
          * @throws NullPointerException When the configuration is null
          */
-        public Builder formatConfig(JsonSerializingConfig config) {
+        public Builder serializationConfig(JsonSerializingConfig config) {
             if (config == null)
                 throw new NullPointerException();
 
@@ -457,7 +466,6 @@ public class Json {
          *
          * @param config The configuration
          * @return This instance for chaining
-         *
          * @throws NullPointerException When the configuration is null
          */
         public Builder parseConfig(JsonParsingConfig config) {

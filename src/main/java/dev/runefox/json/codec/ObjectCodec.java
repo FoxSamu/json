@@ -1,10 +1,10 @@
 package dev.runefox.json.codec;
 
-import dev.runefox.json.JsonNode;
-import dev.runefox.json.MissingKeyException;
-
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.Function;
+
+import dev.runefox.json.MissingKeyException;
+import dev.runefox.json.JsonNode;
 
 interface ObjectCodec<T> extends JsonCodec<T> {
     void encodeObj(T obj, JsonNode json);
@@ -113,7 +113,7 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, T> implements ObjectCodecBuilder.Builder1<P0, T> {
-            private final Field<T, P0> field0;
+        private final Field<T, P0> field0;
 
             Builder(Field<T, P0> field0) {
                 this.field0 = field0;
@@ -176,8 +176,8 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, T> implements ObjectCodecBuilder.Builder2<P0, P1, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1) {
                 this.field0 = field0;
@@ -245,9 +245,9 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, T> implements ObjectCodecBuilder.Builder3<P0, P1, P2, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2) {
                 this.field0 = field0;
@@ -320,10 +320,10 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, T> implements ObjectCodecBuilder.Builder4<P0, P1, P2, P3, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3) {
                 this.field0 = field0;
@@ -401,11 +401,11 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, T> implements ObjectCodecBuilder.Builder5<P0, P1, P2, P3, P4, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4) {
                 this.field0 = field0;
@@ -488,12 +488,12 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, T> implements ObjectCodecBuilder.Builder6<P0, P1, P2, P3, P4, P5, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5) {
                 this.field0 = field0;
@@ -581,13 +581,13 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, T> implements ObjectCodecBuilder.Builder7<P0, P1, P2, P3, P4, P5, P6, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6) {
                 this.field0 = field0;
@@ -680,14 +680,14 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, T> implements ObjectCodecBuilder.Builder8<P0, P1, P2, P3, P4, P5, P6, P7, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7) {
                 this.field0 = field0;
@@ -785,15 +785,15 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, T> implements ObjectCodecBuilder.Builder9<P0, P1, P2, P3, P4, P5, P6, P7, P8, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8) {
                 this.field0 = field0;
@@ -896,16 +896,16 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T> implements ObjectCodecBuilder.Builder10<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
-            private final Field<T, P9> field9;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
+        private final Field<T, P9> field9;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8, Field<T, P9> field9) {
                 this.field0 = field0;
@@ -1013,17 +1013,17 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, T> implements ObjectCodecBuilder.Builder11<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
-            private final Field<T, P9> field9;
-            private final Field<T, P10> field10;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
+        private final Field<T, P9> field9;
+        private final Field<T, P10> field10;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8, Field<T, P9> field9, Field<T, P10> field10) {
                 this.field0 = field0;
@@ -1136,18 +1136,18 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, T> implements ObjectCodecBuilder.Builder12<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
-            private final Field<T, P9> field9;
-            private final Field<T, P10> field10;
-            private final Field<T, P11> field11;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
+        private final Field<T, P9> field9;
+        private final Field<T, P10> field10;
+        private final Field<T, P11> field11;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8, Field<T, P9> field9, Field<T, P10> field10, Field<T, P11> field11) {
                 this.field0 = field0;
@@ -1265,19 +1265,19 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, T> implements ObjectCodecBuilder.Builder13<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
-            private final Field<T, P9> field9;
-            private final Field<T, P10> field10;
-            private final Field<T, P11> field11;
-            private final Field<T, P12> field12;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
+        private final Field<T, P9> field9;
+        private final Field<T, P10> field10;
+        private final Field<T, P11> field11;
+        private final Field<T, P12> field12;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8, Field<T, P9> field9, Field<T, P10> field10, Field<T, P11> field11, Field<T, P12> field12) {
                 this.field0 = field0;
@@ -1400,20 +1400,20 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, T> implements ObjectCodecBuilder.Builder14<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
-            private final Field<T, P9> field9;
-            private final Field<T, P10> field10;
-            private final Field<T, P11> field11;
-            private final Field<T, P12> field12;
-            private final Field<T, P13> field13;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
+        private final Field<T, P9> field9;
+        private final Field<T, P10> field10;
+        private final Field<T, P11> field11;
+        private final Field<T, P12> field12;
+        private final Field<T, P13> field13;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8, Field<T, P9> field9, Field<T, P10> field10, Field<T, P11> field11, Field<T, P12> field12, Field<T, P13> field13) {
                 this.field0 = field0;
@@ -1541,21 +1541,21 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, T> implements ObjectCodecBuilder.Builder15<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
-            private final Field<T, P9> field9;
-            private final Field<T, P10> field10;
-            private final Field<T, P11> field11;
-            private final Field<T, P12> field12;
-            private final Field<T, P13> field13;
-            private final Field<T, P14> field14;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
+        private final Field<T, P9> field9;
+        private final Field<T, P10> field10;
+        private final Field<T, P11> field11;
+        private final Field<T, P12> field12;
+        private final Field<T, P13> field13;
+        private final Field<T, P14> field14;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8, Field<T, P9> field9, Field<T, P10> field10, Field<T, P11> field11, Field<T, P12> field12, Field<T, P13> field13, Field<T, P14> field14) {
                 this.field0 = field0;
@@ -1688,22 +1688,22 @@ interface ObjectCodec<T> extends JsonCodec<T> {
         }
 
         static class Builder<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, T> implements ObjectCodecBuilder.Builder16<P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, T> {
-            private final Field<T, P0> field0;
-            private final Field<T, P1> field1;
-            private final Field<T, P2> field2;
-            private final Field<T, P3> field3;
-            private final Field<T, P4> field4;
-            private final Field<T, P5> field5;
-            private final Field<T, P6> field6;
-            private final Field<T, P7> field7;
-            private final Field<T, P8> field8;
-            private final Field<T, P9> field9;
-            private final Field<T, P10> field10;
-            private final Field<T, P11> field11;
-            private final Field<T, P12> field12;
-            private final Field<T, P13> field13;
-            private final Field<T, P14> field14;
-            private final Field<T, P15> field15;
+        private final Field<T, P0> field0;
+        private final Field<T, P1> field1;
+        private final Field<T, P2> field2;
+        private final Field<T, P3> field3;
+        private final Field<T, P4> field4;
+        private final Field<T, P5> field5;
+        private final Field<T, P6> field6;
+        private final Field<T, P7> field7;
+        private final Field<T, P8> field8;
+        private final Field<T, P9> field9;
+        private final Field<T, P10> field10;
+        private final Field<T, P11> field11;
+        private final Field<T, P12> field12;
+        private final Field<T, P13> field13;
+        private final Field<T, P14> field14;
+        private final Field<T, P15> field15;
 
             Builder(Field<T, P0> field0, Field<T, P1> field1, Field<T, P2> field2, Field<T, P3> field3, Field<T, P4> field4, Field<T, P5> field5, Field<T, P6> field6, Field<T, P7> field7, Field<T, P8> field8, Field<T, P9> field9, Field<T, P10> field10, Field<T, P11> field11, Field<T, P12> field12, Field<T, P13> field13, Field<T, P14> field14, Field<T, P15> field15) {
                 this.field0 = field0;

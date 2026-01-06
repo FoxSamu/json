@@ -11,7 +11,11 @@
  * language governing permissions and limitations under the License.
  */
 
-package dev.runefox.json.impl.parse;
+package dev.runefox.json.impl.node;
 
-public interface TokenType {
+public enum Finiteness {
+    FINITE,
+    NAN,
+    POSITIVE_INFINITE,
+    NEGATIVE_INFINITE
 }
