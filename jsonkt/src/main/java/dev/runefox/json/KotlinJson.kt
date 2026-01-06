@@ -149,7 +149,7 @@ fun JsonNode.requireSize(range: IntRange): JsonNode {
  * }
  * ```
  */
-inline fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
+fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
     return jsonObject().invoke(config)
 }
 
@@ -162,7 +162,7 @@ inline fun jsonObject(config: (JsonNode) -> Unit): JsonNode {
  * }
  * ```
  */
-inline fun jsonArray(config: (JsonNode) -> Unit): JsonNode {
+fun jsonArray(config: (JsonNode) -> Unit): JsonNode {
     return jsonArray().invoke(config)
 }
 
