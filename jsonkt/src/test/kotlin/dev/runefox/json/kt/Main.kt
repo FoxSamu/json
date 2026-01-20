@@ -15,12 +15,13 @@ package dev.runefox.json.kt
 
 import dev.runefox.json.Json
 import dev.runefox.json.NodeType
-import dev.runefox.json.kt.JsonCodecs.INT_RANGE
-import dev.runefox.json.kt.JsonCodecs.INT_RANGE_OPEN
+import dev.runefox.json.kt.JsonCodecs.IntRange
+import dev.runefox.json.kt.JsonCodecs.OpenIntRange
 import dev.runefox.json.codec.JsonCodec.INT
 import dev.runefox.json.codec.JsonCodec.LOCAL_DATE_TIME
 import java.time.LocalDateTime
 
+@OptIn(ExperimentalKotlinJsonCodecApi::class, ExperimentalKotlinJsonNodeApi::class)
 fun main() {
     val a = JsonObject()
 
@@ -31,15 +32,15 @@ fun main() {
 
     b += "3"
     b += ULong.MAX_VALUE
-    b += 3..18 encode INT_RANGE
-    b += 3..18 encode INT_RANGE_OPEN
+    b += 3..18 encode IntRange
+    b += 3..18 encode OpenIntRange
 
     println(a)
     println(b)
     println(ULong.MAX_VALUE)
     println(a["y"] decode LOCAL_DATE_TIME)
-    println(b[2] decode INT_RANGE)
-    println(b[3] decode INT_RANGE_OPEN)
+    println(b[2] decode IntRange)
+    println(b[3] decode OpenIntRange)
 
     println(JsonNumber(3) == JsonNumber(3))
 
