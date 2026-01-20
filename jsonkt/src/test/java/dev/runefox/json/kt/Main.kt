@@ -11,10 +11,12 @@
  * language governing permissions and limitations under the License.
  */
 
-package dev.runefox.json
+package dev.runefox.json.kt
 
-import dev.runefox.json.JsonCodecs.INT_RANGE
-import dev.runefox.json.JsonCodecs.INT_RANGE_OPEN
+import dev.runefox.json.Json
+import dev.runefox.json.NodeType
+import dev.runefox.json.kt.JsonCodecs.INT_RANGE
+import dev.runefox.json.kt.JsonCodecs.INT_RANGE_OPEN
 import dev.runefox.json.codec.JsonCodec.INT
 import dev.runefox.json.codec.JsonCodec.LOCAL_DATE_TIME
 import java.time.LocalDateTime

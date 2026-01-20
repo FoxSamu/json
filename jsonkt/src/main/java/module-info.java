@@ -1,4 +1,6 @@
 module dev.runefox.json.kt {
+    exports dev.runefox.json.kt;
+
     requires dev.runefox.json;
 
     requires java.base;

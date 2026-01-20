@@ -13,8 +13,12 @@
 
 @file:Suppress("unused")
 
-package dev.runefox.json
+package dev.runefox.json.kt
 
+import dev.runefox.json.IncorrectSizeException
+import dev.runefox.json.IncorrectTypeException
+import dev.runefox.json.JsonNode
+import dev.runefox.json.NodeType
 import dev.runefox.json.codec.JsonCodec
 import dev.runefox.json.impl.KotlinUnsignedIntWrapper
 import dev.runefox.json.impl.UnparsedHexNumber
