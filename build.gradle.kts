@@ -14,12 +14,12 @@
 import dev.runefox.json.ObjectCodecTask
 
 plugins {
-    id("java")
-    id("maven-publish")
+    `java-library`
+    `maven-publish`
 }
 
 group = "dev.runefox"
-version = "0.8"
+version = "0.8.1"
 
 repositories {
     mavenCentral()

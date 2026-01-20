@@ -12,8 +12,9 @@
  */
 
 plugins {
-    id("java")
-    id("maven-publish")
+    `java-library`
+    `maven-publish`
+
     kotlin("jvm") version "2.2.21"
 }
 
@@ -29,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    implementation(rootProject)
+    api(rootProject)
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
