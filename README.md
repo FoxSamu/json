@@ -20,7 +20,7 @@ This library is in development and the API can change at any time, although at t
 
 ## Installing
 
-The current version is `0.8`. This version is compatible with Java 17 and above. However, I plan to drop Java 11 compat and move to Java 17 (allowing for sealing the `JsonNode` interface).
+Check the [releases page](https://github.com/FoxSamu/json/releases) for the latest release. This version is compatible with Java 17 and above.
 
 The artifact can be installed from my [Maven repository](https://mvn.runefox.dev/).
 
@@ -34,7 +34,7 @@ repositories {
 
 dependencies {
     // Add the artifact
-    implementation("dev.runefox:json:0.8")
+    implementation("dev.runefox:json:0.8.1")
 }
 ```
 
@@ -54,7 +54,7 @@ dependencies {
     <dependency>
         <groupId>dev.runefox</groupId>
         <artifactId>json</artifactId>
-        <version>0.8</version>
+        <version>0.8.1</version>
     </dependency>
 </dependencies>
 ```
@@ -63,9 +63,9 @@ dependencies {
 
 You can also manually download the artifacts manually from my Maven repository:
 
-- **[Download v0.8](https://mvn.runefox.dev/releases/dev/runefox/json/0.8/json-0.8.jar)**
-- **[Download sources v0.8](https://mvn.runefox.dev/releases/dev/runefox/json/0.8/json-0.8-sources.jar)**
-- **[All artifacts for v0.8](https://mvn.runefox.dev/#/releases/dev/runefox/json/0.8)**
+- **[Download v0.8.1](https://mvn.runefox.dev/releases/dev/runefox/json/0.8.1/json-0.8.1.jar)**
+- **[Download sources v0.8.1](https://mvn.runefox.dev/releases/dev/runefox/json/0.8.1/json-0.8.1-sources.jar)**
+- **[All artifacts for v0.8.1](https://mvn.runefox.dev/#/releases/dev/runefox/json/0.8.1)**
 
 ## Usage
 
